@@ -25,4 +25,4 @@ var formattedFileContents = formatter.format(unformattedFileContents, formatting
 
 ## Formatting Options
 
-There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface located](src/FormattingOptions.ts)
+There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface](src/FormattingOptions.ts).
