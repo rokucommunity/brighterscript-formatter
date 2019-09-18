@@ -1,21 +1,18 @@
-# ⚠️ Warning 
-This project is no longer maintained. Its successor is [brighterscript-formatter](https://github.com/RokuCommunity/brighterscript-formatter), which can format all valid brightscript.
+# brighterscript-formatter
 
-# brightscript-formatter
-
-A code formatter for Roku's BrightScript language
+A code formatter for [BrighterScript](https://github.com/RokuCommunity/brighterscript), a superset of Roku's BrightScript language
 
 
-[![Build Status](https://travis-ci.org/TwitchBronBron/brightscript-formatter.svg?branch=master)](https://travis-ci.org/TwitchBronBron/brightscript-formatter)
-[![Coverage Status](https://coveralls.io/repos/github/TwitchBronBron/brightscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/TwitchBronBron/brightscript-formatter?branch=master)
-[![npm](https://img.shields.io/npm/v/brightscript-formatter.svg?branch=master)](https://www.npmjs.com/package/brightscript-formatter)
+[![Build Status](https://travis-ci.org/RokuCommunity/brighterscript-formatter.svg?branch=master)](https://travis-ci.org/RokuCommunity/brighterscript-formatter)
+[![Coverage Status](https://coveralls.io/repos/github/RokuCommunity/brighterscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/RokuCommunity/brighterscript-formatter?branch=master)
+[![npm](https://img.shields.io/npm/v/brighterscript-formatter.svg?branch=master)](https://www.npmjs.com/package/brighterscript-formatter)
 
 ## Usage
 ```javascript
-import { BrightScriptFormatter } from 'brightscript-formatter';
+import { Formatter } from 'brighterscript-formatter';
 
 //create a new instance of the formatter
-var formatter = new BrightscriptFormatter();
+var formatter = new Formatter();
 
 //retrieve the raw brightscript file contents (probably from fs.readFile)
 var unformattedFileContents = getFileAsStringSomehow();

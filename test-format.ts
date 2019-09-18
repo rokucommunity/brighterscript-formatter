@@ -9,7 +9,7 @@ import * as fsExtra from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as path from 'path';
 
-import { BrightScriptFormatter } from './src/BrightScriptFormatter';
+import { Formatter } from './src/Formatter';
 
 const repositoryUrls = [
     'https://github.com/georgejecook/rokuNavSpike',
@@ -66,7 +66,7 @@ let workspace = {
 
             await Promise.all(
                 files.map(async (filePath) => {
-                    const formatter = new BrightScriptFormatter();
+                    const formatter = new Formatter();
                     let fullFilePath = path.join(projectFolderPath, filePath);
                     console.log(`Loading file contents for "${fullFilePath}"`);
                     const fileContents = await fsExtra.readFile(fullFilePath);

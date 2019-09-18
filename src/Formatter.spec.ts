@@ -1,14 +1,14 @@
 import { BrightScriptLexer, TokenType } from 'brightscript-parser';
 import { expect } from 'chai';
 
-import { BrightScriptFormatter } from './BrightScriptFormatter';
+import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 
 describe('BrightScriptFormatter', () => {
-    let formatter: BrightScriptFormatter;
+    let formatter: Formatter;
 
     beforeEach(() => {
-        formatter = new BrightScriptFormatter();
+        formatter = new Formatter();
     });
 
     describe('dedupeWhitespace', () => {

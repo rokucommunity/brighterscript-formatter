@@ -1,2 +1,2 @@
 export * from './FormattingOptions';
-export * from './BrightScriptFormatter';
+export * from './Formatter';

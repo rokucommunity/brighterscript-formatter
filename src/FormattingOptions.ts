@@ -1,5 +1,3 @@
-import { TokenType } from 'brightscript-parser';
-
 /**
  * A set of formatting options used to determine how the file should be formatted.
  */

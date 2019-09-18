@@ -9,7 +9,7 @@ import * as trimRight from 'trim-right';
 
 import { FormattingOptions } from './FormattingOptions';
 
-export class BrightScriptFormatter {
+export class Formatter {
     constructor() { }
     /**
      * The default number of spaces when indenting with spaces
@@ -310,7 +310,7 @@ export class BrightScriptFormatter {
             if (options.indentStyle === 'spaces') {
                 let indentSpaceCount = options.indentSpaceCount
                     ? options.indentSpaceCount
-                    : BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT;
+                    : Formatter.DEFAULT_INDENT_SPACE_COUNT;
                 let spaceCount = thisTabCount * indentSpaceCount;
                 leadingWhitespace = Array(spaceCount + 1).join(' ');
             } else {
@@ -599,7 +599,7 @@ export class BrightScriptFormatter {
             if (
                 //next non-whitespace token is a numeric literal
                 nextToken && nextToken.tokenType === TokenType.numberLiteral &&
-                previousToken && BrightScriptFormatter.tokensBeforeNegativeNumericLiteral.indexOf(previousToken.tokenType) > -1
+                previousToken && Formatter.tokensBeforeNegativeNumericLiteral.indexOf(previousToken.tokenType) > -1
             ) {
                 return true;
             }
@@ -722,7 +722,7 @@ export class BrightScriptFormatter {
     private normalizeOptions(options: FormattingOptions | undefined) {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
-            indentSpaceCount: BrightScriptFormatter.DEFAULT_INDENT_SPACE_COUNT,
+            indentSpaceCount: Formatter.DEFAULT_INDENT_SPACE_COUNT,
             formatIndent: true,
             keywordCase: 'lower',
             compositeKeywords: 'split',
