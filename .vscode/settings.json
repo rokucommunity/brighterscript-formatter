@@ -1,0 +1,19 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "**/coverage": true,
+        ".temp": true,
+        ".nyc_output": true
+    },
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
+    "typescript.autoClosingTags": true,
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false
+}
