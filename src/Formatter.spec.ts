@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 
-describe('BrightScriptFormatter', () => {
+describe('Formatter', () => {
     let formatter: Formatter;
 
     beforeEach(() => {
