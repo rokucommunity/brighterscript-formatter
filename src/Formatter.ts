@@ -256,9 +256,11 @@ export class Formatter {
             let lineTokens = lineObj.tokens;
             let thisTabCount = tabCount;
             let foundIndentorThisLine = false;
+            let foundNonWhitespaceThisLine = false;
 
             //if this is a single-line if statement, do nothing with indentation
             if (this.isSingleLineIfStatement(lineTokens, tokens)) {
+                foundNonWhitespaceThisLine = true;
                 // //if this line has a return statement, outdent
                 // if (this.tokenIndexOf(TokenType.return, lineTokens) > -1) {
                 //     tabCount--;
@@ -269,6 +271,11 @@ export class Formatter {
                 inner: for (let i = 0; i < lineTokens.length; i++) {
                     let token = lineTokens[i];
                     let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
+
+                    //keep track of whether we found a non-whitespace (or newline) character
+                    if (token.tokenType !== TokenType.whitespace && token.tokenType !== TokenType.newline) {
+                        foundNonWhitespaceThisLine = true;
+                    }
 
                     //if this is an indentor token,
                     if (indentTokens.indexOf(token.tokenType) > -1) {
@@ -328,11 +335,18 @@ export class Formatter {
             //replace the whitespace with the formatted whitespace
             lineTokens[0].value = leadingWhitespace;
 
+            //if this is a line filled only with whitespace, throw out the whitespace
+            if (foundNonWhitespaceThisLine === false) {
+                //only keep the traling newline
+                lineTokens = [lineTokens.pop() as Token];
+            }
+
             //add this list of tokens
             outputTokens.push.apply(outputTokens, lineTokens);
+            let lastLineToken = lineTokens[lineTokens.length - 1];
             //if we have found the end of file
             if (
-                lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE
+                lastLineToken && lastLineToken.tokenType === TokenType.END_OF_FILE
             ) {
                 break outer;
             }

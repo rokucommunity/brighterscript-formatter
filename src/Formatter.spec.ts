@@ -192,6 +192,9 @@ describe('Formatter', () => {
     });
 
     describe('indentStyle', () => {
+        it('trims empty lines', () => {
+            expect(formatter.format(`sub a()\n    \nend sub`)).to.equal(`sub a()\n\nend sub`);
+        });
         it('does not fail with comments next to if statement', () => {
             let program = `sub a()\n    if true then 'comment\n        return true\n    end if\nend sub`;
             expect(formatter.format(program)).to.equal(program);
