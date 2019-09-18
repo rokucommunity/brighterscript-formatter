@@ -43,14 +43,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RokuCommunity/brightscript-formatter.git"
+    "url": "git+https://github.com/RokuCommunity/brighterscript-formatter.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RokuCommunity/brightscript-formatter/issues"
+    "url": "https://github.com/RokuCommunity/brighterscript-formatter/issues"
   },
-  "homepage": "https://github.com/RokuCommunity/brightscript-formatter#readme",
+  "homepage": "https://github.com/RokuCommunity/brighterscript-formatter#readme",
   "dependencies": {
     "brightscript-parser": "1.2.0",
     "child-process-promise": "^2.2.1",

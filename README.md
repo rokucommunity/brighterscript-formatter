@@ -14,11 +14,11 @@ import { Formatter } from 'brighterscript-formatter';
 //create a new instance of the formatter
 var formatter = new Formatter();
 
-//retrieve the raw brightscript file contents (probably from fs.readFile)
+//retrieve the raw BrighterScript/BrightScript file contents (probably from fs.readFile)
 var unformattedFileContents = getFileAsStringSomehow();
 
 var formattingOptions = {};
-//get a formatted version of the brightscript file
+//get a formatted version of the BrighterScript/BrightScript file
 var formattedFileContents = formatter.format(unformattedFileContents, formattingOptions);
 
 ```
