@@ -252,15 +252,6 @@ export class Formatter {
         outer: for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
             let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
-            //hack to fix lines with `end` as a property name
-            for (let i = 0; i < lineObj.tokens.length; i++) {
-                let token = lineObj.tokens[i];
-                let previousToken = lineObj.tokens[i - 1];
-                if (token.value.toLowerCase() === 'end') {
-                    var k = 2;
-                }
-            }
-
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
             let lineTokens = lineObj.tokens;
             let thisTabCount = tabCount;
