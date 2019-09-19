@@ -89,6 +89,18 @@ describe('Formatter', () => {
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
         });
 
+        it.only('works for special cases', () => {
+            let program = `
+sub main()
+    name = "cat"
+    e = previousCuePoint.end
+    if true then
+        print "hello"
+    end if
+end sub`;
+            expect(formatter.format(program)).to.equal(program);
+        });
+
         it('ensures whitespace between numeric literal and `then` keyword', () => {
             expect(formatter.format(`if playlist.indexOf(songEntry) = -1 then`)).to.equal(`if playlist.indexOf(songEntry) = -1 then`);
         });
