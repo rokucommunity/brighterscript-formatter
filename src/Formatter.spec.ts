@@ -89,7 +89,7 @@ describe('Formatter', () => {
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
         });
 
-        it.only('works for special cases', () => {
+        it('works for special cases', () => {
             let program = `
 sub main()
     name = "cat"
