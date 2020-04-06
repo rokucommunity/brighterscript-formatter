@@ -20,9 +20,6 @@ export class Formatter {
             includeWhitespace: true
         });
 
-        //force all composite keywords to have 0 or 1 spaces in between, but no more than 1
-        tokens = this.normalizeCompositeKeywords(tokens);
-
         if (options.compositeKeywords) {
             tokens = this.formatCompositeKeywords(tokens, options);
         }
@@ -52,26 +49,6 @@ export class Formatter {
         return outputText;
     }
 
-    /**
-     * Replace all Whitespace in the composite keyword tokens with a single space
-     * @param tokens
-     */
-    private normalizeCompositeKeywords(tokens: Token[]) {
-        let indexOffset = 0;
-        for (let token of tokens) {
-            (token as any).startIndex += indexOffset;
-            //is this a composite token
-            if (CompositeKeywords.includes(token.kind)) {
-                let originalValue = token.text;
-                //replace all Whitespace with a single space
-                token.text = token.text.replace(/\s+/g, ' ');
-                let indexDifference = originalValue.length - token.text.length;
-                indexOffset -= indexDifference;
-            }
-        }
-        return tokens;
-    }
-
     private dedupeWhitespace(tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let currentToken = tokens[i];
@@ -87,10 +64,20 @@ export class Formatter {
 
     private formatCompositeKeywords(tokens: Token[], options: FormattingOptions) {
         let indexOffset = 0;
-        for (let token of tokens) {
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
             (token as any).startIndex += indexOffset;
-            //is this a composite token
-            if (CompositeKeywords.includes(token.kind)) {
+            let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(tokens, i)
+            let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+
+            if (
+                //is this a composite token
+                CompositeKeywords.includes(token.kind) &&
+                //is not being used as a key in an AA literal
+                nextNonWhitespaceToken?.kind !== TokenKind.Colon &&
+                //is not being used as an object key
+                previousNonWhitespaceToken?.kind !== TokenKind.Dot
+            ) {
                 let parts = this.getCompositeKeywordParts(token);
                 let tokenValue = token.text;
                 //remove separating Whitespace
@@ -166,35 +153,19 @@ export class Formatter {
                     case 'title':
                         let lowerValue = token.text.toLowerCase();
 
-                        let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
-                        let firstWordLength: number = 0;
-                        if (lowerValue.indexOf('end') === 0) {
-                            firstWordLength = 3;
-                        } else {
-                            //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
-                            firstWordLength = 4;
+                        //format the first letter (conditional compile composite-keywords start with hash)
+                        let charIndex = token.text.startsWith('#') ? 1 : 0;
+                        token.text = this.upperCaseLetter(token.text, charIndex);
+
+                        //if this is a composite keyword, format the first letter of the second word
+                        if (CompositeKeywords.includes(token.kind)) {
+                            let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
+
+                            let firstWordLength = CompositeKeywordStartingWords.find(x => lowerValue.startsWith(x))?.length!;
+
+                            let nextWordFirstCharIndex = firstWordLength + spaceCharCount;
+                            token.text = this.upperCaseLetter(token.text, nextWordFirstCharIndex);
                         }
-                        token.text =
-                            //first character
-                            token.text.substring(0, 1).toUpperCase() +
-                            //rest of first word
-                            token.text.substring(1, firstWordLength).toLowerCase() +
-                            //add back the Whitespace
-                            token.text.substring(
-                                firstWordLength,
-                                firstWordLength + spaceCharCount
-                            ) +
-                            //first character of second word
-                            token.text
-                                .substring(
-                                    firstWordLength + spaceCharCount,
-                                    firstWordLength + spaceCharCount + 1
-                                )
-                                .toUpperCase() +
-                            //rest of second word
-                            token.text
-                                .substring(firstWordLength + spaceCharCount + 1)
-                                .toLowerCase();
                         break;
                     case 'original':
                     case null:
@@ -238,27 +209,34 @@ export class Formatter {
                 inner: for (let i = 0; i < lineTokens.length; i++) {
                     let token = lineTokens[i];
                     let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
+                    let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(lineTokens, i);
 
                     //keep track of whether we found a non-Whitespace (or Newline) character
-                    if (![TokenKind.Whitespace, TokenKind.Whitespace].includes(token.kind)) {
+                    if (![TokenKind.Whitespace, TokenKind.Newline].includes(token.kind)) {
                         foundNonWhitespaceThisLine = true;
                     }
 
-                    //if this is an indentor token,
-                    if (IndentSpacerTokenKinds.includes(token.kind)) {
+                    //if this is an indentor token, and is not being used as a key in an AA literal
+                    if (IndentSpacerTokenKinds.includes(token.kind) && nextNonWhitespaceToken.kind !== TokenKind.Colon) {
                         //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                         if (
-                            (CallableKeywordTokenKinds.includes(token.kind)) &&
+                            CallableKeywordTokenKinds.includes(token.kind) &&
                             //the previous token will be Whitespace, so verify that previousPrevious is 'as'
-                            previousNonWhitespaceToken && previousNonWhitespaceToken.text.toLowerCase() === 'as'
+                            previousNonWhitespaceToken?.kind == TokenKind.As
                         ) {
                             continue inner;
                         }
                         tabCount++;
                         foundIndentorThisLine = true;
 
-                        //this is an outdentor token
-                    } else if (OutdentSpacerTokenKinds.includes(token.kind)) {
+                    } else if (
+                        //this is an outdentor token  
+                        OutdentSpacerTokenKinds.includes(token.kind) &&
+                        //is not being used as a key in an AA literal
+                        nextNonWhitespaceToken.kind !== TokenKind.Colon &&
+                        //is not a method call
+                        nextNonWhitespaceToken.kind !== TokenKind.LeftParen
+                    ) {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
@@ -466,7 +444,7 @@ export class Formatter {
                     parenToken = nextNonWhitespaceToken;
 
                     //look for named functions
-                } else if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.IdentifierLiteral) {
+                } else if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.Identifier) {
                     //get the next non-Whitespace token, which SHOULD be the paren
                     let parenCandidate = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(nextNonWhitespaceToken));
                     if (parenCandidate.kind === TokenKind.LeftParen) {
@@ -739,6 +717,24 @@ export class Formatter {
         }
         return false;
     }
+
+    /**
+     * Convert the character at the specified index to upper case
+     */
+    public upperCaseLetter(text: string, index: number) {
+        //out of bounds index should be a noop
+        if (index < 0 || index > text.length) {
+            return text;
+        }
+        text =
+            //add the beginning text
+            text.substring(0, index) +
+            //uppercase the letter
+            text.substring(index, index + 1).toUpperCase() +
+            //rest of word
+            text.substring(index + 1).toLowerCase();
+        return text;
+    }
 }
 
 export const CompositeKeywords = [
@@ -756,7 +752,6 @@ export const CompositeKeywords = [
     TokenKind.EndNamespace
 ];
 
-
 export const BasicKeywords = [
     TokenKind.And,
     TokenKind.Eval,
@@ -771,14 +766,13 @@ export const BasicKeywords = [
     TokenKind.While,
     TokenKind.Function,
     TokenKind.Sub,
-    //TokenKind.As,
+    TokenKind.As,
     TokenKind.Return,
     TokenKind.Print,
     TokenKind.Goto,
     TokenKind.Dim,
     TokenKind.Stop,
     TokenKind.Void,
-    TokenKind.Number,
     TokenKind.Boolean,
     TokenKind.Integer,
     TokenKind.LongInteger,
@@ -792,7 +786,6 @@ export const BasicKeywords = [
     TokenKind.Or,
     TokenKind.Let,
     // TokenKind.LineNum,
-    TokenKind.Next,
     TokenKind.Next,
     TokenKind.Not,
     // TokenKind.Run,
@@ -884,3 +877,5 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.Colon,
     TokenKind.Semicolon
 ];
+
+export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];

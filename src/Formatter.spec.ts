@@ -313,7 +313,7 @@ end sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('method called "next"', () => {
+        it('does not de-indent for a method called "next"', () => {
             let program = `if true then\n    m.top.returnString = m.someArray.next()\nend if`;
             expect(formatter.format(program)).to.equal(program);
         });
@@ -416,6 +416,17 @@ end sub`;
                 `SUB a(name AS STRING, cb AS FUNCTION)`,
             );
         });
+
+        it('does not format custom types', () => {
+            expect(formatter.format(
+                `sub a(person as SomePersonClass)`,
+                {
+                    typeCase: 'lower'
+                }
+            )).to.equal(
+                `sub a(person as SomePersonClass)`,
+            );
+        });
     });
 
     describe('compositeKeywords', () => {
@@ -498,6 +509,17 @@ end sub`;
         //         `function add(cb1 as FUNCTION, cb2 as SUB)\n`
         //     );
         // });
+
+        it('works with `as` keyword', () => {
+            expect(formatter.format(
+                `sub add(name AS string)\nend sub`,
+                {
+                    keywordCase: 'lower'
+                }
+            )).to.equal(
+                `sub add(name as string)\nend sub`,
+            );
+        });
 
         it('forces keywords to lower case', () => {
             expect(formatter.format(
@@ -604,6 +626,9 @@ end sub`;
     });
 
     describe('composite keywords', () => {
+        it('does not separate endfor when used as an object key', () => {
+            formatEqual(`obj = {\n    endfor: true\n}\nobj.endfor = false\nval = obj.endfor`);
+        });
         it('joins together when specified', () => {
             expect(formatter.format(
                 `if true then\n    break\nelse if true then\n    break\nend if`,
@@ -657,15 +682,14 @@ end sub`;
         }
 
         it('adds spaces at proper locations when supposed to', () => {
-            throw new Error('Verify this works properly....we should not be passing EndFunction for all of them?');
             expect(format('endfunction', TokenKind.EndFunction)).to.equal('end function');
-            expect(format('endif', TokenKind.EndFunction)).to.equal('end if');
-            expect(format('endsub', TokenKind.EndFunction)).to.equal('end sub');
-            expect(format('endwhile', TokenKind.EndFunction)).to.equal('end while');
-            expect(format('exitwhile', TokenKind.EndFunction)).to.equal('exit while');
-            expect(format('exitfor', TokenKind.EndFunction)).to.equal('exit for');
-            expect(format('endfor', TokenKind.EndFunction)).to.equal('end for');
-            expect(format('elseif', TokenKind.EndFunction)).to.equal('else if');
+            expect(format('endif', TokenKind.EndIf)).to.equal('end if');
+            expect(format('endsub', TokenKind.EndSub)).to.equal('end sub');
+            expect(format('endwhile', TokenKind.EndWhile)).to.equal('end while');
+            expect(format('exitwhile', TokenKind.ExitWhile)).to.equal('exit while');
+            expect(format('exitfor', TokenKind.ExitFor)).to.equal('exit for');
+            expect(format('endfor', TokenKind.EndFor)).to.equal('end for');
+            expect(format('elseif', TokenKind.ElseIf)).to.equal('else if');
 
             expect(formatter.format(
                 `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
@@ -706,6 +730,22 @@ end sub`;
         });
     });
 
+    describe('upperCaseLetter()', () => {
+        it('works for beginning of word', () => {
+            expect(formatter.upperCaseLetter('hello', 0)).to.equal('Hello');
+        });
+        it('works for middle of word', () => {
+            expect(formatter.upperCaseLetter('hello', 2)).to.equal('heLlo');
+        });
+        it('works for end of word', () => {
+            expect(formatter.upperCaseLetter('hello', 4)).to.equal('hellO');
+        });
+        it('handles out-of-bounds indexes', () => {
+            expect(formatter.upperCaseLetter('hello', -1)).to.equal('hello');
+            expect(formatter.upperCaseLetter('hello', 5)).to.equal('hello');
+        });
+    });
+
     describe('indentStyle for conditional block', () => {
         it('correctly fixes the indentation', () => {
             let expected = `#if isDebug\n    doSomething()\n#end if`;
@@ -734,7 +774,8 @@ end sub`;
         });
     });
 
-    function formatEqual(incoming: string, expected: string, options?: FormattingOptions) {
+    function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
+        expected = expected ?? incoming;
         expect(formatter.format(incoming, options)).to.equal(expected);
     }
 });
