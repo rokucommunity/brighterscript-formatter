@@ -61,7 +61,7 @@ export class Formatter {
         for (let token of tokens) {
             (token as any).startIndex += indexOffset;
             //is this a composite token
-            if (CompositeKeywordTokenTypes.includes(token.kind)) {
+            if (CompositeKeywords.includes(token.kind)) {
                 let originalValue = token.text;
                 //replace all Whitespace with a single space
                 token.text = token.text.replace(/\s+/g, ' ');
@@ -90,7 +90,7 @@ export class Formatter {
         for (let token of tokens) {
             (token as any).startIndex += indexOffset;
             //is this a composite token
-            if (CompositeKeywordTokenTypes.includes(token.kind)) {
+            if (CompositeKeywords.includes(token.kind)) {
                 let parts = this.getCompositeKeywordParts(token);
                 let tokenValue = token.text;
                 //remove separating Whitespace
@@ -140,7 +140,7 @@ export class Formatter {
         for (let token of tokens) {
 
             //if this token is a keyword
-            if (KeywordTokenTypes.includes(token.kind)) {
+            if (Keywords.includes(token.kind)) {
                 //a token is a type if it's preceeded by an `as` token
                 let isType = this.isType(tokens, token);
 
@@ -150,9 +150,10 @@ export class Formatter {
                     keywordCase = options.typeCase;
                 } else {
                     keywordCase = options.keywordCase;
+                    let lowerKind = token.kind.toLowerCase();
                     //if this is an overridable keyword, use that override instead
-                    if (options.keywordCaseOverride && options.keywordCaseOverride[token.kind] !== undefined) {
-                        keywordCase = options.keywordCaseOverride[token.kind];
+                    if (options.keywordCaseOverride?.[lowerKind] !== undefined) {
+                        keywordCase = options.keywordCaseOverride[lowerKind];
                     }
                 }
                 switch (keywordCase) {
@@ -164,41 +165,37 @@ export class Formatter {
                         break;
                     case 'title':
                         let lowerValue = token.text.toLowerCase();
-                        if (CompositeKeywordTokenTypes.includes(token.kind)) {
-                            token.text =
-                                token.text.substring(0, 1).toUpperCase() +
-                                token.text.substring(1).toLowerCase();
+
+                        let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
+                        let firstWordLength: number = 0;
+                        if (lowerValue.indexOf('end') === 0) {
+                            firstWordLength = 3;
                         } else {
-                            let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
-                            let firstWordLength: number = 0;
-                            if (lowerValue.indexOf('end') === 0) {
-                                firstWordLength = 3;
-                            } else {
-                                //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
-                                firstWordLength = 4;
-                            }
-                            token.text =
-                                //first character
-                                token.text.substring(0, 1).toUpperCase() +
-                                //rest of first word
-                                token.text.substring(1, firstWordLength).toLowerCase() +
-                                //add back the Whitespace
-                                token.text.substring(
-                                    firstWordLength,
-                                    firstWordLength + spaceCharCount
-                                ) +
-                                //first character of second word
-                                token.text
-                                    .substring(
-                                        firstWordLength + spaceCharCount,
-                                        firstWordLength + spaceCharCount + 1
-                                    )
-                                    .toUpperCase() +
-                                //rest of second word
-                                token.text
-                                    .substring(firstWordLength + spaceCharCount + 1)
-                                    .toLowerCase();
+                            //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
+                            firstWordLength = 4;
                         }
+                        token.text =
+                            //first character
+                            token.text.substring(0, 1).toUpperCase() +
+                            //rest of first word
+                            token.text.substring(1, firstWordLength).toLowerCase() +
+                            //add back the Whitespace
+                            token.text.substring(
+                                firstWordLength,
+                                firstWordLength + spaceCharCount
+                            ) +
+                            //first character of second word
+                            token.text
+                                .substring(
+                                    firstWordLength + spaceCharCount,
+                                    firstWordLength + spaceCharCount + 1
+                                )
+                                .toUpperCase() +
+                            //rest of second word
+                            token.text
+                                .substring(firstWordLength + spaceCharCount + 1)
+                                .toLowerCase();
+                        break;
                     case 'original':
                     case null:
                     case undefined:
@@ -248,7 +245,7 @@ export class Formatter {
                     }
 
                     //if this is an indentor token,
-                    if (IndentSpacingTokens.includes(token.kind)) {
+                    if (IndentSpacerTokenKinds.includes(token.kind)) {
                         //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                         if (
                             (CallableKeywordTokenKinds.includes(token.kind)) &&
@@ -261,7 +258,7 @@ export class Formatter {
                         foundIndentorThisLine = true;
 
                         //this is an outdentor token
-                    } else if (OutdentSpacingTokens.includes(token.kind)) {
+                    } else if (OutdentSpacerTokenKinds.includes(token.kind)) {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
@@ -675,7 +672,7 @@ export class Formatter {
         };
     }
 
-    private normalizeOptions(options: FormattingOptions | undefined) {
+    private normalizeOptions(options: FormattingOptions | undefined = {}) {
         let fullOptions: FormattingOptions = {
             indentStyle: 'spaces',
             indentSpaceCount: Formatter.DEFAULT_INDENT_SPACE_COUNT,
@@ -686,16 +683,24 @@ export class Formatter {
             keywordCaseOverride: {},
             formatInteriorWhitespace: true,
             insertSpaceBeforeFunctionParenthesis: false,
-            insertSpaceBetweenEmptyCurlyBraces: false
+            insertSpaceBetweenEmptyCurlyBraces: false,
+
+            //override defaults with the provided values
+            ...options
         };
-        if (options) {
-            for (let attrname in options) {
-                fullOptions[attrname] = options[attrname];
-            }
-        }
+
         if (!fullOptions.typeCase) {
             fullOptions.typeCase = fullOptions.keywordCase as any;
         }
+
+        //force all keyword case override values to lower case
+        let keywordCaseOverride = {};
+        for (let key in fullOptions.keywordCaseOverride) {
+            keywordCaseOverride[key.toLowerCase()] = fullOptions.keywordCaseOverride[key]?.toLowerCase();
+        }
+        fullOptions.keywordCaseOverride = keywordCaseOverride;
+
+
         return fullOptions;
     }
 
@@ -736,7 +741,7 @@ export class Formatter {
     }
 }
 
-export const CompositeKeywordTokenTypes = [
+export const CompositeKeywords = [
     TokenKind.EndFunction,
     TokenKind.EndIf,
     TokenKind.EndSub,
@@ -752,11 +757,11 @@ export const CompositeKeywordTokenTypes = [
 ];
 
 
-export const BasicKeywordTokenTypes = [
+export const BasicKeywords = [
     TokenKind.And,
     TokenKind.Eval,
     TokenKind.If,
-    //TokenKind.Then,
+    TokenKind.Then,
     TokenKind.Else,
     TokenKind.For,
     TokenKind.To,
@@ -796,14 +801,14 @@ export const BasicKeywordTokenTypes = [
     TokenKind.Class
 ];
 
-export let KeywordTokenTypes: TokenKind[] = [];
-Array.prototype.push.apply(KeywordTokenTypes, CompositeKeywordTokenTypes);
-Array.prototype.push.apply(KeywordTokenTypes, BasicKeywordTokenTypes);
+export let Keywords: TokenKind[] = [];
+Array.prototype.push.apply(Keywords, CompositeKeywords);
+Array.prototype.push.apply(Keywords, BasicKeywords);
 
 /**
  * The list of tokens that should cause an indent
  */
-export let IndentSpacingTokens = [
+export let IndentSpacerTokenKinds = [
     TokenKind.Sub,
     TokenKind.For,
     TokenKind.Function,
@@ -816,7 +821,7 @@ export let IndentSpacingTokens = [
 /**
  * The list of tokens that should cause an outdent
  */
-export let OutdentSpacingTokens = [
+export let OutdentSpacerTokenKinds = [
     TokenKind.RightCurlyBrace,
     TokenKind.RightSquareBracket,
     TokenKind.EndFunction,
