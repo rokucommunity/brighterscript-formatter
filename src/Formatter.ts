@@ -1,11 +1,5 @@
-import {
-    BrightScriptLexer,
-    CompositeKeywordTokenTypes,
-    KeywordTokenTypes,
-    Token,
-    TokenType
-} from 'brightscript-parser';
 import * as trimRight from 'trim-right';
+import { Lexer, Token, TokenKind } from 'brighterscript';
 
 import { FormattingOptions } from './FormattingOptions';
 
@@ -22,8 +16,9 @@ export class Formatter {
      */
     public format(inputText: string, formattingOptions?: FormattingOptions) {
         let options = this.normalizeOptions(formattingOptions);
-        let lexer = new BrightScriptLexer();
-        let tokens = lexer.tokenize(inputText);
+        let { tokens, errors } = Lexer.scan(inputText, '', {
+            includeWhitespace: true
+        });
 
         //force all composite keywords to have 0 or 1 spaces in between, but no more than 1
         tokens = this.normalizeCompositeKeywords(tokens);
@@ -42,7 +37,7 @@ export class Formatter {
             tokens = this.formatInteriorWhitespace(tokens, options);
         }
 
-        //dedupe side-by-side whitespace tokens
+        //dedupe side-by-side Whitespace tokens
         this.dedupeWhitespace(tokens);
 
         if (options.formatIndent) {
@@ -52,25 +47,25 @@ export class Formatter {
         //join all tokens back together into a single string
         let outputText = '';
         for (let token of tokens) {
-            outputText += token.value;
+            outputText += token.text;
         }
         return outputText;
     }
 
     /**
-     * Remove all whitespace in the composite keyword tokens with a single space
+     * Replace all Whitespace in the composite keyword tokens with a single space
      * @param tokens
      */
     private normalizeCompositeKeywords(tokens: Token[]) {
         let indexOffset = 0;
         for (let token of tokens) {
-            token.startIndex += indexOffset;
+            (token as any).startIndex += indexOffset;
             //is this a composite token
-            if (CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
-                let value = token.value;
-                //remove all whitespace with a single space
-                token.value.replace(/s+/g, ' ');
-                let indexDifference = value.length - token.value.length;
+            if (CompositeKeywordTokenTypes.includes(token.kind)) {
+                let originalValue = token.text;
+                //replace all Whitespace with a single space
+                token.text = token.text.replace(/\s+/g, ' ');
+                let indexDifference = originalValue.length - token.text.length;
                 indexOffset -= indexDifference;
             }
         }
@@ -80,11 +75,11 @@ export class Formatter {
     private dedupeWhitespace(tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let currentToken = tokens[i];
-            let nextToken = tokens[i + 1] ? tokens[i + 1] : { tokenType: undefined, value: '' };
-            if (currentToken.tokenType === TokenType.whitespace && nextToken.tokenType === TokenType.whitespace) {
-                currentToken.value += nextToken.value;
+            let nextToken = tokens[i + 1] ? tokens[i + 1] : { kind: undefined, text: '' };
+            if (currentToken.kind === TokenKind.Whitespace && nextToken.kind === TokenKind.Whitespace) {
+                currentToken.text += nextToken.text;
                 tokens.splice(i + 1, 1);
-                //decrement the counter so we process this token again so it can absorb more whitespace tokens
+                //decrement the counter so we process this token again so it can absorb more Whitespace tokens
                 i--;
             }
         }
@@ -93,20 +88,23 @@ export class Formatter {
     private formatCompositeKeywords(tokens: Token[], options: FormattingOptions) {
         let indexOffset = 0;
         for (let token of tokens) {
-            token.startIndex += indexOffset;
+            (token as any).startIndex += indexOffset;
             //is this a composite token
-            if (CompositeKeywordTokenTypes.indexOf(token.tokenType) > -1) {
+            if (CompositeKeywordTokenTypes.includes(token.kind)) {
                 let parts = this.getCompositeKeywordParts(token);
-                let tokenValue = token.value;
+                let tokenValue = token.text;
+                //remove separating Whitespace
                 if (options.compositeKeywords === 'combine') {
-                    token.value = parts[0] + parts[1];
+                    token.text = parts[0] + parts[1];
+
+                    //separate with exactly 1 space
                 } else if (options.compositeKeywords === 'split') {
-                    // if(options.compositeKeywords === 'split'){
-                    token.value = parts[0] + ' ' + parts[1];
+                    token.text = parts[0] + ' ' + parts[1];
+
                 } else {
                     //do nothing
                 }
-                let offsetDifference = token.value.length - tokenValue.length;
+                let offsetDifference = token.text.length - tokenValue.length;
                 indexOffset += offsetDifference;
             }
         }
@@ -114,15 +112,14 @@ export class Formatter {
     }
 
     private getCompositeKeywordParts(token: Token) {
-        let lowerValue = token.value.toLowerCase();
+        let lowerValue = token.text.toLowerCase();
         //split the parts of the token, but retain their case
         if (lowerValue.indexOf('end') === 0) {
-            return [token.value.substring(0, 3), token.value.substring(3).trim()];
+            return [token.text.substring(0, 3), token.text.substring(3).trim()];
         } else if (lowerValue.indexOf('#else') === 0) {
-            return [token.value.substring(0, 5), token.value.substring(5).trim()];
+            return [token.text.substring(0, 5), token.text.substring(5).trim()];
         } else {
-            // if (lowerValue.indexOf('exit') === 0 || lowerValue.indexOf('else') === 0) {
-            return [token.value.substring(0, 4), token.value.substring(4).trim()];
+            return [token.text.substring(0, 4), token.text.substring(4).trim()];
         }
     }
 
@@ -132,7 +129,7 @@ export class Formatter {
      */
     private isType(tokens: Token[], token: Token) {
         let previousToken = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(token));
-        if (previousToken && previousToken.value.toLowerCase() === 'as') {
+        if (previousToken && previousToken.text.toLowerCase() === 'as') {
             return true;
         } else {
             return false;
@@ -143,7 +140,7 @@ export class Formatter {
         for (let token of tokens) {
 
             //if this token is a keyword
-            if (KeywordTokenTypes.indexOf(token.tokenType) > -1) {
+            if (KeywordTokenTypes.includes(token.kind)) {
                 //a token is a type if it's preceeded by an `as` token
                 let isType = this.isType(tokens, token);
 
@@ -154,23 +151,23 @@ export class Formatter {
                 } else {
                     keywordCase = options.keywordCase;
                     //if this is an overridable keyword, use that override instead
-                    if (options.keywordCaseOverride && options.keywordCaseOverride[token.tokenType] !== undefined) {
-                        keywordCase = options.keywordCaseOverride[token.tokenType];
+                    if (options.keywordCaseOverride && options.keywordCaseOverride[token.kind] !== undefined) {
+                        keywordCase = options.keywordCaseOverride[token.kind];
                     }
                 }
                 switch (keywordCase) {
                     case 'lower':
-                        token.value = token.value.toLowerCase();
+                        token.text = token.text.toLowerCase();
                         break;
                     case 'upper':
-                        token.value = token.value.toUpperCase();
+                        token.text = token.text.toUpperCase();
                         break;
                     case 'title':
-                        let lowerValue = token.value.toLowerCase();
-                        if (CompositeKeywordTokenTypes.indexOf(token.tokenType) === -1) {
-                            token.value =
-                                token.value.substring(0, 1).toUpperCase() +
-                                token.value.substring(1).toLowerCase();
+                        let lowerValue = token.text.toLowerCase();
+                        if (CompositeKeywordTokenTypes.includes(token.kind)) {
+                            token.text =
+                                token.text.substring(0, 1).toUpperCase() +
+                                token.text.substring(1).toLowerCase();
                         } else {
                             let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
                             let firstWordLength: number = 0;
@@ -180,25 +177,25 @@ export class Formatter {
                                 //if (lowerValue.indexOf('exit') > -1 || lowerValue.indexOf('else') > -1)
                                 firstWordLength = 4;
                             }
-                            token.value =
+                            token.text =
                                 //first character
-                                token.value.substring(0, 1).toUpperCase() +
+                                token.text.substring(0, 1).toUpperCase() +
                                 //rest of first word
-                                token.value.substring(1, firstWordLength).toLowerCase() +
-                                //add back the whitespace
-                                token.value.substring(
+                                token.text.substring(1, firstWordLength).toLowerCase() +
+                                //add back the Whitespace
+                                token.text.substring(
                                     firstWordLength,
                                     firstWordLength + spaceCharCount
                                 ) +
                                 //first character of second word
-                                token.value
+                                token.text
                                     .substring(
                                         firstWordLength + spaceCharCount,
                                         firstWordLength + spaceCharCount + 1
                                     )
                                     .toUpperCase() +
                                 //rest of second word
-                                token.value
+                                token.text
                                     .substring(firstWordLength + spaceCharCount + 1)
                                     .toLowerCase();
                         }
@@ -216,33 +213,6 @@ export class Formatter {
     }
 
     private formatIndentation(tokens: Token[], options: FormattingOptions) {
-        let indentTokens = [
-            TokenType.sub,
-            TokenType.for,
-            TokenType.function,
-            TokenType.if,
-            TokenType.openCurlyBraceSymbol,
-            TokenType.openSquareBraceSymbol,
-            TokenType.while,
-            TokenType.condIf
-        ];
-        let outdentTokens = [
-            TokenType.closeCurlyBraceSymbol,
-            TokenType.closeSquareBraceSymbol,
-            TokenType.endFunction,
-            TokenType.endIf,
-            TokenType.endSub,
-            TokenType.endWhile,
-            TokenType.endFor,
-            TokenType.next,
-            TokenType.condEndIf
-        ];
-        let interumTokens = [
-            TokenType.else,
-            TokenType.elseIf,
-            TokenType.condElse,
-            TokenType.condElseIf
-        ];
         let tabCount = 0;
 
         let nextLineStartTokenIndex = 0;
@@ -262,7 +232,7 @@ export class Formatter {
             if (this.isSingleLineIfStatement(lineTokens, tokens)) {
                 foundNonWhitespaceThisLine = true;
                 // //if this line has a return statement, outdent
-                // if (this.tokenIndexOf(TokenType.return, lineTokens) > -1) {
+                // if (this.tokenIndexOf(TokenKind.return, lineTokens) > -1) {
                 //     tabCount--;
                 // } else {
                 //     //do nothing with single-line if statement indentation
@@ -272,18 +242,18 @@ export class Formatter {
                     let token = lineTokens[i];
                     let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
 
-                    //keep track of whether we found a non-whitespace (or newline) character
-                    if (token.tokenType !== TokenType.whitespace && token.tokenType !== TokenType.newline) {
+                    //keep track of whether we found a non-Whitespace (or Newline) character
+                    if (![TokenKind.Whitespace, TokenKind.Whitespace].includes(token.kind)) {
                         foundNonWhitespaceThisLine = true;
                     }
 
                     //if this is an indentor token,
-                    if (indentTokens.indexOf(token.tokenType) > -1) {
+                    if (IndentSpacingTokens.includes(token.kind)) {
                         //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                         if (
-                            (token.tokenType === TokenType.function || token.tokenType === TokenType.sub) &&
-                            //the previous token will be whitespace, so verify that previousPrevious is 'as'
-                            previousNonWhitespaceToken && previousNonWhitespaceToken.value.toLowerCase() === 'as'
+                            (CallableKeywordTokenKinds.includes(token.kind)) &&
+                            //the previous token will be Whitespace, so verify that previousPrevious is 'as'
+                            previousNonWhitespaceToken && previousNonWhitespaceToken.text.toLowerCase() === 'as'
                         ) {
                             continue inner;
                         }
@@ -291,18 +261,18 @@ export class Formatter {
                         foundIndentorThisLine = true;
 
                         //this is an outdentor token
-                    } else if (outdentTokens.indexOf(token.tokenType) > -1) {
+                    } else if (OutdentSpacingTokens.includes(token.kind)) {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
                         }
 
                         //this is an interum token
-                    } else if (interumTokens.indexOf(token.tokenType) > -1) {
+                    } else if (InterumSpacingTokenKinds.includes(token.kind)) {
                         //these need outdented, but don't change the tabCount
                         thisTabCount--;
                     }
-                    //  else if (token.tokenType === TokenType.return && foundIndentorThisLine) {
+                    //  else if (token.kind === TokenKind.return && foundIndentorThisLine) {
                     //     //a return statement on the same line as an indentor means we don't want to indent
                     //     tabCount--;
                     // }
@@ -323,21 +293,21 @@ export class Formatter {
             } else {
                 leadingWhitespace = Array(thisTabCount + 1).join('\t');
             }
-            //create a whitespace token if there isn't one
-            if (lineTokens[0] && lineTokens[0].tokenType !== TokenType.whitespace) {
-                lineTokens.unshift({
+            //create a Whitespace token if there isn't one
+            if (lineTokens[0]?.kind !== TokenKind.Whitespace) {
+                lineTokens.unshift(<any>{
                     startIndex: -1,
-                    tokenType: TokenType.whitespace,
-                    value: ''
+                    kind: TokenKind.Whitespace,
+                    text: ''
                 });
             }
 
-            //replace the whitespace with the formatted whitespace
-            lineTokens[0].value = leadingWhitespace;
+            //replace the Whitespace with the formatted Whitespace
+            lineTokens[0].text = leadingWhitespace;
 
-            //if this is a line filled only with whitespace, throw out the whitespace
+            //if this is a line filled only with Whitespace, throw out the Whitespace
             if (foundNonWhitespaceThisLine === false) {
-                //only keep the traling newline
+                //only keep the traling Newline
                 lineTokens = [lineTokens.pop() as Token];
             }
 
@@ -346,7 +316,7 @@ export class Formatter {
             let lastLineToken = lineTokens[lineTokens.length - 1];
             //if we have found the end of file
             if (
-                lastLineToken && lastLineToken.tokenType === TokenType.END_OF_FILE
+                lastLineToken?.kind === TokenKind.Eof
             ) {
                 break outer;
             }
@@ -359,7 +329,7 @@ export class Formatter {
     }
 
     /**
-     * Force all whitespace between tokens to be exactly 1 space wide
+     * Force all Whitespace between tokens to be exactly 1 space wide
      */
     private formatInteriorWhitespace(
         tokens: Token[],
@@ -367,100 +337,100 @@ export class Formatter {
     ) {
         let addBoth = [
             //assignments
-            TokenType.equalSymbol,
-            TokenType.additionAssignmentSymbol,
-            TokenType.subtractionAssignmentSymbol,
-            TokenType.multiplicationAssignmentSymbol,
-            TokenType.divisionAssignmentSymbol,
-            TokenType.integerDivisionAssignmentSymbol,
-            TokenType.lessThanLessThanEqualSymbol,
-            TokenType.greaterThanGreaterThanEqualSymbol,
+            TokenKind.Equal,
+            TokenKind.PlusEqual,
+            TokenKind.MinusEqual,
+            TokenKind.StarEqual,
+            TokenKind.ForwardslashEqual,
+            TokenKind.BackslashEqual,
+            TokenKind.LessLessEqual,
+            TokenKind.GreaterGreaterEqual,
 
             //operators
-            TokenType.plusSymbol,
-            TokenType.minusSymbol,
-            TokenType.asteriskSymbol,
-            TokenType.forwardSlashSymbol,
-            TokenType.backSlashSymbol,
-            TokenType.carotSymbol,
-            TokenType.notEqual,
-            TokenType.lessThanOrEqual,
-            TokenType.greaterThanOrEqual,
-            TokenType.greaterThanSymbol,
-            TokenType.lessThanSymbol,
+            TokenKind.Plus,
+            TokenKind.Minus,
+            TokenKind.Star,
+            TokenKind.Forwardslash,
+            TokenKind.Backslash,
+            TokenKind.Caret,
+            TokenKind.LessGreater,
+            TokenKind.LessEqual,
+            TokenKind.GreaterEqual,
+            TokenKind.Greater,
+            TokenKind.Less,
         ];
         let addLeft = [
             ...addBoth,
-            TokenType.closeCurlyBraceSymbol
+            TokenKind.RightCurlyBrace
         ];
         let addRight = [
             ...addBoth,
-            TokenType.openCurlyBraceSymbol,
-            TokenType.commaSymbol,
-            TokenType.colonSymbol
+            TokenKind.LeftCurlyBrace,
+            TokenKind.Comma,
+            TokenKind.Colon
         ];
         let removeBoth = [];
         let removeLeft = [
             ...removeBoth,
-            TokenType.closeSquareBraceSymbol,
-            TokenType.closeParenSymbol
+            TokenKind.RightSquareBracket,
+            TokenKind.RightParen
         ];
         let removeRight = [
             ...removeBoth,
-            TokenType.openSquareBraceSymbol,
-            TokenType.openParenSymbol
+            TokenKind.LeftSquareBracket,
+            TokenKind.LeftParen
         ];
 
         let isPastFirstTokenOfLine = false;
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
-            let nextTokenType: TokenType = <any>(tokens[i + 1] ? tokens[i + 1].tokenType : undefined);
-            let previousTokenType: TokenType = <any>(tokens[i - 1] ? tokens[i - 1].tokenType : undefined);
+            let nextTokenType: TokenKind = <any>(tokens[i + 1] ? tokens[i + 1].kind : undefined);
+            let previousTokenType: TokenKind = <any>(tokens[i - 1] ? tokens[i - 1].kind : undefined);
 
-            //reset token indicator on newline
-            if (token.tokenType === TokenType.newline) {
+            //reset token indicator on Newline
+            if (token.kind === TokenKind.Newline) {
                 isPastFirstTokenOfLine = false;
                 continue;
             }
-            //skip past leading whitespace
-            if (token.tokenType === TokenType.whitespace && isPastFirstTokenOfLine === false) {
+            //skip past leading Whitespace
+            if (token.kind === TokenKind.Whitespace && isPastFirstTokenOfLine === false) {
                 continue;
             }
             isPastFirstTokenOfLine = true;
             //force token to be exactly 1 space
-            if (token.tokenType === TokenType.whitespace) {
-                token.value = ' ';
+            if (token.kind === TokenKind.Whitespace) {
+                token.text = ' ';
             }
 
             //pad any of these token types with a space to the right
-            if (addRight.indexOf(token.tokenType) > -1) {
+            if (addRight.indexOf(token.kind) > -1) {
                 //special case: we want the negative sign to be directly beside a numeric, in certain cases.
                 //we can't handle every case, but we can get close
                 if (this.looksLikeNegativeNumericLiteral(tokens, i)) {
                     //throw out the space to the right of the minus symbol if present
-                    if (i + 1 < tokens.length && tokens[i + 1].tokenType === TokenType.whitespace) {
+                    if (i + 1 < tokens.length && tokens[i + 1].kind === TokenKind.Whitespace) {
                         this.removeWhitespace(tokens, i + 1);
                     }
                     //ensure a space token to the right, only if we have more tokens to the right available
-                } else if ([TokenType.whitespace, TokenType.newline, TokenType.END_OF_FILE].indexOf(nextTokenType) === -1) {
-                    //don't add whitespace if the next token is the newline
+                } else if ([TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].indexOf(nextTokenType) === -1) {
+                    //don't add Whitespace if the next token is the Newline
 
-                    tokens.splice(i + 1, 0, {
+                    tokens.splice(i + 1, 0, <any>{
                         startIndex: -1,
-                        tokenType: TokenType.whitespace,
-                        value: ' '
+                        kind: TokenKind.Whitespace,
+                        text: ' '
                     });
                 }
             }
 
             //pad any of these tokens with a space to the left
-            if (addLeft.indexOf(token.tokenType) > -1) {
+            if (addLeft.indexOf(token.kind) > -1) {
                 //ensure a space token to the left
-                if (previousTokenType && previousTokenType !== TokenType.whitespace) {
-                    tokens.splice(i, 0, {
+                if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {
+                    tokens.splice(i, 0, <any>{
                         startIndex: -1,
-                        tokenType: TokenType.whitespace,
-                        value: ' '
+                        kind: TokenKind.Whitespace,
+                        text: ' '
                     });
                     //increment i by 1 since we added a token
                     i++;
@@ -468,17 +438,17 @@ export class Formatter {
             }
 
             //remove any space tokens on the right
-            if (removeRight.indexOf(token.tokenType) > -1) {
-                if (nextTokenType === TokenType.whitespace) {
-                    //remove the next token, which is the whitespace token
+            if (removeRight.indexOf(token.kind) > -1) {
+                if (nextTokenType === TokenKind.Whitespace) {
+                    //remove the next token, which is the Whitespace token
                     tokens.splice(i + 1, 1);
                 }
             }
 
             //remove any space tokens on the left
-            if (removeLeft.indexOf(token.tokenType) > -1) {
-                if (previousTokenType === TokenType.whitespace) {
-                    //remove the previous token, which is the whitespace token
+            if (removeLeft.indexOf(token.kind) > -1) {
+                if (previousTokenType === TokenKind.Whitespace) {
+                    //remove the previous token, which is the Whitespace token
                     tokens.splice(i - 1, 1);
                     //backtrack the index since we just shifted the array
                     i--;
@@ -495,26 +465,26 @@ export class Formatter {
             {
                 let parenToken: Token | undefined;
                 //look for anonymous functions
-                if (token.tokenType === TokenType.function && nextNonWhitespaceToken.tokenType === TokenType.openParenSymbol) {
+                if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.LeftParen) {
                     parenToken = nextNonWhitespaceToken;
 
                     //look for named functions
-                } else if (token.tokenType === TokenType.function && nextNonWhitespaceToken.tokenType === TokenType.identifier) {
-                    //get the next non-whitespace token, which SHOULD be the paren
+                } else if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.IdentifierLiteral) {
+                    //get the next non-Whitespace token, which SHOULD be the paren
                     let parenCandidate = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(nextNonWhitespaceToken));
-                    if (parenCandidate.tokenType === TokenType.openParenSymbol) {
+                    if (parenCandidate.kind === TokenKind.LeftParen) {
                         parenToken = parenCandidate;
                     }
                 }
                 //if we found the paren token, handle spacing
                 if (parenToken) {
-                    //walk backwards, removing any whitespace tokens found
+                    //walk backwards, removing any Whitespace tokens found
                     this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(parenToken));
                     if (options.insertSpaceBeforeFunctionParenthesis) {
-                        //insert a whitespace token
-                        tokens.splice(tokens.indexOf(parenToken), 0, {
-                            tokenType: TokenType.whitespace,
-                            value: ' ',
+                        //insert a Whitespace token
+                        tokens.splice(tokens.indexOf(parenToken), 0, <any>{
+                            kind: TokenKind.Whitespace,
+                            text: ' ',
                             startIndex: -1
                         });
                     }
@@ -524,13 +494,13 @@ export class Formatter {
             }
 
             //empty curly braces
-            if (token.tokenType === TokenType.openCurlyBraceSymbol && nextNonWhitespaceToken.tokenType === TokenType.closeCurlyBraceSymbol) {
+            if (token.kind === TokenKind.LeftCurlyBrace && nextNonWhitespaceToken.kind === TokenKind.RightCurlyBrace) {
                 this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
                 if (options.insertSpaceBetweenEmptyCurlyBraces) {
-                    tokens.splice(tokens.indexOf(nextNonWhitespaceToken), 0, {
-                        tokenType: TokenType.whitespace,
+                    tokens.splice(tokens.indexOf(nextNonWhitespaceToken), 0, <any>{
+                        kind: TokenKind.Whitespace,
                         startIndex: -1,
-                        value: ' '
+                        text: ' '
                     });
                     //next loop iteration should be after the closing curly brace
                     i = tokens.indexOf(nextNonWhitespaceToken);
@@ -538,7 +508,7 @@ export class Formatter {
             }
 
             //empty parenthesis (user doesn't have this option, we will always do this one)
-            if (token.tokenType === TokenType.openParenSymbol && nextNonWhitespaceToken.tokenType === TokenType.closeParenSymbol) {
+            if (token.kind === TokenKind.LeftParen && nextNonWhitespaceToken.kind === TokenKind.RightParen) {
                 this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
                 //next loop iteration should be after the closing paren
                 i = tokens.indexOf(nextNonWhitespaceToken);
@@ -549,71 +519,41 @@ export class Formatter {
     }
 
     /**
-     * Remove whitespace tokens backwards until a non-whitespace token is encountered
-     * @param startIndex the index of the non-whitespace token to start with. This function will start iterating at `startIndex - 1`
+     * Remove Whitespace tokens backwards until a non-Whitespace token is encountered
+     * @param startIndex the index of the non-Whitespace token to start with. This function will start iterating at `startIndex - 1`
      */
     private removeWhitespaceTokensBackwards(tokens: Token[], startIndex: number) {
         let removeCount = 0;
         let i = startIndex - 1;
-        while (tokens[i--].tokenType === TokenType.whitespace) {
+        while (tokens[i--].kind === TokenKind.Whitespace) {
             removeCount++;
         }
         tokens.splice(startIndex - removeCount, removeCount);
     }
 
     /**
-     * Remove whitespace until the next non-whitespace character.
+     * Remove Whitespace until the next non-Whitespace character.
      * This operates on the array itself
      */
     private removeWhitespace(tokens: Token[], index: number) {
-        while (tokens[index] && tokens[index].tokenType === TokenType.whitespace) {
+        while (tokens[index] && tokens[index].kind === TokenKind.Whitespace) {
             tokens.splice(index, 1);
             index++;
         }
     }
 
     /**
-     * Anytime one of these tokens are found before a minus sign,
-     * we can safely assume the minus sign is associated with a negative numeric literal
-     */
-    private static tokensBeforeNegativeNumericLiteral = [
-        TokenType.plusSymbol,
-        TokenType.minusSymbol,
-        TokenType.asteriskSymbol,
-        TokenType.forwardSlashSymbol,
-        TokenType.backSlashSymbol,
-        TokenType.additionAssignmentSymbol,
-        TokenType.divisionAssignmentSymbol,
-        TokenType.subtractionAssignmentSymbol,
-        TokenType.multiplicationAssignmentSymbol,
-        TokenType.integerDivisionAssignmentSymbol,
-        TokenType.equalSymbol,
-        TokenType.notEqual,
-        TokenType.greaterThanSymbol,
-        TokenType.greaterThanOrEqual,
-        TokenType.lessThanSymbol,
-        TokenType.lessThanOrEqual,
-        TokenType.lessThanLessThanEqualSymbol,
-        TokenType.greaterThanGreaterThanEqualSymbol,
-        TokenType.return,
-        TokenType.to,
-        TokenType.step,
-        TokenType.colonSymbol,
-        TokenType.semicolonSymbol
-    ];
-
-    /**
      * Determine if the current token appears to be the negative sign for a numeric leteral
      */
     private looksLikeNegativeNumericLiteral(tokens: Token[], index: number) {
         let thisToken = tokens[index];
-        if (thisToken.tokenType === TokenType.minusSymbol) {
+        if (thisToken.kind === TokenKind.Minus) {
             let nextToken = this.getNextNonWhitespaceToken(tokens, index);
             let previousToken = this.getPreviousNonWhitespaceToken(tokens, index);
             if (
-                //next non-whitespace token is a numeric literal
-                nextToken && nextToken.tokenType === TokenType.numberLiteral &&
-                previousToken && Formatter.tokensBeforeNegativeNumericLiteral.indexOf(previousToken.tokenType) > -1
+                //next non-Whitespace token is a numeric literal
+                NumericLiteralTokenKinds.includes(nextToken?.kind) &&
+                previousToken && TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
             ) {
                 return true;
             }
@@ -622,11 +562,11 @@ export class Formatter {
     }
 
     /**
-     * Get the first token after the index that is NOT whitespace
+     * Get the first token after the index that is NOT Whitespace
      */
     private getNextNonWhitespaceToken(tokens: Token[], index: number) {
         for (index = index + 1; index < tokens.length; index++) {
-            if (tokens[index] && tokens[index].tokenType !== TokenType.whitespace) {
+            if (tokens[index] && tokens[index].kind !== TokenKind.Whitespace) {
                 return tokens[index];
             }
         }
@@ -635,18 +575,18 @@ export class Formatter {
     }
 
     /**
-     * Get the first token before the index that is NOT whitespace
+     * Get the first token before the index that is NOT Whitespace
      */
     private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number) {
         for (let i = startIndex - 1; i > -1; i--) {
-            if (tokens[i] && tokens[i].tokenType !== TokenType.whitespace) {
+            if (tokens[i] && tokens[i].kind !== TokenKind.Whitespace) {
                 return tokens[i];
             }
         }
     }
 
     /**
-     * Remove all trailing whitespace
+     * Remove all trailing Whitespace
      */
     private formatTrailingWhiteSpace(
         tokens: Token[],
@@ -662,24 +602,23 @@ export class Formatter {
 
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
             let lineTokens = lineObj.tokens;
-            //the last token is newline or EOF, so the next-to-last token is where the trailing whitespace would reside
+            //the last token is Newline or EOF, so the next-to-last token is where the trailing Whitespace would reside
             let potentialWhitespaceTokenIndex = lineTokens.length - 2;
 
             let whitespaceTokenCandidate = lineTokens[potentialWhitespaceTokenIndex];
 
             //empty lines won't have any tokens
             if (whitespaceTokenCandidate) {
-                //if the final token is whitespace, throw it away
-                if (whitespaceTokenCandidate.tokenType === TokenType.whitespace) {
+                //if the final token is Whitespace, throw it away
+                if (whitespaceTokenCandidate.kind === TokenKind.Whitespace) {
                     lineTokens.splice(potentialWhitespaceTokenIndex, 1);
 
-                    //if the final token is a comment, trim the whitespace from the righthand side
+                    //if the final token is a comment, trim the Whitespace from the righthand side
                 } else if (
-                    whitespaceTokenCandidate.tokenType === TokenType.quoteComment ||
-                    whitespaceTokenCandidate.tokenType === TokenType.remComment
+                    whitespaceTokenCandidate.kind === TokenKind.Comment
                 ) {
-                    whitespaceTokenCandidate.value = trimRight(
-                        whitespaceTokenCandidate.value
+                    whitespaceTokenCandidate.text = trimRight(
+                        whitespaceTokenCandidate.text
                     );
                 }
             }
@@ -689,7 +628,7 @@ export class Formatter {
 
             //if we have found the end of file, quit the loop
             if (
-                lineTokens[lineTokens.length - 1].tokenType === TokenType.END_OF_FILE
+                lineTokens[lineTokens.length - 1].kind === TokenKind.Eof
             ) {
                 break;
             }
@@ -697,10 +636,13 @@ export class Formatter {
         return outputTokens;
     }
 
-    private tokenIndexOf(tokenType: TokenType, tokens: Token[]) {
+    /**
+     * Find the next index of the token with the specified TokenKind
+     */
+    private firstTokenIndexOf(tokenType: TokenKind, tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
-            if (token.tokenType === tokenType) {
+            if (token.kind === tokenType) {
                 return i;
             }
         }
@@ -708,7 +650,7 @@ export class Formatter {
     }
 
     /**
-     * Get the tokens for the whole line starting at the given index (including the newline or EOF token at the end)
+     * Get the tokens for the whole line starting at the given index (including the Newline or EOF token at the end)
      * @param startIndex
      * @param tokens
      */
@@ -720,8 +662,8 @@ export class Formatter {
             outputTokens[outputTokens.length] = token;
 
             if (
-                token.tokenType === TokenType.newline ||
-                token.tokenType === TokenType.END_OF_FILE
+                token.kind === TokenKind.Newline ||
+                token.kind === TokenKind.Eof
             ) {
                 break;
             }
@@ -758,12 +700,12 @@ export class Formatter {
     }
 
     private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {
-        let ifIndex = this.tokenIndexOf(TokenType.if, lineTokens);
+        let ifIndex = this.firstTokenIndexOf(TokenKind.If, lineTokens);
         if (ifIndex === -1) {
             return false;
         }
-        let thenIndex = this.tokenIndexOf(TokenType.then, lineTokens);
-        let elseIndex = this.tokenIndexOf(TokenType.else, lineTokens);
+        let thenIndex = this.firstTokenIndexOf(TokenKind.Then, lineTokens);
+        let elseIndex = this.firstTokenIndexOf(TokenKind.Else, lineTokens);
         //if there's an else on this line, assume this is a one-line if statement
         if (elseIndex > -1) {
             return true;
@@ -773,7 +715,7 @@ export class Formatter {
             return false;
         }
         //if there's a comment at the end, this is a multi-line if statement
-        if (this.tokenIndexOf(TokenType.remComment, lineTokens) > -1 || this.tokenIndexOf(TokenType.quoteComment, lineTokens) > -1) {
+        if (this.firstTokenIndexOf(TokenKind.Comment, lineTokens) > -1 || this.firstTokenIndexOf(TokenKind.Comment, lineTokens) > -1) {
             return false;
         }
 
@@ -781,15 +723,159 @@ export class Formatter {
         for (let i = thenIndex + 1; i < lineTokens.length; i++) {
             let token = lineTokens[i];
             if (
-                token.tokenType === TokenType.whitespace ||
-                token.tokenType === TokenType.newline
+                token.kind === TokenKind.Whitespace ||
+                token.kind === TokenKind.Newline
             ) {
-                //do nothing with whitespace and newlines
+                //do nothing with Whitespace and newlines
             } else {
-                //we encountered a non whitespace and non newline token, so this line must be a single-line if statement
+                //we encountered a non Whitespace and non Newline token, so this line must be a single-line if statement
                 return true;
             }
         }
         return false;
     }
 }
+
+export const CompositeKeywordTokenTypes = [
+    TokenKind.EndFunction,
+    TokenKind.EndIf,
+    TokenKind.EndSub,
+    TokenKind.EndWhile,
+    TokenKind.ExitWhile,
+    TokenKind.ExitFor,
+    TokenKind.EndFor,
+    TokenKind.ElseIf,
+    TokenKind.HashElseIf,
+    TokenKind.HashEndIf,
+    TokenKind.EndClass,
+    TokenKind.EndNamespace
+];
+
+
+export const BasicKeywordTokenTypes = [
+    TokenKind.And,
+    TokenKind.Eval,
+    TokenKind.If,
+    //TokenKind.Then,
+    TokenKind.Else,
+    TokenKind.For,
+    TokenKind.To,
+    TokenKind.Step,
+    TokenKind.Exit,
+    TokenKind.Each,
+    TokenKind.While,
+    TokenKind.Function,
+    TokenKind.Sub,
+    //TokenKind.As,
+    TokenKind.Return,
+    TokenKind.Print,
+    TokenKind.Goto,
+    TokenKind.Dim,
+    TokenKind.Stop,
+    TokenKind.Void,
+    TokenKind.Number,
+    TokenKind.Boolean,
+    TokenKind.Integer,
+    TokenKind.LongInteger,
+    TokenKind.Float,
+    TokenKind.Double,
+    TokenKind.String,
+    TokenKind.Object,
+    TokenKind.Interface,
+    TokenKind.Invalid,
+    TokenKind.Dynamic,
+    TokenKind.Or,
+    TokenKind.Let,
+    // TokenKind.LineNum,
+    TokenKind.Next,
+    TokenKind.Next,
+    TokenKind.Not,
+    // TokenKind.Run,
+    TokenKind.HashIf,
+    TokenKind.HashElse,
+    TokenKind.Class
+];
+
+export let KeywordTokenTypes: TokenKind[] = [];
+Array.prototype.push.apply(KeywordTokenTypes, CompositeKeywordTokenTypes);
+Array.prototype.push.apply(KeywordTokenTypes, BasicKeywordTokenTypes);
+
+/**
+ * The list of tokens that should cause an indent
+ */
+export let IndentSpacingTokens = [
+    TokenKind.Sub,
+    TokenKind.For,
+    TokenKind.Function,
+    TokenKind.If,
+    TokenKind.LeftCurlyBrace,
+    TokenKind.LeftSquareBracket,
+    TokenKind.While,
+    TokenKind.HashIf
+];
+/**
+ * The list of tokens that should cause an outdent
+ */
+export let OutdentSpacingTokens = [
+    TokenKind.RightCurlyBrace,
+    TokenKind.RightSquareBracket,
+    TokenKind.EndFunction,
+    TokenKind.EndIf,
+    TokenKind.EndSub,
+    TokenKind.EndWhile,
+    TokenKind.EndFor,
+    TokenKind.Next,
+    TokenKind.HashEndIf
+];
+/**
+ * The list of tokens that should cause an outdent followed by an immediate indent
+ */
+export let InterumSpacingTokenKinds = [
+    TokenKind.Else,
+    TokenKind.ElseIf,
+    TokenKind.HashElse,
+    TokenKind.HashElseIf
+];
+
+export let CallableKeywordTokenKinds = [
+    TokenKind.Function,
+    TokenKind.Sub
+];
+
+export let NumericLiteralTokenKinds = [
+    TokenKind.IntegerLiteral,
+    TokenKind.FloatLiteral,
+    TokenKind.DoubleLiteral,
+    TokenKind.LongIntegerLiteral
+];
+
+
+/**
+ * Anytime one of these tokens are found before a minus sign,
+ * we can safely assume the minus sign is associated with a negative numeric literal
+ */
+export let TokensBeforeNegativeNumericLiteral = [
+    TokenKind.Plus,
+    TokenKind.Minus,
+    TokenKind.Star,
+    TokenKind.Forwardslash,
+    TokenKind.Backslash,
+    TokenKind.PlusEqual,
+    TokenKind.ForwardslashEqual,
+    TokenKind.MinusEqual,
+    TokenKind.StarEqual,
+    TokenKind.BackslashEqual,
+    TokenKind.Equal,
+    TokenKind.LessGreater,
+    TokenKind.Greater,
+    TokenKind.GreaterEqual,
+    TokenKind.Less,
+    TokenKind.LessEqual,
+    TokenKind.LessLessEqual,
+    TokenKind.GreaterGreaterEqual,
+    TokenKind.Return,
+    TokenKind.To,
+    TokenKind.Step,
+    TokenKind.Colon,
+    TokenKind.Semicolon
+];

@@ -1,8 +1,8 @@
-import { BrightScriptLexer, TokenType } from 'brightscript-parser';
 import { expect } from 'chai';
 
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
+import { TokenKind, Token } from 'brighterscript';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -12,18 +12,18 @@ describe('Formatter', () => {
     });
 
     describe('dedupeWhitespace', () => {
-        it('dedupes whitespace', () => {
+        it('dedupes Whitespace', () => {
             const tokens = [{
-                tokenType: TokenType.whitespace,
-                value: ' ',
+                kind: TokenKind.Whitespace,
+                text: ' ',
                 startIndex: 0
             }, {
-                tokenType: TokenType.whitespace,
-                value: ' ',
+                kind: TokenKind.Whitespace,
+                text: ' ',
                 startIndex: 1
             }, {
-                tokenType: TokenType.whitespace,
-                value: ' ',
+                kind: TokenKind.Whitespace,
+                text: ' ',
                 startIndex: 2
             }];
             (formatter as any).dedupeWhitespace(tokens);
@@ -32,7 +32,7 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
-        it('handles malformed function whitespace', () => {
+        it('handles malformed function Whitespace', () => {
             expect(formatter.format(`function add`,
                 { formatIndent: false }
             )).to.equal(`function add`);
@@ -83,7 +83,7 @@ describe('Formatter', () => {
             expect(formatter.format(`name=-1`)).to.equal(`name = -1`);
             expect(formatter.format(`name=1+-1`)).to.equal(`name = 1 + -1`);
             expect(formatter.format(`sub main(num=-1)\nend sub`)).to.equal(`sub main(num = -1)\nend sub`);
-            //DOES remove the whitespace between them when applicable
+            //DOES remove the Whitespace between them when applicable
             expect(formatter.format(`num = - 1`)).to.equal(`num = -1`);
 
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
@@ -101,15 +101,15 @@ end sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
-        it('ensures whitespace between numeric literal and `then` keyword', () => {
+        it('ensures Whitespace between numeric literal and `then` keyword', () => {
             expect(formatter.format(`if playlist.indexOf(songEntry) = -1 then`)).to.equal(`if playlist.indexOf(songEntry) = -1 then`);
         });
 
-        it('does not add extra whitespace to end of line', () => {
+        it('does not add extra Whitespace to end of line', () => {
             formatEqual('name,', 'name,');
         });
 
-        it('removes whitespace after square brace and paren', () => {
+        it('removes Whitespace after square brace and paren', () => {
             formatEqual(`[ 1, 2, 3 ]`, `[1, 2, 3]`);
             formatEqual(`[ 1,\n2,\n 3\n]`, `[1,\n    2,\n    3\n]`);
             formatEqual(`{name: "john"}`, `{ name: "john" }`);
@@ -181,23 +181,23 @@ end sub`;
     describe('getCompositeKeywordParts', () => {
         it('works', () => {
             let parts;
-            parts = (formatter as any).getCompositeKeywordParts({ value: 'endif' });
+            parts = (formatter as any).getCompositeKeywordParts({ text: 'endif' });
             expect(parts[0]).to.equal('end');
             expect(parts[1]).to.equal('if');
 
-            parts = (formatter as any).getCompositeKeywordParts({ value: 'end if' });
+            parts = (formatter as any).getCompositeKeywordParts({ text: 'end if' });
             expect(parts[0]).to.equal('end');
             expect(parts[1]).to.equal('if');
 
-            parts = (formatter as any).getCompositeKeywordParts({ value: 'elseif' });
+            parts = (formatter as any).getCompositeKeywordParts({ text: 'elseif' });
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
 
-            parts = (formatter as any).getCompositeKeywordParts({ value: 'else if' });
+            parts = (formatter as any).getCompositeKeywordParts({ text: 'else if' });
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
 
-            parts = (formatter as any).getCompositeKeywordParts({ value: '#else if' });
+            parts = (formatter as any).getCompositeKeywordParts({ text: '#else if' });
             expect(parts[0]).to.equal('#else');
             expect(parts[1]).to.equal('if');
         });
@@ -628,7 +628,7 @@ end sub`;
             expect(formatter.format(`name = "bob"\t `)).to.equal(`name = "bob"`);
             expect(formatter.format(`name = "bob" \t`)).to.equal(`name = "bob"`);
         });
-        it('removes whitespace from end of comment', () => {
+        it('removes Whitespace from end of comment', () => {
             expect(formatter.format(`'comment `)).to.equal(`'comment`);
             expect(formatter.format(`'comment\t`)).to.equal(`'comment`);
             expect(formatter.format(`'comment \t`)).to.equal(`'comment`);
@@ -647,25 +647,25 @@ end sub`;
     });
 
     describe('break composite keywords', () => {
-        function format(text, tokenType) {
-            let token = {
-                value: text,
-                tokenType: tokenType,
+        function format(text, kind) {
+            let tokens = (formatter as any).formatCompositeKeywords([{
+                text: text,
+                kind: kind,
                 startIndex: 0
-            };
-            let tokens = (formatter as any).formatCompositeKeywords([token], { compositeKeywords: 'split' });
-            return tokens[0].value;
+            }], { compositeKeywords: 'split' });
+            return tokens[0].text;
         }
 
         it('adds spaces at proper locations when supposed to', () => {
-            expect(format('endfunction', TokenType.endFunction)).to.equal('end function');
-            expect(format('endif', TokenType.endFunction)).to.equal('end if');
-            expect(format('endsub', TokenType.endFunction)).to.equal('end sub');
-            expect(format('endwhile', TokenType.endFunction)).to.equal('end while');
-            expect(format('exitwhile', TokenType.endFunction)).to.equal('exit while');
-            expect(format('exitfor', TokenType.endFunction)).to.equal('exit for');
-            expect(format('endfor', TokenType.endFunction)).to.equal('end for');
-            expect(format('elseif', TokenType.endFunction)).to.equal('else if');
+            throw new Error('Verify this works properly....we should not be passing EndFunction for all of them?');
+            expect(format('endfunction', TokenKind.EndFunction)).to.equal('end function');
+            expect(format('endif', TokenKind.EndFunction)).to.equal('end if');
+            expect(format('endsub', TokenKind.EndFunction)).to.equal('end sub');
+            expect(format('endwhile', TokenKind.EndFunction)).to.equal('end while');
+            expect(format('exitwhile', TokenKind.EndFunction)).to.equal('exit while');
+            expect(format('exitfor', TokenKind.EndFunction)).to.equal('exit for');
+            expect(format('endfor', TokenKind.EndFunction)).to.equal('end for');
+            expect(format('elseif', TokenKind.EndFunction)).to.equal('else if');
 
             expect(formatter.format(
                 `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
@@ -678,21 +678,21 @@ end sub`;
         });
 
         it('honors case', () => {
-            expect(format('endFUNCTION', TokenType.endFunction)).to.equal('end FUNCTION');
+            expect(format('endFUNCTION', TokenKind.EndFunction)).to.equal('end FUNCTION');
         });
 
         it('adjusts startIndex correctly', () => {
             let tokens = [{
-                value: 'elseif',
-                tokenType: TokenType.elseIf,
+                text: 'elseif',
+                kind: TokenKind.ElseIf,
                 startIndex: 0
             }, {
-                value: ' ',
-                tokenType: TokenType.whitespace,
+                text: ' ',
+                kind: TokenKind.Whitespace,
                 startIndex: 6
             }, {
-                value: 'true',
-                tokenType: TokenType.booleanLiteral,
+                text: 'true',
+                kind: TokenKind.BooleanLiteral,
                 startIndex: 7
             }];
             tokens = (formatter as any).formatCompositeKeywords(tokens, { compositeKeywords: 'split' });
@@ -718,7 +718,7 @@ end sub`;
             expect(formatter.format(program, { formatIndent: false })).to.equal(program);
         });
 
-        it('correctly fixes the indentation2', () => {
+        it('correctly fixes the indentation', () => {
             let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
             expect(formatter.format(program)).to.equal(program);
         });

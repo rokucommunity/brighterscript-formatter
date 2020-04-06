@@ -60,4 +60,11 @@ export interface FormattingOptions {
      * @default false
      */
     insertSpaceBetweenEmptyCurlyBraces?: boolean;
+    /**
+     * Forces all single-line comments to use the same style.
+     * If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default.
+     * If 'rem', all comments are preceeded by `rem`
+     * If 'original', the comment type is unchanged
+     */
+    formatSingleLineCommentType?: 'singlequote' | 'rem' | 'original'
 }
