@@ -4,7 +4,6 @@ import { Lexer, Token, TokenKind } from 'brighterscript';
 import { FormattingOptions } from './FormattingOptions';
 
 export class Formatter {
-    constructor() { }
     /**
      * The default number of spaces when indenting with spaces
      */
@@ -67,7 +66,7 @@ export class Formatter {
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
             (token as any).startIndex += indexOffset;
-            let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(tokens, i)
+            let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(tokens, i);
             let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
 
             if (
@@ -101,9 +100,9 @@ export class Formatter {
     private getCompositeKeywordParts(token: Token) {
         let lowerValue = token.text.toLowerCase();
         //split the parts of the token, but retain their case
-        if (lowerValue.indexOf('end') === 0) {
+        if (lowerValue.startsWith('end')) {
             return [token.text.substring(0, 3), token.text.substring(3).trim()];
-        } else if (lowerValue.indexOf('#else') === 0) {
+        } else if (lowerValue.startsWith('#else')) {
             return [token.text.substring(0, 5), token.text.substring(5).trim()];
         } else {
             return [token.text.substring(0, 4), token.text.substring(4).trim()];
@@ -159,9 +158,9 @@ export class Formatter {
 
                         //if this is a composite keyword, format the first letter of the second word
                         if (CompositeKeywords.includes(token.kind)) {
-                            let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
+                            let spaceCharCount = (/\s+/.exec(lowerValue) ?? []).length;
 
-                            let firstWordLength = CompositeKeywordStartingWords.find(x => lowerValue.startsWith(x))!.length!;
+                            let firstWordLength = CompositeKeywordStartingWords.find(x => lowerValue.startsWith(x))!.length;
 
                             let nextWordFirstCharIndex = firstWordLength + spaceCharCount;
                             token.text = this.upperCaseLetter(token.text, nextWordFirstCharIndex);
@@ -187,7 +186,7 @@ export class Formatter {
         //the list of output tokens
         let outputTokens: Token[] = [];
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
-        outer: for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
+        for (let outerLoopCounter = 0; outerLoopCounter <= tokens.length * 2; outerLoopCounter++) {
             let lineObj = this.getLineTokens(nextLineStartTokenIndex, tokens);
 
             nextLineStartTokenIndex = lineObj.stopIndex + 1;
@@ -206,7 +205,7 @@ export class Formatter {
                 //     //do nothing with single-line if statement indentation
                 // }
             } else {
-                inner: for (let i = 0; i < lineTokens.length; i++) {
+                for (let i = 0; i < lineTokens.length; i++) {
                     let token = lineTokens[i];
                     let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
                     let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(lineTokens, i);
@@ -222,15 +221,15 @@ export class Formatter {
                         if (
                             CallableKeywordTokenKinds.includes(token.kind) &&
                             //the previous token will be Whitespace, so verify that previousPrevious is 'as'
-                            previousNonWhitespaceToken?.kind == TokenKind.As
+                            previousNonWhitespaceToken?.kind === TokenKind.As
                         ) {
-                            continue inner;
+                            continue;
                         }
                         tabCount++;
                         foundIndentorThisLine = true;
 
                     } else if (
-                        //this is an outdentor token  
+                        //this is an outdentor token
                         OutdentSpacerTokenKinds.includes(token.kind) &&
                         //is not being used as a key in an AA literal
                         nextNonWhitespaceToken.kind !== TokenKind.Colon &&
@@ -293,7 +292,7 @@ export class Formatter {
             if (
                 lastLineToken && lastLineToken.kind === TokenKind.Eof
             ) {
-                break outer;
+                break;
             }
             /* istanbul ignore next */
             if (outerLoopCounter === tokens.length * 2) {
@@ -332,7 +331,7 @@ export class Formatter {
             TokenKind.LessEqual,
             TokenKind.GreaterEqual,
             TokenKind.Greater,
-            TokenKind.Less,
+            TokenKind.Less
         ];
         let addLeft = [
             ...addBoth,
@@ -378,7 +377,7 @@ export class Formatter {
             }
 
             //pad any of these token types with a space to the right
-            if (addRight.indexOf(token.kind) > -1) {
+            if (addRight.includes(token.kind)) {
                 //special case: we want the negative sign to be directly beside a numeric, in certain cases.
                 //we can't handle every case, but we can get close
                 if (this.looksLikeNegativeNumericLiteral(tokens, i)) {
@@ -387,7 +386,7 @@ export class Formatter {
                         this.removeWhitespace(tokens, i + 1);
                     }
                     //ensure a space token to the right, only if we have more tokens to the right available
-                } else if ([TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].indexOf(nextTokenType) === -1) {
+                } else if (![TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].includes(nextTokenType)) {
                     //don't add Whitespace if the next token is the Newline
 
                     tokens.splice(i + 1, 0, <any>{
@@ -399,7 +398,7 @@ export class Formatter {
             }
 
             //pad any of these tokens with a space to the left
-            if (addLeft.indexOf(token.kind) > -1) {
+            if (addLeft.includes(token.kind)) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {
                     tokens.splice(i, 0, <any>{
@@ -413,7 +412,7 @@ export class Formatter {
             }
 
             //remove any space tokens on the right
-            if (removeRight.indexOf(token.kind) > -1) {
+            if (removeRight.includes(token.kind)) {
                 if (nextTokenType === TokenKind.Whitespace) {
                     //remove the next token, which is the Whitespace token
                     tokens.splice(i + 1, 1);
@@ -421,7 +420,7 @@ export class Formatter {
             }
 
             //remove any space tokens on the left
-            if (removeLeft.indexOf(token.kind) > -1) {
+            if (removeLeft.includes(token.kind)) {
                 if (previousTokenType === TokenKind.Whitespace) {
                     //remove the previous token, which is the Whitespace token
                     tokens.splice(i - 1, 1);
@@ -542,7 +541,7 @@ export class Formatter {
      * Get the first token after the index that is NOT Whitespace
      */
     private getNextNonWhitespaceToken(tokens: Token[], index: number) {
-        for (index = index + 1; index < tokens.length; index++) {
+        for (index += 1; index < tokens.length; index++) {
             if (tokens[index] && tokens[index].kind !== TokenKind.Whitespace) {
                 return tokens[index];
             }

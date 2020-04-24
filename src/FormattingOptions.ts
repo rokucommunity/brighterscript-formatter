@@ -66,5 +66,5 @@ export interface FormattingOptions {
      * If 'rem', all comments are preceeded by `rem`
      * If 'original', the comment type is unchanged
      */
-    formatSingleLineCommentType?: 'singlequote' | 'rem' | 'original'
+    formatSingleLineCommentType?: 'singlequote' | 'rem' | 'original';
 }

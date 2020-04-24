@@ -42,9 +42,7 @@ describe('Formatter', () => {
             expect(formatter.format(`
                 sub  add(name   as   string)
                     name   =   name   +   "bob"
-                end sub`,
-                { formatIndent: false }
-            )).to.equal(`
+                end sub`, { formatIndent: false })).to.equal(`
                 sub add(name as string)
                     name = name + "bob"
                 end sub`
@@ -281,9 +279,10 @@ end sub`;
 
         it('handles intermediate elseif', () => {
             expect(formatter.format(
-                `sub add()\nif true then\na=1\nelse if true then\na=1\nend if\nend sub`)).to.equal(
-                    `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`
-                );
+                `sub add()\nif true then\na=1\nelse if true then\na=1\nend if\nend sub`)
+            ).to.equal(
+                `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`
+            );
         });
 
         it('handles return token properly', () => {
@@ -414,7 +413,7 @@ end sub`;
                     keywordCase: 'lower'
                 }
             )).to.equal(
-                `sub a(name as string, cb as function)`,
+                `sub a(name as string, cb as function)`
             );
         });
 
@@ -426,7 +425,7 @@ end sub`;
                     typeCase: 'title'
                 }
             )).to.equal(
-                `sub a(name as String, cb as Function)`,
+                `sub a(name as String, cb as Function)`
             );
         });
 
@@ -437,7 +436,7 @@ end sub`;
                     typeCase: 'title'
                 }
             )).to.equal(
-                `sub a(name as String, cb as Function)`,
+                `sub a(name as String, cb as Function)`
             );
         });
 
@@ -449,7 +448,7 @@ end sub`;
                     typeCase: 'title'
                 }
             )).to.equal(
-                `SUB a(name AS String, cb AS Function)`,
+                `SUB a(name AS String, cb AS Function)`
             );
         });
 
@@ -461,7 +460,7 @@ end sub`;
                     typeCase: undefined
                 }
             )).to.equal(
-                `SUB a(name AS STRING, cb AS FUNCTION)`,
+                `SUB a(name AS STRING, cb AS FUNCTION)`
             );
         });
 
@@ -472,7 +471,7 @@ end sub`;
                     typeCase: 'lower'
                 }
             )).to.equal(
-                `sub a(person as SomePersonClass)`,
+                `sub a(person as SomePersonClass)`
             );
         });
     });
@@ -485,7 +484,7 @@ end sub`;
                     compositeKeywords: 'combine'
                 }
             )).to.equal(
-                `function a()\nendfunction`,
+                `function a()\nendfunction`
             );
         });
 
@@ -496,7 +495,7 @@ end sub`;
                     compositeKeywords: 'split'
                 }
             )).to.equal(
-                `function a()\nend function`,
+                `function a()\nend function`
             );
         });
 
@@ -507,7 +506,7 @@ end sub`;
                     compositeKeywords: 'original'
                 }
             )).to.equal(
-                `function a()\nend  function`,
+                `function a()\nend  function`
             );
         });
 
@@ -517,7 +516,7 @@ end sub`;
                 {
                 }
             )).to.equal(
-                `function a()\nend function`,
+                `function a()\nend function`
             );
         });
 
@@ -528,7 +527,7 @@ end sub`;
                     compositeKeywords: undefined
                 }
             )).to.equal(
-                `function a()\nend   function`,
+                `function a()\nend   function`
             );
         });
     });
@@ -542,7 +541,7 @@ end sub`;
                     compositeKeywords: 'original'
                 }
             )).to.equal(
-                `SUB add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nENDSUB`,
+                `SUB add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nENDSUB`
             );
         });
 
@@ -565,7 +564,7 @@ end sub`;
                     keywordCase: 'lower'
                 }
             )).to.equal(
-                `sub add(name as string)\nend sub`,
+                `sub add(name as string)\nend sub`
             );
         });
 
@@ -577,7 +576,7 @@ end sub`;
                     compositeKeywords: 'original'
                 }
             )).to.equal(
-                `sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nendsub`,
+                `sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nendsub`
             );
         });
 
@@ -589,7 +588,7 @@ end sub`;
                     compositeKeywords: 'original'
                 }
             )).to.equal(
-                `Sub add()\n    If true Then\n        a = 1\n    ElseIf true Then\n        a = 1\n    End If\nEndSub`,
+                `Sub add()\n    If true Then\n        a = 1\n    ElseIf true Then\n        a = 1\n    End If\nEndSub`
             );
         });
 
@@ -601,18 +600,18 @@ end sub`;
                     compositeKeywords: 'original'
                 }
             )).to.equal(
-                `sub add()\n    IF true then\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    endif\nENDSUB`,
+                `sub add()\n    IF true then\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    endif\nENDSUB`
             );
         });
 
-        it('formats conditional compile items', ()=>{
+        it('formats conditional compile items', () => {
             expect(formatter.format(
                 `#if true then\n#else if true then\n#else\n#end if`,
                 {
                     keywordCase: 'title'
                 }
             )).to.equal(
-                `#If true Then\n#Else If true Then\n#Else\n#End If`,
+                `#If true Then\n#Else If true Then\n#Else\n#End If`
             );
         });
     });
@@ -630,7 +629,7 @@ end sub`;
                     }
                 }
             )).to.equal(
-                `sub add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nendsub`,
+                `sub add()\n    IF true THEN\n        a = 1\n    ELSEIF true THEN\n        a = 1\n    ENDIF\nendsub`
             );
         });
         it('overrides default casing and uses upper case', () => {
@@ -645,7 +644,7 @@ end sub`;
                     }
                 }
             )).to.equal(
-                `SUB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nENDSUB`,
+                `SUB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nENDSUB`
             );
         });
 
@@ -661,7 +660,7 @@ end sub`;
                     }
                 }
             )).to.equal(
-                `Sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    end if\nEndSub`,
+                `Sub add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    end if\nEndSub`
             );
         });
 
@@ -677,7 +676,7 @@ end sub`;
                     }
                 }
             )).to.equal(
-                `SuB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nEnDSuB`,
+                `SuB add()\n    if true then\n        a = 1\n    elseif true then\n        a = 1\n    endif\nEnDSuB`
             );
         });
 
@@ -767,7 +766,7 @@ end sub`;
                     compositeKeywords: 'split'
                 }
             )).to.equal(
-                `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`,
+                `sub add()\n    if true then\n        a = 1\n    else if true then\n        a = 1\n    end if\nend sub`
             );
         });
 
