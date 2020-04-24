@@ -11,7 +11,7 @@
     "lint": "tslint --project ./tsconfig.json",
     "test": "nyc mocha src/**/*.spec.ts --full-trace",
     "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
     "format-github": "ts-node test-format.ts"
   },
   "dependencies": {
