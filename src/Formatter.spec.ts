@@ -204,6 +204,54 @@ end sub`;
     });
 
     describe('indentStyle', () => {
+        it('correctly fixes indentation for namespace', () => {
+            expect(formatter.format(
+                'namespace A.B\nsub main()\nend sub\nend namespace'
+            )).to.equal(
+                'namespace A.B\n    sub main()\n    end sub\nend namespace'
+            );
+        });
+
+        it('correctly indents class declarations', () => {
+            expect(formatter.format(
+                'class Person\nsub new()\nend sub\nend class'
+            )).to.equal(
+                'class Person\n    sub new()\n    end sub\nend class'
+            );
+        });
+
+        it('correctly indents class methods with access modifiers', () => {
+            expect(formatter.format(
+                'class Person\npublic sub a()\nend sub\nprotected sub b()\nend sub\nprivate sub c()\nend sub\nend class'
+            )).to.equal(
+                'class Person\n    public sub a()\n    end sub\n    protected sub b()\n    end sub\n    private sub c()\n    end sub\nend class'
+            );
+        });
+
+        it('correctly indents class method body with access modifiers', () => {
+            expect(formatter.format(
+                'class Person\npublic sub a()\nprint "hello"\nend sub\nend class'
+            )).to.equal(
+                'class Person\n    public sub a()\n        print "hello"\n    end sub\nend class'
+            );
+        });
+
+        it('correctly indents class method body with override keyword', () => {
+            expect(formatter.format(
+                'class Person\noverride sub a()\nprint "hello"\nend sub\nend class'
+            )).to.equal(
+                'class Person\n    override sub a()\n        print "hello"\n    end sub\nend class'
+            );
+        });
+
+        it('correctly indents class method body with access modifier AND override keyword', () => {
+            expect(formatter.format(
+                'class Person\npublic override sub a()\nprint "hello"\nend sub\nend class'
+            )).to.equal(
+                'class Person\n    public override sub a()\n        print "hello"\n    end sub\nend class'
+            );
+        });
+
         it('trims empty lines', () => {
             expect(formatter.format(`sub a()\n    \nend sub`)).to.equal(`sub a()\n\nend sub`);
         });
@@ -557,6 +605,16 @@ end sub`;
             );
         });
 
+        it('formats conditional compile items', ()=>{
+            expect(formatter.format(
+                `#if true then\n#else if true then\n#else\n#end if`,
+                {
+                    keywordCase: 'title'
+                }
+            )).to.equal(
+                `#If true Then\n#Else If true Then\n#Else\n#End If`,
+            );
+        });
     });
 
     describe('keywordCaseOverride', () => {
@@ -667,12 +725,11 @@ end sub`;
         });
         it('skips formatting when the option is set to false', () => {
             expect(formatter.format(`name = "bob" `, { removeTrailingWhiteSpace: false })).to.equal(`name = "bob" `);
-
         });
     });
 
     describe('break composite keywords', () => {
-        function format(text, kind) {
+        function format(text: string, kind: TokenKind) {
             let tokens = (formatter as any).formatCompositeKeywords([{
                 text: text,
                 kind: kind,
@@ -680,6 +737,19 @@ end sub`;
             }], { compositeKeywords: 'split' });
             return tokens[0].text;
         }
+
+        it('handles edge cases', () => {
+            let tokens = (formatter as any).formatCompositeKeywords([{
+                text: 'endfunction',
+                kind: TokenKind.EndFunction,
+                startIndex: 0
+            }, {
+                text: 'BlaBla',
+                kind: TokenKind.Identifier,
+                startIndex: 0
+            }], { compositeKeywords: 'split' });
+            expect(tokens[0].text).to.equal('end function');
+        });
 
         it('adds spaces at proper locations when supposed to', () => {
             expect(format('endfunction', TokenKind.EndFunction)).to.equal('end function');
@@ -703,25 +773,6 @@ end sub`;
 
         it('honors case', () => {
             expect(format('endFUNCTION', TokenKind.EndFunction)).to.equal('end FUNCTION');
-        });
-
-        it('adjusts startIndex correctly', () => {
-            let tokens = [{
-                text: 'elseif',
-                kind: TokenKind.ElseIf,
-                startIndex: 0
-            }, {
-                text: ' ',
-                kind: TokenKind.Whitespace,
-                startIndex: 6
-            }, {
-                text: 'true',
-                kind: TokenKind.BooleanLiteral,
-                startIndex: 7
-            }];
-            tokens = (formatter as any).formatCompositeKeywords(tokens, { compositeKeywords: 'split' });
-            expect(tokens[1].startIndex).to.equal(7);
-            expect(tokens[2].startIndex).to.equal(8);
         });
 
         it('handles multi-line arrays', () => {
