@@ -792,7 +792,9 @@ export const BasicKeywords = [
     // TokenKind.Run,
     TokenKind.HashIf,
     TokenKind.HashElse,
-    TokenKind.Class
+    TokenKind.Class,
+    TokenKind.Namespace,
+    TokenKind.Import
 ];
 
 export let Keywords: TokenKind[] = [];
