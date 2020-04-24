@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "brighterscript": "^0.7.0",
+    "glob": "^7.1.6",
     "trim-right": "^1.0.1"
   },
   "devDependencies": {
