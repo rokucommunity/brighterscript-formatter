@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [1.1.0] - 2020-04-23
+### Added
+ - indent support for class and namespace
+ - keyword case support for class, namespace, and import keywords
 ### Changed
  - Now uses [BrighterScript](https://github.com/RokuCommunity/brighterscript) for lexing and parsing.
 
