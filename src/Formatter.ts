@@ -16,7 +16,7 @@ export class Formatter {
      */
     public format(inputText: string, formattingOptions?: FormattingOptions) {
         let options = this.normalizeOptions(formattingOptions);
-        let { tokens, errors } = Lexer.scan(inputText, '', {
+        let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
         });
 
@@ -74,7 +74,7 @@ export class Formatter {
                 //is this a composite token
                 CompositeKeywords.includes(token.kind) &&
                 //is not being used as a key in an AA literal
-                nextNonWhitespaceToken?.kind !== TokenKind.Colon &&
+                nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
                 //is not being used as an object key
                 previousNonWhitespaceToken?.kind !== TokenKind.Dot
             ) {
@@ -139,7 +139,7 @@ export class Formatter {
                     keywordCase = options.keywordCase;
                     let lowerKind = token.kind.toLowerCase();
                     //if this is an overridable keyword, use that override instead
-                    if (options.keywordCaseOverride?.[lowerKind] !== undefined) {
+                    if (options.keywordCaseOverride && options.keywordCaseOverride[lowerKind] !== undefined) {
                         keywordCase = options.keywordCaseOverride[lowerKind];
                     }
                 }
@@ -161,7 +161,7 @@ export class Formatter {
                         if (CompositeKeywords.includes(token.kind)) {
                             let spaceCharCount = (lowerValue.match(/\s+/) || []).length;
 
-                            let firstWordLength = CompositeKeywordStartingWords.find(x => lowerValue.startsWith(x))?.length!;
+                            let firstWordLength = CompositeKeywordStartingWords.find(x => lowerValue.startsWith(x))!.length!;
 
                             let nextWordFirstCharIndex = firstWordLength + spaceCharCount;
                             token.text = this.upperCaseLetter(token.text, nextWordFirstCharIndex);
@@ -269,7 +269,7 @@ export class Formatter {
                 leadingWhitespace = Array(thisTabCount + 1).join('\t');
             }
             //create a Whitespace token if there isn't one
-            if (lineTokens[0]?.kind !== TokenKind.Whitespace) {
+            if (lineTokens[0] && lineTokens[0].kind !== TokenKind.Whitespace) {
                 lineTokens.unshift(<any>{
                     startIndex: -1,
                     kind: TokenKind.Whitespace,
@@ -291,7 +291,7 @@ export class Formatter {
             let lastLineToken = lineTokens[lineTokens.length - 1];
             //if we have found the end of file
             if (
-                lastLineToken?.kind === TokenKind.Eof
+                lastLineToken && lastLineToken.kind === TokenKind.Eof
             ) {
                 break outer;
             }
@@ -318,8 +318,8 @@ export class Formatter {
             TokenKind.StarEqual,
             TokenKind.ForwardslashEqual,
             TokenKind.BackslashEqual,
-            TokenKind.LessLessEqual,
-            TokenKind.GreaterGreaterEqual,
+            TokenKind.LeftShiftEqual,
+            TokenKind.RightShiftEqual,
 
             //operators
             TokenKind.Plus,
@@ -526,9 +526,11 @@ export class Formatter {
             let nextToken = this.getNextNonWhitespaceToken(tokens, index);
             let previousToken = this.getPreviousNonWhitespaceToken(tokens, index);
             if (
+                nextToken &&
                 //next non-Whitespace token is a numeric literal
-                NumericLiteralTokenKinds.includes(nextToken?.kind) &&
-                previousToken && TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
+                NumericLiteralTokenKinds.includes(nextToken.kind) &&
+                previousToken &&
+                TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
             ) {
                 return true;
             }
@@ -674,7 +676,7 @@ export class Formatter {
         //force all keyword case override values to lower case
         let keywordCaseOverride = {};
         for (let key in fullOptions.keywordCaseOverride) {
-            keywordCaseOverride[key.toLowerCase()] = fullOptions.keywordCaseOverride[key]?.toLowerCase();
+            keywordCaseOverride[key.toLowerCase()] = fullOptions.keywordCaseOverride[key]!.toLowerCase();
         }
         fullOptions.keywordCaseOverride = keywordCaseOverride;
 
@@ -809,7 +811,9 @@ export let IndentSpacerTokenKinds = [
     TokenKind.LeftCurlyBrace,
     TokenKind.LeftSquareBracket,
     TokenKind.While,
-    TokenKind.HashIf
+    TokenKind.HashIf,
+    TokenKind.Class,
+    TokenKind.Namespace
 ];
 /**
  * The list of tokens that should cause an outdent
@@ -823,7 +827,9 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.EndWhile,
     TokenKind.EndFor,
     TokenKind.Next,
-    TokenKind.HashEndIf
+    TokenKind.HashEndIf,
+    TokenKind.EndClass,
+    TokenKind.EndNamespace
 ];
 /**
  * The list of tokens that should cause an outdent followed by an immediate indent
@@ -869,8 +875,8 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.GreaterEqual,
     TokenKind.Less,
     TokenKind.LessEqual,
-    TokenKind.LessLessEqual,
-    TokenKind.GreaterGreaterEqual,
+    TokenKind.LeftShift,
+    TokenKind.RightShift,
     TokenKind.Return,
     TokenKind.To,
     TokenKind.Step,
