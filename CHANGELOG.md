@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.0] - 2020-04-23
+### Changed
+ - Now uses [BrighterScript](https://github.com/RokuCommunity/brighterscript) for lexing and parsing.
+
+
+
 ## [1.0.2] - 2019-09-18
 ### Changed
  - upgraded to [brightscript-parser](https://github.com/RokuCommunity/brightscript-parser)@1.2.1
@@ -28,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.1.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.0.2...v1.1.0
 [1.0.2]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.0.1...v1.0.2
 [1.0.1]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.0.0...v1.0.1
 [1.0.0]:  https://github.com/RokuCommunity/brighterscript-formatter/tree/v1.0.0
