@@ -11,6 +11,14 @@ describe('Formatter', () => {
         formatter = new Formatter();
     });
 
+    describe('formatIndentation', () => {
+        it.only('properly indents foreach loops', () => {
+            formatEqual(
+                `for each item in collection\n    name = true\nend for`
+            );
+        });
+    });
+
     describe('dedupeWhitespace', () => {
         it('dedupes Whitespace', () => {
             const tokens = [{

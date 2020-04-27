@@ -807,6 +807,7 @@ Array.prototype.push.apply(Keywords, BasicKeywords);
 export let IndentSpacerTokenKinds = [
     TokenKind.Sub,
     TokenKind.For,
+    TokenKind.ForEach,
     TokenKind.Function,
     TokenKind.If,
     TokenKind.LeftCurlyBrace,
