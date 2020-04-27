@@ -12,7 +12,7 @@ describe('Formatter', () => {
     });
 
     describe('formatIndentation', () => {
-        it.only('properly indents foreach loops', () => {
+        it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
             );
