@@ -44,6 +44,10 @@ export interface FormattingOptions {
      */
     keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
     /**
+     * Provides a way to override keyword case at the individual TokenType level
+     */
+    typeCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
+    /**
      * If true (the default), all whitespace between items is reduced to exactly 1 space character,
      * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`)
      */

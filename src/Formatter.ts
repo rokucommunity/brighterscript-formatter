@@ -708,12 +708,22 @@ export class Formatter {
         let keywordCaseOverride = {};
         for (let key in fullOptions.keywordCaseOverride) {
             let value = fullOptions.keywordCaseOverride[key]
-                ? fullOptions.keywordCaseOverride[key]?.toLowerCase()
+                ? fullOptions.keywordCaseOverride[key]!.toLowerCase()
                 : 'original';
 
             keywordCaseOverride[key.toLowerCase()] = value;
         }
         fullOptions.keywordCaseOverride = keywordCaseOverride;
+
+        let typeCaseOverride = {};
+        for (let key in fullOptions.typeCaseOverride) {
+            let value = fullOptions.typeCaseOverride[key]
+                ? fullOptions.typeCaseOverride[key]!.toLowerCase()
+                : 'original';
+
+            typeCaseOverride[key.toLowerCase()] = value;
+        }
+        fullOptions.typeCaseOverride = typeCaseOverride;
 
 
         return fullOptions;

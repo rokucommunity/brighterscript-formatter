@@ -347,7 +347,7 @@ end sub`;
 
         it('does not double-indent curly square on same line', () => {
             formatEqual(`theVar = [{\n    name = "bob"\n}]`);
-    });
+        });
 
         it.skip('works for arrays with objects in them on separate lines', () => {
             formatEqual(`theVar = [\n    {\n        name = bob"\n    }\n]`);
@@ -754,6 +754,34 @@ end sub`;
         });
         it('skips formatting when the option is set to false', () => {
             expect(formatter.format(`name = "bob" `, { removeTrailingWhiteSpace: false })).to.equal(`name = "bob" `);
+        });
+    });
+
+    describe('normalizeOptions', () => {
+        it('does not fail with falsey value for `keywordCaseOverride`', () => {
+            let options = (formatter as any).normalizeOptions({
+                keywordCaseOverride: {
+                    function: 'title',
+                    sub: null
+                }
+            });
+            expect(options.keywordCaseOverride).to.eql({
+                function: 'title',
+                sub: 'original'
+            });
+        });
+
+        it('does not fail with falsey value for `keywordCaseOverride`', () => {
+            let options = (formatter as any).normalizeOptions({
+                typeCaseOverride: {
+                    function: 'title',
+                    sub: null
+                }
+            });
+            expect(options.typeCaseOverride).to.eql({
+                function: 'title',
+                sub: 'original'
+            });
         });
     });
 
