@@ -344,6 +344,14 @@ end sub`;
                 `sub work(callback as sub) as sub\n    'comment\nend sub`
             );
         });
+
+        it('does not double-indent curly square on same line', () => {
+            formatEqual(`theVar = [{\n    name = "bob"\n}]`);
+    });
+
+        it.skip('works for arrays with objects in them on separate lines', () => {
+            formatEqual(`theVar = [\n    {\n        name = bob"\n    }\n]`);
+        });
     });
 
     describe('indentSpaceCount', () => {

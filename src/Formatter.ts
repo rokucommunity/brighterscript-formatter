@@ -215,8 +215,12 @@ export class Formatter {
                         foundNonWhitespaceThisLine = true;
                     }
 
-                    //if this is an indentor token, and is not being used as a key in an AA literal
-                    if (IndentSpacerTokenKinds.includes(token.kind) && nextNonWhitespaceToken.kind !== TokenKind.Colon) {
+                    if (
+                        //if this is an indentor token
+                        IndentSpacerTokenKinds.includes(token.kind) &&
+                        //is not being used as a key in an AA literal
+                        nextNonWhitespaceToken.kind !== TokenKind.Colon
+                    ) {
                         //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                         if (
                             CallableKeywordTokenKinds.includes(token.kind) &&
@@ -228,6 +232,18 @@ export class Formatter {
                         tabCount++;
                         foundIndentorThisLine = true;
 
+                        //don't double indent if square curly on same line
+                        if (
+                            //if this is an open square
+                            token.kind === TokenKind.LeftSquareBracket &&
+                            //the next token is an open curly
+                            nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace &&
+                            //both tokens are on the same line
+                            token.range.start.line === nextNonWhitespaceToken.range.start.line
+                        ) {
+                            //skip the next token
+                            i++;
+                        }
                     } else if (
                         //this is an outdentor token
                         OutdentSpacerTokenKinds.includes(token.kind) &&
@@ -239,6 +255,19 @@ export class Formatter {
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
+                        }
+
+                        //don't double un-indent if this is a close curly and the next item is a close square
+                        if (
+                            //is closing curly
+                            token.kind === TokenKind.RightCurlyBrace &&
+                            //is closing square
+                            nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                            //both tokens are on the same line
+                            token.range.start.line === nextNonWhitespaceToken.range.start.line
+                        ) {
+                            //skip the next token
+                            i++;
                         }
 
                         //this is an interum token
