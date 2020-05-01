@@ -177,6 +177,10 @@ end sub`;
             formatEqual(`main()`, `main()`);
         });
 
+        it('removes leading space when comma appears next to an item', () => {
+            formatEqual(`action("value" ,"otherValue")`, `action("value", "otherValue")`);
+        });
+
         it('disabling the rule works', () => {
             expect(formatter.format(`a=1`)).to.equal('a = 1');
             //disabled

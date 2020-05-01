@@ -346,6 +346,7 @@ export class Formatter {
         let removeBoth = [];
         let removeLeft = [
             ...removeBoth,
+            TokenKind.Comma,
             TokenKind.RightSquareBracket,
             TokenKind.RightParen
         ];
