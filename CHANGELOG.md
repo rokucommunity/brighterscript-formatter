@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.1.4] - 2020-05-01
+### Fixed
+ - incorrect indent of upper-case two-word conditional compile blocks `#ELSE IF` and `#END IF`. 
+### Changed
+ - upgraded to [brighterscript@0.9.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#091---2020-05-01)
+
+
+
 ## [1.1.3] - 2020-05-01
 ### Fixed
  - Unwanted spacing between a negative sign and a number whenever preceeded by a comma (#8)
@@ -60,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.1.4]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.3...v1.1.4
 [1.1.3]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.2...v1.1.3
 [1.1.2]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.1...v1.1.2
 [1.1.1]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.0...v1.1.1
