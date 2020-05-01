@@ -127,16 +127,20 @@ export class Formatter {
 
             //if this token is a keyword
             if (Keywords.includes(token.kind)) {
-                //a token is a type if it's preceeded by an `as` token
-                let isType = this.isType(tokens, token);
 
                 let keywordCase: FormattingOptions['keywordCase'];
+                let lowerKind = token.kind.toLowerCase();
 
-                if (isType) {
+                //a token is a type if it's preceeded by an `as` token
+                if (this.isType(tokens, token)) {
+                    //options.typeCase is always set to options.keywordCase when not provided
                     keywordCase = options.typeCase;
+                    //if this is an overridden type keyword, use that override instead
+                    if (options.typeCaseOverride && options.typeCaseOverride[lowerKind] !== undefined) {
+                        keywordCase = options.typeCaseOverride[lowerKind];
+                    }
                 } else {
                     keywordCase = options.keywordCase;
-                    let lowerKind = token.kind.toLowerCase();
                     //if this is an overridable keyword, use that override instead
                     if (options.keywordCaseOverride && options.keywordCaseOverride[lowerKind] !== undefined) {
                         keywordCase = options.keywordCaseOverride[lowerKind];
@@ -167,8 +171,6 @@ export class Formatter {
                         }
                         break;
                     case 'original':
-                    case null:
-                    case undefined:
                     default:
                         //do nothing
                         break;
@@ -704,29 +706,53 @@ export class Formatter {
             fullOptions.typeCase = fullOptions.keywordCase as any;
         }
 
-        //force all keyword case override values to lower case
-        let keywordCaseOverride = {};
-        for (let key in fullOptions.keywordCaseOverride) {
-            let value = fullOptions.keywordCaseOverride[key]
-                ? fullOptions.keywordCaseOverride[key]!.toLowerCase()
-                : 'original';
-
-            keywordCaseOverride[key.toLowerCase()] = value;
-        }
-        fullOptions.keywordCaseOverride = keywordCaseOverride;
-
-        let typeCaseOverride = {};
-        for (let key in fullOptions.typeCaseOverride) {
-            let value = fullOptions.typeCaseOverride[key]
-                ? fullOptions.typeCaseOverride[key]!.toLowerCase()
-                : 'original';
-
-            typeCaseOverride[key.toLowerCase()] = value;
-        }
-        fullOptions.typeCaseOverride = typeCaseOverride;
-
+        fullOptions.keywordCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.keywordCaseOverride);
+        fullOptions.typeCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.typeCaseOverride);
 
         return fullOptions;
+    }
+
+    private normalizeKeywordCaseOverride(obj: FormattingOptions['keywordCaseOverride']) {
+        let result = {};
+
+        //quit now if the object is not iterable
+        if (!obj) {
+            return result;
+        }
+
+        for (let key in obj) {
+            let value = obj[key]
+                ? obj[key]!.toLowerCase()
+                : 'original';
+
+            key = key
+                //remove any whitespace
+                .replace(/\s+/gi, '')
+                //force key to lower case
+                .toLowerCase();
+
+            //replace some of the hash tokens with their corresponding TokenKind
+            if (key === '#const') {
+                key = TokenKind.HashConst.toLowerCase();
+
+            } else if (key === '#else') {
+                key = TokenKind.HashElse.toLowerCase();
+
+            } else if (key === '#elseif') {
+                key = TokenKind.HashElseIf.toLowerCase();
+
+            } else if (key === '#endif') {
+                key = TokenKind.HashEndIf.toLowerCase();
+
+            } else if (key === '#error') {
+                key = TokenKind.HashError.toLowerCase();
+
+            } else if (key === '#if') {
+                key = TokenKind.HashIf.toLowerCase();
+            }
+            result[key] = value;
+        }
+        return result;
     }
 
     private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {
@@ -832,12 +858,11 @@ export const BasicKeywords = [
     TokenKind.Dynamic,
     TokenKind.Or,
     TokenKind.Let,
-    // TokenKind.LineNum,
     TokenKind.Next,
     TokenKind.Not,
-    // TokenKind.Run,
     TokenKind.HashIf,
     TokenKind.HashElse,
+    TokenKind.HashConst,
     TokenKind.Class,
     TokenKind.Namespace,
     TokenKind.Import
@@ -931,6 +956,20 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.Colon,
     TokenKind.Semicolon,
     TokenKind.Comma
+];
+
+export const TypeTokens = [
+    TokenKind.Boolean,
+    TokenKind.Double,
+    TokenKind.Dynamic,
+    TokenKind.Float,
+    TokenKind.Function,
+    TokenKind.Integer,
+    TokenKind.Invalid,
+    TokenKind.LongInteger,
+    TokenKind.Object,
+    TokenKind.String,
+    TokenKind.Void
 ];
 
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];

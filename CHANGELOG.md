@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## Unreleased
+### Added
+ - new formatting option `typeCaseOverride` which works just like `keywordCaseOverride` but only for type tokens. 
+
+
 ## [1.1.4] - 2020-05-01
 ### Fixed
  - incorrect indent of upper-case two-word conditional compile blocks `#ELSE IF` and `#END IF`. 

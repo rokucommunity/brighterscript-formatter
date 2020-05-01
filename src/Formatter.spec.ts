@@ -447,6 +447,16 @@ end sub`;
             );
         });
 
+        it('only formats types', () => {
+            formatEqual(
+                `sub a(name as STRing, age as LIBRARY)`,
+                `sub a(name as string, age as LIBRARY)`,
+                {
+                    typeCase: 'lower'
+                }
+            );
+        });
+
         it('overrides keywordCase when specified', () => {
             expect(formatter.format(
                 `SUB a(name AS STRING, cb AS FUNCTION)`,
@@ -777,7 +787,28 @@ end sub`;
             });
         });
 
-        it('does not fail with falsey value for `keywordCaseOverride`', () => {
+        it('converts keywordCaseOverride conditional compile tokens to the proper token kind`', () => {
+            let options = (formatter as any).normalizeOptions({
+                keywordCaseOverride: {
+                    '#const': 'title',
+                    '#else': 'title',
+                    '#elseif': 'title',
+                    '#endif': 'title',
+                    '#error': 'title',
+                    '#if': 'title'
+                }
+            });
+            expect(options.keywordCaseOverride).to.eql({
+                'hashconst': 'title',
+                'hashelse': 'title',
+                'hashelseif': 'title',
+                'hashendif': 'title',
+                'hasherror': 'title',
+                'hashif': 'title'
+            });
+        });
+
+        it('does not fail with falsey value for `typeCaseOverride`', () => {
             let options = (formatter as any).normalizeOptions({
                 typeCaseOverride: {
                     function: 'title',
@@ -787,6 +818,23 @@ end sub`;
             expect(options.typeCaseOverride).to.eql({
                 function: 'title',
                 sub: 'original'
+            });
+        });
+    });
+
+    describe('formatKeywordCase', () => {
+        describe('typeCaseOverride', () => {
+            it('overrides specific types', () => {
+                formatEqual(
+                    `sub log(name as StRiNg, age as InTeGer)`,
+                    `sub log(name as STRING, age as integer)`,
+                    {
+                        typeCase: 'upper',
+                        typeCaseOverride: {
+                            'integer': 'lower'
+                        }
+                    }
+                );
             });
         });
     });
