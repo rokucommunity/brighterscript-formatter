@@ -12,16 +12,26 @@
     "test": "nyc mocha src/**/*.spec.ts --full-trace",
     "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
     "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
-    "format-github": "ts-node test-format.ts"
+    "format-github": "ts-node test-format.ts",
+    "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts"
+  },
+  "bin": {
+    "bsfmt": "dist/cli.js",
+    "brighterscript-formatter": "dist/cli.js"
   },
   "dependencies": {
     "brighterscript": "^0.9.1",
-    "trim-right": "^1.0.1"
+    "glob-all": "^3.2.1",
+    "trim-right": "^1.0.1",
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/fs-extra": "^8.1.0",
+    "@types/glob": "^7.1.1",
     "@types/mocha": "^7.0.2",
+    "@types/sinon": "^9.0.0",
+    "@types/yargs": "^15.0.4",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
     "chai": "^4.2.0",
@@ -33,6 +43,7 @@
     "mocha": "^7.1.1",
     "nyc": "^14.1.1",
     "rimraf": "^2.6.2",
+    "sinon": "^9.0.2",
     "source-map-support": "^0.5.3",
     "ts-node": "^8.2.0",
     "tslint-eslint-rules": "^5.4.0",

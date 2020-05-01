@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Unwanted spacing between a negative sign and a number whenever preceeded by a comma (#8)
  - Remove whitespace preceeding a comma within a statement (#5)
  - Remove leading whitespace around `++` and `--` (#10)
- - bug when providing `nul` to keywordCaseOverride would case crash
+ - bug when providing `null` to keywordCaseOverride would case crash
  - Fix bug with titleCase not being properly handled.
  - Only indent once for left square bracket and left square curly brace on the same line (#6)
 

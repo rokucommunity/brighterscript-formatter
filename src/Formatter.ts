@@ -1,9 +1,25 @@
 import * as trimRight from 'trim-right';
 import { Lexer, Token, TokenKind } from 'brighterscript';
+import { EventEmitter } from 'events';
 
 import { FormattingOptions } from './FormattingOptions';
 
 export class Formatter {
+    /**
+     * Construct a new formatter. The options provided here will be normalized exactly once,
+     * and stored on the formatter instance.
+     */
+    public constructor(formattingOptions?: FormattingOptions) {
+        if (formattingOptions) {
+            this.formattingOptions = formattingOptions;
+        }
+    }
+
+    /**
+     * The formatting options provided in the constructor. Can be undefined if none were provided
+     */
+    public formattingOptions?: FormattingOptions;
+
     /**
      * The default number of spaces when indenting with spaces
      */
@@ -14,7 +30,20 @@ export class Formatter {
      * @param formattingOptions options specifying formatting preferences
      */
     public format(inputText: string, formattingOptions?: FormattingOptions) {
-        let options = this.normalizeOptions(formattingOptions);
+
+        /**
+         * Choose options in this order:
+         *  1. The provided options
+         *  2. The options from this instance property
+         *  3. The default options
+         */
+        let options: FormattingOptions;
+        if (formattingOptions || !this.formattingOptions) {
+            options = this.normalizeOptions(formattingOptions ?? this.formattingOptions);
+        } else {
+            options = this.formattingOptions;
+        }
+
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
         });
