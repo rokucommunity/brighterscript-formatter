@@ -675,7 +675,11 @@ export class Formatter {
         //force all keyword case override values to lower case
         let keywordCaseOverride = {};
         for (let key in fullOptions.keywordCaseOverride) {
-            keywordCaseOverride[key.toLowerCase()] = fullOptions.keywordCaseOverride[key]!.toLowerCase();
+            let value = fullOptions.keywordCaseOverride[key]
+                ? fullOptions.keywordCaseOverride[key]?.toLowerCase()
+                : 'original';
+
+            keywordCaseOverride[key.toLowerCase()] = value;
         }
         fullOptions.keywordCaseOverride = keywordCaseOverride;
 
@@ -883,7 +887,8 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.To,
     TokenKind.Step,
     TokenKind.Colon,
-    TokenKind.Semicolon
+    TokenKind.Semicolon,
+    TokenKind.Comma
 ];
 
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];

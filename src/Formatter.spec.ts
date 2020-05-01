@@ -91,9 +91,11 @@ describe('Formatter', () => {
             expect(formatter.format(`sub main(num=-1)\nend sub`)).to.equal(`sub main(num = -1)\nend sub`);
             //DOES remove the Whitespace between them when applicable
             expect(formatter.format(`num = - 1`)).to.equal(`num = -1`);
+            expect(formatter.format(`call(a, -1)`)).to.equal(`call(a, -1)`);
 
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
         });
+
 
         it('works for special cases', () => {
             let program = `
