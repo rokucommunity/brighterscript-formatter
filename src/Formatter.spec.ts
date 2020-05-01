@@ -84,6 +84,14 @@ describe('Formatter', () => {
             expect(formatter.format(`x=5:print 25; " is equal to"; x^2`)).to.equal(`x = 5: print 25; " is equal to"; x ^ 2`);
         });
 
+        it('removes leading space around increment and decrement operators', () => {
+            formatEqual(`i ++`, `i++`);
+            formatEqual(`i++`, `i++`);
+
+            formatEqual(`i --`, `i--`);
+            formatEqual(`i--`, `i--`);
+        });
+
         it('correctly formats negative numbers compared to subtraction', () => {
             expect(formatter.format(`name=2-1`)).to.equal(`name = 2 - 1`);
             expect(formatter.format(`name=-1`)).to.equal(`name = -1`);
