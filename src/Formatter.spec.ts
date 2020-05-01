@@ -644,6 +644,12 @@ end sub`;
                 `#If true Then\n#Else If true Then\n#Else\n#End If`
             );
         });
+
+        it('formats upper case conditional compile items', () => {
+            formatEqual(`#IF true\n    'true\n#ELSE IF true\n    'true\n#ELSE\n    'true\n#END IF`, undefined, {
+                keywordCase: 'original'
+            });
+        });
     });
 
     describe('keywordCaseOverride', () => {
