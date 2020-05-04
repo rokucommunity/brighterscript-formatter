@@ -44,7 +44,7 @@ export interface FormattingOptions {
      */
     keywordCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
     /**
-     * Provides a way to override type keyword case at the individual TokenType level. 
+     * Provides a way to override type keyword case at the individual TokenType level.
      * Types are defined as keywords that are preceeded by an `as` token.
      */
     typeCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
