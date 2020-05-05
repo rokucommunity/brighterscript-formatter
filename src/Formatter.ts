@@ -255,7 +255,7 @@ export class Formatter {
                         nextNonWhitespaceToken.kind !== TokenKind.LeftParen
                     ) {
                         //do not un-indent if this is a `next` token preceeded by a period
-                        if (token.kind === TokenKind.Next && previousNonWhitespaceToken?.kind === TokenKind.Dot) {
+                        if (token.kind === TokenKind.Next && previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot) {
                             continue;
                         }
 
