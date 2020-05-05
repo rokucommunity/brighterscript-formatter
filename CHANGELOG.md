@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## Unreleased
+## Fixed
+ - issue where object properties named `next` would incorrectly cause a de-indent ([#12](https://github.com/rokucommunity/brighterscript-formatter/issues/12))
+
+
+
 ## [1.1.5] - 2020-05-01
 ### Added
  - new formatting option `typeCaseOverride` which works just like `keywordCaseOverride` but only for type tokens. 

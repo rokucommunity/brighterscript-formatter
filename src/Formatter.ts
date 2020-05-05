@@ -254,6 +254,11 @@ export class Formatter {
                         //is not a method call
                         nextNonWhitespaceToken.kind !== TokenKind.LeftParen
                     ) {
+                        //do not un-indent if this is a `next` token preceeded by a period
+                        if (token.kind === TokenKind.Next && previousNonWhitespaceToken?.kind === TokenKind.Dot) {
+                            continue;
+                        }
+
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;

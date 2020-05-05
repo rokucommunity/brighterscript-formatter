@@ -395,6 +395,10 @@ end sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
+        it('does not de-indent when the word `next` is used as an object property', () => {
+            formatEqual(`sub a()\n    m.next = true\n    m.t = true\nend sub`);
+        });
+
         it('handles string multiple string literals on same line', () => {
             let program = `function test()\n    asdf = "asdf: " + anytostring(m.asdf["asdf"])\nend function`;
             expect(formatter.format(program)).to.equal(program);
