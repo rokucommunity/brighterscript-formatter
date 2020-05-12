@@ -252,7 +252,12 @@ export class Formatter {
                         //is not being used as a key in an AA literal
                         nextNonWhitespaceToken.kind !== TokenKind.Colon &&
                         //is not a method call
-                        nextNonWhitespaceToken.kind !== TokenKind.LeftParen
+                        !(
+                            //certain symbols may appear next to an open paren, so exclude those
+                            ![TokenKind.RightSquareBracket].includes(token.kind) &&
+                            //open paren means method call
+                            nextNonWhitespaceToken.kind === TokenKind.LeftParen
+                        )
                     ) {
                         //do not un-indent if this is a `next` token preceeded by a period
                         if (token.kind === TokenKind.Next && previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot) {

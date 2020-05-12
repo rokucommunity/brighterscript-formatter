@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
  - bug that would incorrectly add spacing between a negative sign and a number if it's the first entry in an array ([#14](https://github.com/rokucommunity/brighterscript-formatter/issues/14))
  - bug that would incorrectly add spacing to the left of a negative sign if preceeded by a left curly bracket or left paren.  
+ - Prevent indent after lines with indexed getter function call (i.e. `someObj[someKey]()`) ([#15](https://github.com/rokucommunity/brighterscript-formatter/issues/15))
 
 
 

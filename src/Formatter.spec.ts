@@ -17,6 +17,10 @@ describe('Formatter', () => {
                 `for each item in collection\n    name = true\nend for`
             );
         });
+
+        it('handles calling function from indexed getter', () => {
+            formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
+        });
     });
 
     describe('dedupeWhitespace', () => {
