@@ -15,7 +15,7 @@
         "format-github": "ts-node test-format.ts"
     },
     "dependencies": {
-        "brighterscript": "^0.9.1",
+        "brighterscript": "^0.9.6",
         "trim-right": "^1.0.1"
     },
     "devDependencies": {
