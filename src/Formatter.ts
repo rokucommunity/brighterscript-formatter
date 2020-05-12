@@ -437,7 +437,11 @@ export class Formatter {
             }
 
             //pad any of these tokens with a space to the left
-            if (addLeft.includes(token.kind)) {
+            if (
+                addLeft.includes(token.kind) &&
+                //don't add left for negative sign preceeded by a square brace or paren
+                !(token.kind === TokenKind.Minus && previousTokenType && [TokenKind.LeftSquareBracket, TokenKind.LeftParen].includes(previousTokenType))
+            ) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {
                     tokens.splice(i, 0, <any>{
@@ -960,7 +964,9 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.Step,
     TokenKind.Colon,
     TokenKind.Semicolon,
-    TokenKind.Comma
+    TokenKind.Comma,
+    TokenKind.LeftSquareBracket,
+    TokenKind.LeftParen
 ];
 
 export const TypeTokens = [

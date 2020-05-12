@@ -102,8 +102,10 @@ describe('Formatter', () => {
             expect(formatter.format(`call(a, -1)`)).to.equal(`call(a, -1)`);
 
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
+            formatEqual(`a = [1, -24]`);
+            formatEqual(`a = [-24]`);
+            formatEqual(`a(-24)`);
         });
-
 
         it('works for special cases', () => {
             let program = `

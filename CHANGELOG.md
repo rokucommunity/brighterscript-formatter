@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## Unversioned
+### Fixed
+ - bug that would incorrectly add spacing between a negative sign and a number if it's the first entry in an array ([#14](https://github.com/rokucommunity/brighterscript-formatter/issues/14))
+ - bug that would incorrectly add spacing to the left of a negative sign if preceeded by a left curly bracket or left paren.  
+
+
+
 ## [1.1.7] - 2020-05-11
 ### Changed
  - upgraded to [brighterscript@0.9.6](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#096)
