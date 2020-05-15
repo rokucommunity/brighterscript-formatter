@@ -149,7 +149,7 @@ end sub`;
             formatEqual(`function main ()\nend function`, `function main()\nend function`);
         });
 
-        it('adds space between function name and opening curly brace', () => {
+        it('adds space between function name and opening paren', () => {
             formatEqual(`function main ()\nend function`, `function main ()\nend function`, {
                 insertSpaceBeforeFunctionParenthesis: true
             });
@@ -158,12 +158,12 @@ end sub`;
             });
         });
 
-        it('removes space between anon function keyword and opening curly brace', () => {
+        it('removes space between anon function keyword and opening paren', () => {
             formatEqual(`func = function()\nend function`, `func = function()\nend function`);
             formatEqual(`func = function()\nend function`, `func = function()\nend function`);
         });
 
-        it('adds space between anon function keyword and opening curly brace', () => {
+        it('adds space between anon function keyword and opening paren', () => {
             formatEqual(`func = function ()\nend function`, `func = function ()\nend function`, {
                 insertSpaceBeforeFunctionParenthesis: true
             });
@@ -173,7 +173,7 @@ end sub`;
         });
 
         it('removes space between empty curly braces', () => {
-            formatEqual(`person = {}`, `person = {}`);
+            formatEqual(`person = {  }`, `person = {}`);
             formatEqual(`person = {}`, `person = {}`);
         });
 
@@ -866,6 +866,32 @@ end sub`;
         it('handles out-of-bounds indexes', () => {
             expect(formatter.upperCaseLetter('hello', -1)).to.equal('hello');
             expect(formatter.upperCaseLetter('hello', 5)).to.equal('hello');
+        });
+    });
+
+    describe('insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces', () => {
+        it('adds spaces for single-line when non-empty', () => {
+            formatEqual(`{a:1,b:2}`, `{ a: 1, b: 2 }`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
+            });
+        });
+
+        it('removes spaces for single-line when non-empty', () => {
+            formatEqual(`{ a: 1, b: 2 }`, `{a: 1, b: 2}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
+        });
+
+        it('adds spaces for multi-line when non-empty', () => {
+            formatEqual(`{a: 1,\nb: 2}`, `{ a: 1,\nb: 2 }`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
+            });
+        });
+
+        it('removes spaces for single-line when non-empty', () => {
+            formatEqual(`{ a: 1,\n b: 2 }`, `{a: 1,\nb: 2}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
         });
     });
 

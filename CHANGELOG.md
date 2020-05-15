@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [Unreleased]
+### Added
+ - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. 
+### Changed
+ - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
+
+
+
 ## [1.1.8] - 2020-05-11
 ### Fixed
  - bug that would incorrectly add spacing between a negative sign and a number if it's the first entry in an array ([#14](https://github.com/rokucommunity/brighterscript-formatter/issues/14))

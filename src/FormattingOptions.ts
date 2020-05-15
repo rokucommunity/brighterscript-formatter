@@ -53,7 +53,11 @@ export interface FormattingOptions {
     typeCaseOverride?: { [id: string]: FormattingOptions['keywordCase'] };
     /**
      * If true (the default), all whitespace between items is reduced to exactly 1 space character,
-     * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`)
+     * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`).
+     * This is a catchall property that will also disable the following rules:
+     * - insertSpaceBeforeFunctionParenthesis
+     * - insertSpaceBetweenEmptyCurlyBraces
+     * - insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces
      */
     formatInteriorWhitespace?: boolean;
     /**
@@ -68,6 +72,12 @@ export interface FormattingOptions {
      * @default false
      */
     insertSpaceBetweenEmptyCurlyBraces?: boolean;
+    /**
+     * 'always' will always insert exactly 1 space after leading and before trailing curly braces
+     * 'never' will always REMOVE space after leading and before trailing curly braces (excluding indentation spacing)
+     * 'disabled' means spacing around these braces will remain unchanged
+     */
+    insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces?: boolean;
     /**
      * Forces all single-line comments to use the same style.
      * If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default.
@@ -90,6 +100,7 @@ export function normalizeOptions(options: FormattingOptions | undefined = {}) {
         formatInteriorWhitespace: true,
         insertSpaceBeforeFunctionParenthesis: false,
         insertSpaceBetweenEmptyCurlyBraces: false,
+        insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
 
         //override defaults with the provided values
         ...options

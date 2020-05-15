@@ -490,10 +490,18 @@ export class Formatter {
         tokens: Token[],
         options: FormattingOptions
     ) {
+        let i = 0;
+        let token: Token = undefined as any;
+        let nextNonWhitespaceToken: Token = undefined as any;
+        const setIndex = (newValue) => {
+            i = newValue;
+            token = tokens[i];
+            nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+        };
+
         //handle special cases
-        for (let i = 0; i < tokens.length; i++) {
-            let token = tokens[i];
-            let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+        for (i; i < tokens.length; i++) {
+            setIndex(i);
 
             //space to left of function parens?
             {
@@ -523,29 +531,83 @@ export class Formatter {
                         });
                     }
                     //next loop iteration should be after the open paren
-                    i = tokens.indexOf(parenToken);
+                    setIndex(
+                        tokens.indexOf(parenToken)
+                    );
+                }
+            }
+
+            //add/remove whitespace around curly braces
+            {
+                //start of non empty object
+                if (
+                    //is start of object
+                    token.kind === TokenKind.LeftCurlyBrace &&
+                    //there is some non-whitespace token to our right
+                    this.getNextNonWhitespaceToken(tokens, i, true)?.kind
+                ) {
+                    let whitespaceToken = tokens[i + 1];
+
+                    //ensure there is a whitespace token in that position (make it 0-length for now)
+                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
+                        whitespaceToken = <any>{
+                            kind: TokenKind.Whitespace,
+                            startIndex: -1,
+                            text: ''
+                        };
+                        tokens.splice(i, 0, whitespaceToken);
+                    }
+                    //insert the space only if so configured
+                    whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
+                }
+
+                //end of non-empty object
+                if (
+                    //is end of object
+                    token.kind === TokenKind.RightCurlyBrace &&
+                    //there is some non-whitespace token to our left
+                    this.getPreviousNonWhitespaceToken(tokens, i, true)
+                ) {
+                    let whitespaceToken = tokens[i - 1];
+                    //ensure there is a whitespace token in that position (make it 0-length for now)
+                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
+                        whitespaceToken = <any>{
+                            kind: TokenKind.Whitespace,
+                            startIndex: -1,
+                            text: ''
+                        };
+                        tokens.splice(i - 1, 0, whitespaceToken);
+                    }
+                    //insert the space only if so configured
+                    whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
+                    //next loop iteration should be after the closing curly brace
+                    setIndex(
+                        tokens.indexOf(token)
+                    );
                 }
             }
 
             //empty curly braces
-            if (token.kind === TokenKind.LeftCurlyBrace && nextNonWhitespaceToken.kind === TokenKind.RightCurlyBrace) {
-                this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
-                if (options.insertSpaceBetweenEmptyCurlyBraces) {
-                    tokens.splice(tokens.indexOf(nextNonWhitespaceToken), 0, <any>{
-                        kind: TokenKind.Whitespace,
-                        startIndex: -1,
-                        text: ' '
-                    });
-                    //next loop iteration should be after the closing curly brace
-                    i = tokens.indexOf(nextNonWhitespaceToken);
-                }
+            if (token.kind === TokenKind.RightCurlyBrace && this.getPreviousNonWhitespaceToken(tokens, i, true)?.kind === TokenKind.LeftCurlyBrace) {
+                this.removeWhitespaceTokensBackwards(tokens, i);
+                tokens.splice(tokens.indexOf(token), 0, <any>{
+                    kind: TokenKind.Whitespace,
+                    startIndex: -1,
+                    text: options.insertSpaceBetweenEmptyCurlyBraces ? ' ' : ''
+                });
+                //next loop iteration should be after the closing curly brace
+                setIndex(
+                    tokens.indexOf(token)
+                );
             }
 
             //empty parenthesis (user doesn't have this option, we will always do this one)
             if (token.kind === TokenKind.LeftParen && nextNonWhitespaceToken.kind === TokenKind.RightParen) {
                 this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
                 //next loop iteration should be after the closing paren
-                i = tokens.indexOf(nextNonWhitespaceToken);
+                setIndex(
+                    tokens.indexOf(nextNonWhitespaceToken)
+                );
             }
 
         }
@@ -600,9 +662,16 @@ export class Formatter {
     /**
      * Get the first token after the index that is NOT Whitespace
      */
-    private getNextNonWhitespaceToken(tokens: Token[], index: number) {
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: true): Token | undefined;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: false): Token;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number): Token;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine = false) {
         for (index += 1; index < tokens.length; index++) {
-            if (tokens[index] && tokens[index].kind !== TokenKind.Whitespace) {
+            let token = tokens[index];
+            if (stopAtNewLine && token && token.kind === TokenKind.Newline) {
+                return;
+            }
+            if (token && token.kind !== TokenKind.Whitespace) {
                 return tokens[index];
             }
         }
@@ -613,9 +682,13 @@ export class Formatter {
     /**
      * Get the first token before the index that is NOT Whitespace
      */
-    private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number) {
+    private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number, stopAtNewline = false) {
         for (let i = startIndex - 1; i > -1; i--) {
-            if (tokens[i] && tokens[i].kind !== TokenKind.Whitespace) {
+            let token = tokens[i];
+            if (stopAtNewline && token.kind === TokenKind.Newline) {
+                return;
+            }
+            if (token && token.kind !== TokenKind.Whitespace) {
                 return tokens[i];
             }
         }
