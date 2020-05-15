@@ -1,20 +1,21 @@
 import * as trimRight from 'trim-right';
 import { Lexer, Token, TokenKind } from 'brighterscript';
 
-import { FormattingOptions } from './FormattingOptions';
+import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 
 export class Formatter {
     /**
      * The default number of spaces when indenting with spaces
      */
-    private static DEFAULT_INDENT_SPACE_COUNT = 4;
+    public static DEFAULT_INDENT_SPACE_COUNT = 4;
+
     /**
      * Format the given input.
      * @param inputText the text to format
      * @param formattingOptions options specifying formatting preferences
      */
     public format(inputText: string, formattingOptions?: FormattingOptions) {
-        let options = this.normalizeOptions(formattingOptions);
+        let options = normalizeOptions(formattingOptions);
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
         });
@@ -697,76 +698,6 @@ export class Formatter {
             stopIndex: index,
             tokens: outputTokens
         };
-    }
-
-    private normalizeOptions(options: FormattingOptions | undefined = {}) {
-        let fullOptions: FormattingOptions = {
-            indentStyle: 'spaces',
-            indentSpaceCount: Formatter.DEFAULT_INDENT_SPACE_COUNT,
-            formatIndent: true,
-            keywordCase: 'lower',
-            compositeKeywords: 'split',
-            removeTrailingWhiteSpace: true,
-            keywordCaseOverride: {},
-            formatInteriorWhitespace: true,
-            insertSpaceBeforeFunctionParenthesis: false,
-            insertSpaceBetweenEmptyCurlyBraces: false,
-
-            //override defaults with the provided values
-            ...options
-        };
-
-        if (!fullOptions.typeCase) {
-            fullOptions.typeCase = fullOptions.keywordCase as any;
-        }
-
-        fullOptions.keywordCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.keywordCaseOverride);
-        fullOptions.typeCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.typeCaseOverride);
-
-        return fullOptions;
-    }
-
-    private normalizeKeywordCaseOverride(obj: FormattingOptions['keywordCaseOverride']) {
-        let result = {};
-
-        //quit now if the object is not iterable
-        if (!obj) {
-            return result;
-        }
-
-        for (let key in obj) {
-            let value = obj[key]
-                ? obj[key]!.toLowerCase()
-                : 'original';
-
-            key = key
-                //remove any whitespace
-                .replace(/\s+/gi, '')
-                //force key to lower case
-                .toLowerCase();
-
-            //replace some of the hash tokens with their corresponding TokenKind
-            if (key === '#const') {
-                key = TokenKind.HashConst.toLowerCase();
-
-            } else if (key === '#else') {
-                key = TokenKind.HashElse.toLowerCase();
-
-            } else if (key === '#elseif') {
-                key = TokenKind.HashElseIf.toLowerCase();
-
-            } else if (key === '#endif') {
-                key = TokenKind.HashEndIf.toLowerCase();
-
-            } else if (key === '#error') {
-                key = TokenKind.HashError.toLowerCase();
-
-            } else if (key === '#if') {
-                key = TokenKind.HashIf.toLowerCase();
-            }
-            result[key] = value;
-        }
-        return result;
     }
 
     private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {

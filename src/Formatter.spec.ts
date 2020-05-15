@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
-import { TokenKind, Token } from 'brighterscript';
+import { TokenKind } from 'brighterscript';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -780,55 +780,6 @@ end sub`;
         });
         it('skips formatting when the option is set to false', () => {
             expect(formatter.format(`name = "bob" `, { removeTrailingWhiteSpace: false })).to.equal(`name = "bob" `);
-        });
-    });
-
-    describe('normalizeOptions', () => {
-        it('does not fail with falsey value for `keywordCaseOverride`', () => {
-            let options = (formatter as any).normalizeOptions({
-                keywordCaseOverride: {
-                    function: 'title',
-                    sub: null
-                }
-            });
-            expect(options.keywordCaseOverride).to.eql({
-                function: 'title',
-                sub: 'original'
-            });
-        });
-
-        it('converts keywordCaseOverride conditional compile tokens to the proper token kind`', () => {
-            let options = (formatter as any).normalizeOptions({
-                keywordCaseOverride: {
-                    '#const': 'title',
-                    '#else': 'title',
-                    '#elseif': 'title',
-                    '#endif': 'title',
-                    '#error': 'title',
-                    '#if': 'title'
-                }
-            });
-            expect(options.keywordCaseOverride).to.eql({
-                'hashconst': 'title',
-                'hashelse': 'title',
-                'hashelseif': 'title',
-                'hashendif': 'title',
-                'hasherror': 'title',
-                'hashif': 'title'
-            });
-        });
-
-        it('does not fail with falsey value for `typeCaseOverride`', () => {
-            let options = (formatter as any).normalizeOptions({
-                typeCaseOverride: {
-                    function: 'title',
-                    sub: null
-                }
-            });
-            expect(options.typeCaseOverride).to.eql({
-                function: 'title',
-                sub: 'original'
-            });
         });
     });
 
