@@ -479,6 +479,17 @@ export class Formatter {
             }
         }
 
+        tokens = this.formatTokenSpacing(tokens, options);
+        return tokens;
+    }
+
+    /**
+     * Format spacing between various tokens that are more specific than `formatInteriorWhitespace`
+     */
+    private formatTokenSpacing(
+        tokens: Token[],
+        options: FormattingOptions
+    ) {
         //handle special cases
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
