@@ -21,6 +21,10 @@ describe('Formatter', () => {
         it('handles calling function from indexed getter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
         });
+
+        it('does not de-indent on double closing squares', () => {
+            formatEqual(`sub main()\n    if true then\n        stuff = [[1], [2], [3]]\n    end if\nend sub`);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
