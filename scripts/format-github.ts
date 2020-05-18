@@ -34,8 +34,7 @@ const repositoryUrls = [
     'https://github.com/trystant/Roku',
     'https://github.com/glanza2311/rokuToyProject',
     'https://github.com/exegersha/2048',
-    'https://github.com/paulcullin/roku-ci-test',
-    'https://github.com/VerizonAdPlatforms/VerizonVideoPartnerSDK-Roku',
+    'https://github.com/paulcullin/roku-ci-test'
 ];
 
 let tempPath = path.join(__dirname, '../', 'temp');
@@ -91,7 +90,7 @@ let workspace = {
                         const formattedFileContents = formatter.format(fileContents.toString(), {
                             keywordCase: null
                         });
-                        
+
 
                         console.log(`Saving formatting changes for "${fullFilePath}"`);
                         await fsExtra.writeFile(fullFilePath, formattedFileContents);
@@ -122,6 +121,6 @@ let workspace = {
             );
         })
     );
-
+    console.log('Writing workspace');
     await fsExtra.writeFile(path.join(tempPath, 'workspace.code-workspace'), JSON.stringify(workspace));
-})();
+})().catch(console.error.bind(console));
