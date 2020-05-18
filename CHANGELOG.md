@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
  - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. 
+ - new option `formatMultiLineObjectsAndArrays` which inserts newlines and indents multi-line objects and arrays
 ### Changed
  - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
 

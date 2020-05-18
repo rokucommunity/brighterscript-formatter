@@ -11,7 +11,7 @@ describe('Formatter', () => {
         formatter = new Formatter();
     });
 
-    describe('formatIndentation', () => {
+    describe('formatIndent', () => {
         it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
@@ -20,6 +20,76 @@ describe('Formatter', () => {
 
         it('handles calling function from indexed getter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
+        });
+    });
+
+    describe('formatMultiLineObjectsAndArrays', () => {
+        describe('associative arrays', () => {
+            it('does not affect single-line items', () => {
+                formatEqual(`person = { a: 1, b: 2 }`);
+            });
+
+            it('moves items off of brace lines when spanning multiple lines', () => {
+                formatEqual(`person = { a: 1,\n b: 2 }`, `person = {\n    a: 1,\n    b: 2\n}`);
+            });
+
+            it('removes spaces for single-line when non-empty', () => {
+                formatEqual(`{ a: 1,\n b: 2 }`, `{\n    a: 1,\n    b: 2\n}`);
+            });
+
+            it('keeps multiple statements on same line', () => {
+                formatEqual(`{ a: 1, b: 2\nc: 3, d: 4}`, `{\n    a: 1, b: 2\n    c: 3, d: 4\n}`);
+            });
+
+            it('supports same-line nested objects', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4 } }`);
+            });
+
+            it('keeps same-line nested objects together', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4}\n}`, `{\n    a: 1, b: { c: 3, d: 4 }\n}`);
+            });
+
+            it('standardizes nested objects', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4\n}}`, `{\n    a: 1, b: {\n        c: 3, d: 4\n    }\n}`);
+            });
+        });
+
+        describe('arrays', () => {
+            it('does not affect single-line items', () => {
+                formatEqual(`person = [1, 2]`);
+            });
+
+            it('moves items off of brace lines when spanning multiple lines', () => {
+                formatEqual(`person = [ 1,\n2]`, `person = [\n    1,\n    2\n]`);
+            });
+
+            it('removes spaces for single-line when non-empty', () => {
+                formatEqual(`[ 1,\n 2]`, `[\n    1,\n    2\n]`);
+            });
+
+            it('keeps multiple statements on same line', () => {
+                formatEqual(`[ 1, 2,\n 3, 4]`, `[\n    1, 2,\n    3, 4\n]`);
+            });
+
+            it('supports same-line nested objects', () => {
+                formatEqual(`[ 1, [ 3, 4 ] ]`, `[1, [3, 4]]`);
+            });
+
+            it('keeps same-line nested objects together', () => {
+                formatEqual(`[1, [3, 4]\n]`, `[\n    1, [3, 4]\n]`);
+            });
+
+            it('standardizes nested arrays', () => {
+                formatEqual(`[1, [3, 4\n]]`, `[\n    1, [\n        3, 4\n    ]\n]`);
+            });
+        });
+
+        it('does not separate [{ when closed by }] ', () => {
+            formatEqual(`[{\n    exists: true\n}]`);
+        });
+
+        it('does not separate [[ when closed by ]]', () => {
+            formatEqual(`[[\n    true\n]]`);
         });
     });
 
@@ -133,7 +203,7 @@ end sub`;
 
         it('removes Whitespace after square brace and paren', () => {
             formatEqual(`[ 1, 2, 3 ]`, `[1, 2, 3]`);
-            formatEqual(`[ 1,\n2,\n 3\n]`, `[1,\n    2,\n    3\n]`);
+            formatEqual(`[ 1,\n2,\n 3\n]`, `[\n    1,\n    2,\n    3\n]`);
             formatEqual(`{name: "john"}`, `{ name: "john" }`);
             formatEqual(`doSomething( 1, 2 )`, `doSomething(1, 2)`);
         });
@@ -355,8 +425,8 @@ end sub`;
             formatEqual(`theVar = [{\n    name = "bob"\n}]`);
         });
 
-        it.skip('works for arrays with objects in them on separate lines', () => {
-            formatEqual(`theVar = [\n    {\n        name = bob"\n    }\n]`);
+        it('works for arrays with objects in them on separate lines', () => {
+            formatEqual(`theVar = [\n    {\n        name = "bob"\n    }\n]`);
         });
     });
 
@@ -883,43 +953,45 @@ end sub`;
         });
 
         it('adds spaces for multi-line when non-empty', () => {
-            formatEqual(`{a: 1,\nb: 2}`, `{ a: 1,\nb: 2 }`, {
+            formatEqual(`{a: 1,\nb: 2}`, `{\n    a: 1,\n    b: 2\n}`, {
                 insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
             });
         });
 
         it('removes spaces for single-line when non-empty', () => {
-            formatEqual(`{ a: 1,\n b: 2 }`, `{a: 1,\nb: 2}`, {
+            formatEqual(`{ a: 1,\n b: 2 }`, `{\n    a: 1,\n    b: 2\n}`, {
                 insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
             });
         });
     });
 
-    describe('indentStyle for conditional block', () => {
-        it('correctly fixes the indentation', () => {
-            let expected = `#if isDebug\n    doSomething()\n#end if`;
-            let current = `#if isDebug\n doSomething()\n#end if`;
-            expect(formatter.format(current)).to.equal(expected);
-        });
+    describe('indentStyle', () => {
+        describe('conditional block', () => {
+            it('correctly fixes the indentation', () => {
+                let expected = `#if isDebug\n    doSomething()\n#end if`;
+                let current = `#if isDebug\n doSomething()\n#end if`;
+                expect(formatter.format(current)).to.equal(expected);
+            });
 
-        it('skips indentation when formatIndent===false for conditional block', () => {
-            let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
-            expect(formatter.format(program, { formatIndent: false })).to.equal(program);
-        });
+            it('skips indentation when formatIndent===false for conditional block', () => {
+                let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
+                expect(formatter.format(program, { formatIndent: false })).to.equal(program);
+            });
 
-        it('correctly fixes the indentation', () => {
-            let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
-            expect(formatter.format(program)).to.equal(program);
-        });
+            it('correctly fixes the indentation', () => {
+                let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
 
-        it('correctly fixes the indentation nested if in conditional block', () => {
-            let program = `#if isDebug\n    if true then\n        doSomething()\n    end if\n#end if`;
-            expect(formatter.format(program)).to.equal(program);
-        });
+            it('correctly fixes the indentation nested if in conditional block', () => {
+                let program = `#if isDebug\n    if true then\n        doSomething()\n    end if\n#end if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
 
-        it('correctly fixes the indentation nested #if in if block', () => {
-            let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
-            expect(formatter.format(program)).to.equal(program);
+            it('correctly fixes the indentation nested #if in if block', () => {
+                let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
         });
     });
 
