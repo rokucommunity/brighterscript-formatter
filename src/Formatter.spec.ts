@@ -21,6 +21,18 @@ describe('Formatter', () => {
         it('handles calling function from indexed getter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
         });
+
+        it(`does not indent object properties called 'class'`, () => {
+            formatEqual(`sub main()\n    if m.class = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not outdent for object properties called 'endclass'`, () => {
+            formatEqual(`sub main()\n    if m.endclass = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not indent object properties called 'endnamespace'`, () => {
+            formatEqual(`sub main()\n    if m.endnamespace = 123\n        print true\n    end if\nend sub`);
+        });
     });
 
     describe('dedupeWhitespace', () => {

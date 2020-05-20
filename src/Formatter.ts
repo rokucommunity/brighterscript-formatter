@@ -1,5 +1,5 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers } from 'brighterscript';
 
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 
@@ -232,6 +232,11 @@ export class Formatter {
                         ) {
                             continue;
                         }
+                        //skip indent for 'class' used as property name
+                        if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
+                            continue;
+                        }
+
                         tabCount++;
                         foundIndentorThisLine = true;
 
@@ -260,8 +265,11 @@ export class Formatter {
                             nextNonWhitespaceToken.kind === TokenKind.LeftParen
                         )
                     ) {
-                        //do not un-indent if this is a `next` token preceeded by a period
-                        if (token.kind === TokenKind.Next && previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot) {
+                        //do not un-indent if this is a `next` or `endclass` token preceeded by a period
+                        if (
+                            [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                            previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
+                        ) {
                             continue;
                         }
 
@@ -1004,3 +1012,5 @@ export const TypeTokens = [
 ];
 
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];
+
+export const AllowedClassIdentifierKinds = [TokenKind.Identifier, ...AllowedLocalIdentifiers];

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. 
 ### Changed
  - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
+### Fixed
+ - incorrect indent when using `class`, `endclass`, `namespace`, `endnamespace` as an object property ([#18](https://github.com/rokucommunity/brighterscript-formatter/issues/18))
 
 
 
