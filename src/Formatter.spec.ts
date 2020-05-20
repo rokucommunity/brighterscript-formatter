@@ -25,6 +25,10 @@ describe('Formatter', () => {
         it('does not de-indent on double closing squares', () => {
             formatEqual(`sub main()\n    if true then\n        stuff = [[1], [2], [3]]\n    end if\nend sub`);
         });
+
+        it('properly indents arrays of objects', () => {
+            formatEqual('sub main()\n    val = [{\n        alive: true\n    }, {\n        alive: true\n    }]\nend sub');
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
