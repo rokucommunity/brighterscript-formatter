@@ -556,15 +556,16 @@ export class Formatter {
                 ) {
                     let whitespaceToken = tokens[i + 1];
 
-                    //ensure there is a whitespace token in that position (make it 0-length for now)
-                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
-                        whitespaceToken = <any>{
-                            kind: TokenKind.Whitespace,
-                            startIndex: -1,
-                            text: ''
-                        };
-                        tokens.splice(i, 0, whitespaceToken);
-                    }
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i, 0, whitespaceToken);
+                    // }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                 }
@@ -577,15 +578,16 @@ export class Formatter {
                     this.getPreviousNonWhitespaceToken(tokens, i, true)
                 ) {
                     let whitespaceToken = tokens[i - 1];
-                    //ensure there is a whitespace token in that position (make it 0-length for now)
-                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
-                        whitespaceToken = <any>{
-                            kind: TokenKind.Whitespace,
-                            startIndex: -1,
-                            text: ''
-                        };
-                        tokens.splice(i - 1, 0, whitespaceToken);
-                    }
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i - 1, 0, whitespaceToken);
+                    // }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                     //next loop iteration should be after the closing curly brace
