@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0]
 ### Added
- - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. 
+ - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. ([#16](https://github.com/rokucommunity/brighterscript-formatter/issues/16)
 ### Changed
  - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
 ### Fixed
