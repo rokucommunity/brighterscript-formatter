@@ -6,6 +6,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.2.0] - 2020-05-20
+### Added
+ - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. ([#16](https://github.com/rokucommunity/brighterscript-formatter/issues/16)
+### Changed
+ - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
+### Fixed
+ - incorrect indent when using `class`, `endclass`, `namespace`, `endnamespace` as an object property ([#18](https://github.com/rokucommunity/brighterscript-formatter/issues/18))
+
+
+
+## [1.1.8] - 2020-05-11
+### Fixed
+ - bug that would incorrectly add spacing between a negative sign and a number if it's the first entry in an array ([#14](https://github.com/rokucommunity/brighterscript-formatter/issues/14))
+ - bug that would incorrectly add spacing to the left of a negative sign if preceeded by a left curly bracket or left paren.  
+ - Prevent indent after lines with indexed getter function call (i.e. `someObj[someKey]()`) ([#15](https://github.com/rokucommunity/brighterscript-formatter/issues/15))
+
+
+
+## [1.1.7] - 2020-05-11
+### Changed
+ - upgraded to [brighterscript@0.9.6](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#096)
+
+
+
+## [1.1.6] - 2020-05-04
+## Fixed
+ - issue where object properties named `next` would incorrectly cause a de-indent ([#12](https://github.com/rokucommunity/brighterscript-formatter/issues/12))
+
+
+
 ## [1.1.5] - 2020-05-01
 ### Added
  - new formatting option `typeCaseOverride` which works just like `keywordCaseOverride` but only for type tokens. 
@@ -76,6 +106,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.2.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.8...v1.2.0
+[1.1.8]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.7...v1.1.8
+[1.1.7]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.6...v1.1.7
+[1.1.6]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.5...v1.1.6
 [1.1.5]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.4...v1.1.5
 [1.1.4]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.3...v1.1.4
 [1.1.3]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.2...v1.1.3

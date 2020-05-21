@@ -1,8 +1,7 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind } from 'brighterscript';
-import { EventEmitter } from 'events';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers } from 'brighterscript';
 
-import { FormattingOptions } from './FormattingOptions';
+import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 
 export class Formatter {
     /**
@@ -23,7 +22,8 @@ export class Formatter {
     /**
      * The default number of spaces when indenting with spaces
      */
-    private static DEFAULT_INDENT_SPACE_COUNT = 4;
+    public static DEFAULT_INDENT_SPACE_COUNT = 4;
+
     /**
      * Format the given input.
      * @param inputText the text to format
@@ -39,7 +39,7 @@ export class Formatter {
          */
         let options: FormattingOptions;
         if (formattingOptions || !this.formattingOptions) {
-            options = this.normalizeOptions(formattingOptions ?? this.formattingOptions);
+            options = normalizeOptions(formattingOptions ?? this.formattingOptions);
         } else {
             options = this.formattingOptions;
         }
@@ -260,6 +260,11 @@ export class Formatter {
                         ) {
                             continue;
                         }
+                        //skip indent for 'class' used as property name
+                        if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
+                            continue;
+                        }
+
                         tabCount++;
                         foundIndentorThisLine = true;
 
@@ -281,8 +286,21 @@ export class Formatter {
                         //is not being used as a key in an AA literal
                         nextNonWhitespaceToken.kind !== TokenKind.Colon &&
                         //is not a method call
-                        nextNonWhitespaceToken.kind !== TokenKind.LeftParen
+                        !(
+                            //certain symbols may appear next to an open paren, so exclude those
+                            ![TokenKind.RightSquareBracket].includes(token.kind) &&
+                            //open paren means method call
+                            nextNonWhitespaceToken.kind === TokenKind.LeftParen
+                        )
                     ) {
+                        //do not un-indent if this is a `next` or `endclass` token preceeded by a period
+                        if (
+                            [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                            previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
+                        ) {
+                            continue;
+                        }
+
                         tabCount--;
                         if (foundIndentorThisLine === false) {
                             thisTabCount--;
@@ -461,7 +479,11 @@ export class Formatter {
             }
 
             //pad any of these tokens with a space to the left
-            if (addLeft.includes(token.kind)) {
+            if (
+                addLeft.includes(token.kind) &&
+                //don't add left for negative sign preceeded by a square brace or paren
+                !(token.kind === TokenKind.Minus && previousTokenType && [TokenKind.LeftSquareBracket, TokenKind.LeftParen].includes(previousTokenType))
+            ) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {
                     tokens.splice(i, 0, <any>{
@@ -493,10 +515,29 @@ export class Formatter {
             }
         }
 
+        tokens = this.formatTokenSpacing(tokens, options);
+        return tokens;
+    }
+
+    /**
+     * Format spacing between various tokens that are more specific than `formatInteriorWhitespace`
+     */
+    private formatTokenSpacing(
+        tokens: Token[],
+        options: FormattingOptions
+    ) {
+        let i = 0;
+        let token: Token = undefined as any;
+        let nextNonWhitespaceToken: Token = undefined as any;
+        const setIndex = (newValue) => {
+            i = newValue;
+            token = tokens[i];
+            nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+        };
+
         //handle special cases
-        for (let i = 0; i < tokens.length; i++) {
-            let token = tokens[i];
-            let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
+        for (i; i < tokens.length; i++) {
+            setIndex(i);
 
             //space to left of function parens?
             {
@@ -526,29 +567,85 @@ export class Formatter {
                         });
                     }
                     //next loop iteration should be after the open paren
-                    i = tokens.indexOf(parenToken);
+                    setIndex(
+                        tokens.indexOf(parenToken)
+                    );
+                }
+            }
+
+            //add/remove whitespace around curly braces
+            {
+                //start of non empty object
+                if (
+                    //is start of object
+                    token.kind === TokenKind.LeftCurlyBrace &&
+                    //there is some non-whitespace token to our right
+                    this.getNextNonWhitespaceToken(tokens, i, true)?.kind
+                ) {
+                    let whitespaceToken = tokens[i + 1];
+
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i, 0, whitespaceToken);
+                    // }
+                    //insert the space only if so configured
+                    whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
+                }
+
+                //end of non-empty object
+                if (
+                    //is end of object
+                    token.kind === TokenKind.RightCurlyBrace &&
+                    //there is some non-whitespace token to our left
+                    this.getPreviousNonWhitespaceToken(tokens, i, true)
+                ) {
+                    let whitespaceToken = tokens[i - 1];
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i - 1, 0, whitespaceToken);
+                    // }
+                    //insert the space only if so configured
+                    whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
+                    //next loop iteration should be after the closing curly brace
+                    setIndex(
+                        tokens.indexOf(token)
+                    );
                 }
             }
 
             //empty curly braces
-            if (token.kind === TokenKind.LeftCurlyBrace && nextNonWhitespaceToken.kind === TokenKind.RightCurlyBrace) {
-                this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
-                if (options.insertSpaceBetweenEmptyCurlyBraces) {
-                    tokens.splice(tokens.indexOf(nextNonWhitespaceToken), 0, <any>{
-                        kind: TokenKind.Whitespace,
-                        startIndex: -1,
-                        text: ' '
-                    });
-                    //next loop iteration should be after the closing curly brace
-                    i = tokens.indexOf(nextNonWhitespaceToken);
-                }
+            if (token.kind === TokenKind.RightCurlyBrace && this.getPreviousNonWhitespaceToken(tokens, i, true)?.kind === TokenKind.LeftCurlyBrace) {
+                this.removeWhitespaceTokensBackwards(tokens, i);
+                tokens.splice(tokens.indexOf(token), 0, <any>{
+                    kind: TokenKind.Whitespace,
+                    startIndex: -1,
+                    text: options.insertSpaceBetweenEmptyCurlyBraces ? ' ' : ''
+                });
+                //next loop iteration should be after the closing curly brace
+                setIndex(
+                    tokens.indexOf(token)
+                );
             }
 
             //empty parenthesis (user doesn't have this option, we will always do this one)
             if (token.kind === TokenKind.LeftParen && nextNonWhitespaceToken.kind === TokenKind.RightParen) {
                 this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
                 //next loop iteration should be after the closing paren
-                i = tokens.indexOf(nextNonWhitespaceToken);
+                setIndex(
+                    tokens.indexOf(nextNonWhitespaceToken)
+                );
             }
 
         }
@@ -603,9 +700,16 @@ export class Formatter {
     /**
      * Get the first token after the index that is NOT Whitespace
      */
-    private getNextNonWhitespaceToken(tokens: Token[], index: number) {
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: true): Token | undefined;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: false): Token;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number): Token;
+    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine = false) {
         for (index += 1; index < tokens.length; index++) {
-            if (tokens[index] && tokens[index].kind !== TokenKind.Whitespace) {
+            let token = tokens[index];
+            if (stopAtNewLine && token && token.kind === TokenKind.Newline) {
+                return;
+            }
+            if (token && token.kind !== TokenKind.Whitespace) {
                 return tokens[index];
             }
         }
@@ -616,9 +720,13 @@ export class Formatter {
     /**
      * Get the first token before the index that is NOT Whitespace
      */
-    private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number) {
+    private getPreviousNonWhitespaceToken(tokens: Token[], startIndex: number, stopAtNewline = false) {
         for (let i = startIndex - 1; i > -1; i--) {
-            if (tokens[i] && tokens[i].kind !== TokenKind.Whitespace) {
+            let token = tokens[i];
+            if (stopAtNewline && token.kind === TokenKind.Newline) {
+                return;
+            }
+            if (token && token.kind !== TokenKind.Whitespace) {
                 return tokens[i];
             }
         }
@@ -712,76 +820,6 @@ export class Formatter {
             stopIndex: index,
             tokens: outputTokens
         };
-    }
-
-    private normalizeOptions(options: FormattingOptions | undefined = {}) {
-        let fullOptions: FormattingOptions = {
-            indentStyle: 'spaces',
-            indentSpaceCount: Formatter.DEFAULT_INDENT_SPACE_COUNT,
-            formatIndent: true,
-            keywordCase: 'lower',
-            compositeKeywords: 'split',
-            removeTrailingWhiteSpace: true,
-            keywordCaseOverride: {},
-            formatInteriorWhitespace: true,
-            insertSpaceBeforeFunctionParenthesis: false,
-            insertSpaceBetweenEmptyCurlyBraces: false,
-
-            //override defaults with the provided values
-            ...options
-        };
-
-        if (!fullOptions.typeCase) {
-            fullOptions.typeCase = fullOptions.keywordCase as any;
-        }
-
-        fullOptions.keywordCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.keywordCaseOverride);
-        fullOptions.typeCaseOverride = this.normalizeKeywordCaseOverride(fullOptions.typeCaseOverride);
-
-        return fullOptions;
-    }
-
-    private normalizeKeywordCaseOverride(obj: FormattingOptions['keywordCaseOverride']) {
-        let result = {};
-
-        //quit now if the object is not iterable
-        if (!obj) {
-            return result;
-        }
-
-        for (let key in obj) {
-            let value = obj[key]
-                ? obj[key]!.toLowerCase()
-                : 'original';
-
-            key = key
-                //remove any whitespace
-                .replace(/\s+/gi, '')
-                //force key to lower case
-                .toLowerCase();
-
-            //replace some of the hash tokens with their corresponding TokenKind
-            if (key === '#const') {
-                key = TokenKind.HashConst.toLowerCase();
-
-            } else if (key === '#else') {
-                key = TokenKind.HashElse.toLowerCase();
-
-            } else if (key === '#elseif') {
-                key = TokenKind.HashElseIf.toLowerCase();
-
-            } else if (key === '#endif') {
-                key = TokenKind.HashEndIf.toLowerCase();
-
-            } else if (key === '#error') {
-                key = TokenKind.HashError.toLowerCase();
-
-            } else if (key === '#if') {
-                key = TokenKind.HashIf.toLowerCase();
-            }
-            result[key] = value;
-        }
-        return result;
     }
 
     private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {
@@ -984,7 +1022,9 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.Step,
     TokenKind.Colon,
     TokenKind.Semicolon,
-    TokenKind.Comma
+    TokenKind.Comma,
+    TokenKind.LeftSquareBracket,
+    TokenKind.LeftParen
 ];
 
 export const TypeTokens = [
@@ -1002,3 +1042,5 @@ export const TypeTokens = [
 ];
 
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];
+
+export const AllowedClassIdentifierKinds = [TokenKind.Identifier, ...AllowedLocalIdentifiers];

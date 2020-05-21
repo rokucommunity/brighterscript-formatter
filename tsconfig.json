@@ -1,20 +1,20 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "types/*"
-            ]
-        },
         "noImplicitAny": false,
-        "target": "es5",
+        "target": "ES2017",
         "module": "commonjs",
+        "sourceMap": true,
         "rootDir": "src",
         "outDir": "dist",
         "declaration": true,
-        "strict": true
+        "strict": true,
+        "strictNullChecks": true,
+        "noUnusedLocals": true
     },
     "include": [
         "src/**/*.ts"
-    ]
+    ],
+    "ts-node": {
+        "transpileOnly": true
+    }
 }

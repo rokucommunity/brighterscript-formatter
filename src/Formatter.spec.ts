@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
-import { TokenKind, Token } from 'brighterscript';
+import { TokenKind } from 'brighterscript';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -16,6 +16,22 @@ describe('Formatter', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
             );
+        });
+
+        it('handles calling function from indexed getter', () => {
+            formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
+        });
+
+        it(`does not indent object properties called 'class'`, () => {
+            formatEqual(`sub main()\n    if m.class = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not outdent for object properties called 'endclass'`, () => {
+            formatEqual(`sub main()\n    if m.endclass = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not indent object properties called 'endnamespace'`, () => {
+            formatEqual(`sub main()\n    if m.endnamespace = 123\n        print true\n    end if\nend sub`);
         });
     });
 
@@ -102,8 +118,10 @@ describe('Formatter', () => {
             expect(formatter.format(`call(a, -1)`)).to.equal(`call(a, -1)`);
 
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
+            formatEqual(`a = [1, -24]`);
+            formatEqual(`a = [-24]`);
+            formatEqual(`a(-24)`);
         });
-
 
         it('works for special cases', () => {
             let program = `
@@ -143,7 +161,7 @@ end sub`;
             formatEqual(`function main ()\nend function`, `function main()\nend function`);
         });
 
-        it('adds space between function name and opening curly brace', () => {
+        it('adds space between function name and opening paren', () => {
             formatEqual(`function main ()\nend function`, `function main ()\nend function`, {
                 insertSpaceBeforeFunctionParenthesis: true
             });
@@ -152,12 +170,12 @@ end sub`;
             });
         });
 
-        it('removes space between anon function keyword and opening curly brace', () => {
+        it('removes space between anon function keyword and opening paren', () => {
             formatEqual(`func = function()\nend function`, `func = function()\nend function`);
             formatEqual(`func = function()\nend function`, `func = function()\nend function`);
         });
 
-        it('adds space between anon function keyword and opening curly brace', () => {
+        it('adds space between anon function keyword and opening paren', () => {
             formatEqual(`func = function ()\nend function`, `func = function ()\nend function`, {
                 insertSpaceBeforeFunctionParenthesis: true
             });
@@ -167,7 +185,7 @@ end sub`;
         });
 
         it('removes space between empty curly braces', () => {
-            formatEqual(`person = {}`, `person = {}`);
+            formatEqual(`person = {  }`, `person = {}`);
             formatEqual(`person = {}`, `person = {}`);
         });
 
@@ -393,6 +411,10 @@ end sub`;
         it('does not de-indent for a method called "next"', () => {
             let program = `if true then\n    m.top.returnString = m.someArray.next()\nend if`;
             expect(formatter.format(program)).to.equal(program);
+        });
+
+        it('does not de-indent when the word `next` is used as an object property', () => {
+            formatEqual(`sub a()\n    m.next = true\n    m.t = true\nend sub`);
         });
 
         it('handles string multiple string literals on same line', () => {
@@ -773,55 +795,6 @@ end sub`;
         });
     });
 
-    describe('normalizeOptions', () => {
-        it('does not fail with falsey value for `keywordCaseOverride`', () => {
-            let options = (formatter as any).normalizeOptions({
-                keywordCaseOverride: {
-                    function: 'title',
-                    sub: null
-                }
-            });
-            expect(options.keywordCaseOverride).to.eql({
-                function: 'title',
-                sub: 'original'
-            });
-        });
-
-        it('converts keywordCaseOverride conditional compile tokens to the proper token kind`', () => {
-            let options = (formatter as any).normalizeOptions({
-                keywordCaseOverride: {
-                    '#const': 'title',
-                    '#else': 'title',
-                    '#elseif': 'title',
-                    '#endif': 'title',
-                    '#error': 'title',
-                    '#if': 'title'
-                }
-            });
-            expect(options.keywordCaseOverride).to.eql({
-                'hashconst': 'title',
-                'hashelse': 'title',
-                'hashelseif': 'title',
-                'hashendif': 'title',
-                'hasherror': 'title',
-                'hashif': 'title'
-            });
-        });
-
-        it('does not fail with falsey value for `typeCaseOverride`', () => {
-            let options = (formatter as any).normalizeOptions({
-                typeCaseOverride: {
-                    function: 'title',
-                    sub: null
-                }
-            });
-            expect(options.typeCaseOverride).to.eql({
-                function: 'title',
-                sub: 'original'
-            });
-        });
-    });
-
     describe('formatKeywordCase', () => {
         describe('typeCaseOverride', () => {
             it('overrides specific types', () => {
@@ -905,6 +878,32 @@ end sub`;
         it('handles out-of-bounds indexes', () => {
             expect(formatter.upperCaseLetter('hello', -1)).to.equal('hello');
             expect(formatter.upperCaseLetter('hello', 5)).to.equal('hello');
+        });
+    });
+
+    describe('insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces', () => {
+        it('adds spaces for single-line when non-empty', () => {
+            formatEqual(`{a:1,b:2}`, `{ a: 1, b: 2 }`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
+            });
+        });
+
+        it('removes spaces for single-line when non-empty', () => {
+            formatEqual(`{ a: 1, b: 2 }`, `{a: 1, b: 2}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
+        });
+
+        it('adds spaces for multi-line when non-empty', () => {
+            formatEqual(`{a: 1,\nb: 2}`, `{ a: 1,\nb: 2 }`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
+            });
+        });
+
+        it('removes spaces for single-line when non-empty', () => {
+            formatEqual(`{ a: 1,\n b: 2 }`, `{a: 1,\nb: 2}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
         });
     });
 

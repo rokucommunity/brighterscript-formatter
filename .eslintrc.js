@@ -113,6 +113,7 @@ module.exports = {
         'no-inline-comments': 'off',
         'no-invalid-this': 'off',
         'no-labels': 'off',
+        'no-lone-blocks': 'off',
         'no-negated-condition': 'off',
         'no-param-reassign': 'off',
         'no-plusplus': 'off',

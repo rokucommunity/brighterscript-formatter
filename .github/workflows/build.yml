@@ -55,7 +55,7 @@ jobs:
           prerelease: false #contains(github.ref, '-beta.') == true
 
       #upload package to GitHub release
-      - name: Upload vsix to GitHub release
+      - name: Upload package to GitHub release
         uses: AButler/upload-release-assets@v2.0
         with:
           files: '*.tgz'
