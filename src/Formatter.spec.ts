@@ -11,6 +11,12 @@ describe('Formatter', () => {
         formatter = new Formatter();
     });
 
+    describe('getNextNonWhitespaceToken', () => {
+        it('returns undefined when index is out of bounds', () => {
+            expect((formatter as any).getNextNonWhitespaceToken([], -1)).to.be.undefined;
+        });
+    });
+
     describe('formatIndent', () => {
         it('properly indents foreach loops', () => {
             formatEqual(
@@ -29,9 +35,23 @@ describe('Formatter', () => {
         it('properly indents arrays of objects', () => {
             formatEqual('sub main()\n    val = [{\n        alive: true\n    }, {\n        alive: true\n    }]\nend sub');
         });
+
+        it('does not explode on unmatched pairs', () => {
+            formatEqual(`sub main()\n    val = [\n        [ }]`);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
+        it('does nothing when option is disabled', () => {
+            formatEqual(`person = { a: 1\n}`, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+        });
+
+        it('does not insert extra newline when no newline is found', () => {
+            formatEqual(`person = { `);
+        });
+
         describe('associative arrays', () => {
             it('does not affect single-line items', () => {
                 formatEqual(`person = { a: 1, b: 2 }`);
