@@ -16,8 +16,8 @@
         "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts"
     },
     "bin": {
-      "bsfmt": "dist/cli.js",
-      "brighterscript-formatter": "dist/cli.js"
+        "bsfmt": "dist/cli.js",
+        "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
         "brighterscript": "^0.10.0",
