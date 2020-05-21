@@ -73,9 +73,9 @@ export interface FormattingOptions {
      */
     insertSpaceBetweenEmptyCurlyBraces?: boolean;
     /**
-     * 'always' will always insert exactly 1 space after leading and before trailing curly braces
-     * 'never' will always REMOVE space after leading and before trailing curly braces (excluding indentation spacing)
-     * 'disabled' means spacing around these braces will remain unchanged
+     * If true, ensure exactly 1 space after leading and before trailing curly braces
+     * If false, REMOVE all whitespace after leading and before trailing curly braces (excluding beginning-of-line indentation spacing)
+     * @default true
      */
     insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces?: boolean;
     /**

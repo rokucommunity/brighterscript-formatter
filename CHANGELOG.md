@@ -8,10 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
- - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. 
  - new option `formatMultiLineObjectsAndArrays` which inserts newlines and indents multi-line objects and arrays
+
+
+
+## [1.2.0] - 2020-05-20
+### Added
+ - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. ([#16](https://github.com/rokucommunity/brighterscript-formatter/issues/16)
 ### Changed
  - TypeScript transpile now targets ES2017, so this library now requires a minimum of NodeJS version 8. 
+### Fixed
+ - incorrect indent when using `class`, `endclass`, `namespace`, `endnamespace` as an object property ([#18](https://github.com/rokucommunity/brighterscript-formatter/issues/18))
 
 
 
@@ -105,6 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.2.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.8...v1.2.0
 [1.1.8]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.7...v1.1.8
 [1.1.7]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.6...v1.1.7
 [1.1.6]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.5...v1.1.6

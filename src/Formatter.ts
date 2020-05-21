@@ -1,5 +1,5 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers } from 'brighterscript';
 
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 
@@ -364,6 +364,11 @@ export class Formatter {
                         ) {
                             continue;
                         }
+                        //skip indent for 'class' used as property name
+                        if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
+                            continue;
+                        }
+
                         tabCount++;
                         foundIndentorThisLine = true;
 
@@ -398,8 +403,11 @@ export class Formatter {
                             nextNonWhitespaceToken.kind === TokenKind.LeftParen
                         )
                     ) {
-                        //do not un-indent if this is a `next` token preceeded by a period
-                        if (token.kind === TokenKind.Next && previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot) {
+                        //do not un-indent if this is a `next` or `endclass` token preceeded by a period
+                        if (
+                            [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                            previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
+                        ) {
                             continue;
                         }
 
@@ -695,15 +703,16 @@ export class Formatter {
                 ) {
                     let whitespaceToken = tokens[i + 1];
 
-                    //ensure there is a whitespace token in that position (make it 0-length for now)
-                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
-                        whitespaceToken = <any>{
-                            kind: TokenKind.Whitespace,
-                            startIndex: -1,
-                            text: ''
-                        };
-                        tokens.splice(i, 0, whitespaceToken);
-                    }
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i, 0, whitespaceToken);
+                    // }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                 }
@@ -716,15 +725,16 @@ export class Formatter {
                     this.getPreviousNonWhitespaceToken(tokens, i, true)
                 ) {
                     let whitespaceToken = tokens[i - 1];
-                    //ensure there is a whitespace token in that position (make it 0-length for now)
-                    if (whitespaceToken?.kind !== TokenKind.Whitespace) {
-                        whitespaceToken = <any>{
-                            kind: TokenKind.Whitespace,
-                            startIndex: -1,
-                            text: ''
-                        };
-                        tokens.splice(i - 1, 0, whitespaceToken);
-                    }
+                    //this is never called because formatInteriorWhitespace already handles inserting this space
+                    // //ensure there is a whitespace token in that position (make it 0-length for now)
+                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
+                    //     whitespaceToken = <any>{
+                    //         kind: TokenKind.Whitespace,
+                    //         startIndex: -1,
+                    //         text: ''
+                    //     };
+                    //     tokens.splice(i - 1, 0, whitespaceToken);
+                    // }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                     //next loop iteration should be after the closing curly brace
@@ -1149,3 +1159,5 @@ export const TypeTokens = [
 ];
 
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];
+
+export const AllowedClassIdentifierKinds = [TokenKind.Identifier, ...AllowedLocalIdentifiers];

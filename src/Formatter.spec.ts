@@ -99,6 +99,18 @@ describe('Formatter', () => {
         it('does not separate [[ when closed by ]]', () => {
             formatEqual(`[[\n    true\n]]`);
         });
+
+        it(`does not indent object properties called 'class'`, () => {
+            formatEqual(`sub main()\n    if m.class = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not outdent for object properties called 'endclass'`, () => {
+            formatEqual(`sub main()\n    if m.endclass = 123\n        print true\n    end if\nend sub`);
+        });
+
+        it(`does not indent object properties called 'endnamespace'`, () => {
+            formatEqual(`sub main()\n    if m.endnamespace = 123\n        print true\n    end if\nend sub`);
+        });
     });
 
     describe('dedupeWhitespace', () => {
