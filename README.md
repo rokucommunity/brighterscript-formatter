@@ -23,6 +23,17 @@ var formattedFileContents = formatter.format(unformattedFileContents, formatting
 
 ```
 
+## Source Maps
+The formatter also supports source maps, which can be generated alongside of the formatted code by calling `formatWithSourceMap`
+
+### Usage
+```javascript
+
+var result = formatter.formatWithSourceMap(unformattedFileContents);
+var formattedFileContents = result.code;
+var sourceMap = result.map;
+```
+
 ## Formatting Options
 
-There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface](src/FormattingOptions.ts).
+There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface](https://github.com/rokucommunity/brighterscript-formatter/blob/master/src/FormattingOptions.ts#L7).

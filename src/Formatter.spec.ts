@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 import { TokenKind } from 'brighterscript';
+import { SourceMapConsumer } from 'source-map';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -46,6 +47,13 @@ describe('Formatter', () => {
             formatEqual(`person = { a: 1\n}`, undefined, {
                 formatMultiLineObjectsAndArrays: false
             });
+        });
+
+        it('does not lose trailing line', () => {
+            formatEqual(
+                `function GetPerson()\n    person = { exists: true,\n    }\nend function`,
+                `function GetPerson()\n    person = {\n        exists: true,\n    }\nend function`
+            );
         });
 
         it('does not insert extra newline when no newline is found', () => {
@@ -1031,6 +1039,31 @@ end sub`;
             it('correctly fixes the indentation nested #if in if block', () => {
                 let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
                 expect(formatter.format(program)).to.equal(program);
+            });
+        });
+    });
+
+    describe('formatWithCodeAndMap', () => {
+        it('generates valid sourcemap', async () => {
+            let result = formatter.formatWithSourceMap(`sub main()\nprint    "hello"   \nendsub`, 'file.brs');
+            expect(result.code).to.equal(`sub main()\n    print "hello"\nend sub`);
+            let consumer = await SourceMapConsumer.fromSourceMap(result.map);
+
+            expect(consumer.generatedPositionFor({
+                line: 2,
+                column: 0,
+                source: 'file.brs'
+            })).to.include({
+                line: 2,
+                column: 4
+            });
+
+            expect(consumer.originalPositionFor({
+                line: 2,
+                column: 4
+            })).to.include({
+                line: 2,
+                column: 0
             });
         });
     });

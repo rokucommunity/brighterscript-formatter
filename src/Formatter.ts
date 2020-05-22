@@ -1,6 +1,6 @@
 import * as trimRight from 'trim-right';
 import { Lexer, Token, TokenKind, AllowedLocalIdentifiers } from 'brighterscript';
-
+import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 
 export class Formatter {
@@ -15,6 +15,49 @@ export class Formatter {
      * @param formattingOptions options specifying formatting preferences
      */
     public format(inputText: string, formattingOptions?: FormattingOptions) {
+        let tokens = this.getFormattedTokens(inputText, formattingOptions);
+        //join all tokens back together into a single string
+        let outputText = '';
+        for (let token of tokens) {
+            outputText += token.text;
+        }
+        return outputText;
+    }
+
+    /**
+     * Format the given input and return the formatted text as well as a source map
+     * @param inputText the text to format
+     * @param sourcePath the path to the file being formatted (used for sourcemap generator)
+     * @param formattingOptions options specifying formatting preferences
+     * @returns an object with property `code` holding the formatted code, and `map` holding the source map.
+     */
+    public formatWithSourceMap(inputText: string, sourcePath: string, formattingOptions?: FormattingOptions) {
+        let tokens = this.getFormattedTokens(inputText, formattingOptions);
+        let chunks = [] as Array<string | SourceNode>;
+        for (let token of tokens) {
+            if (token.range) {
+                chunks.push(
+                    new SourceNode(
+                        //BrighterScript line numbers are 0-based, but source-map expects 1-based
+                        token.range.start.line + 1,
+                        token.range.start.character,
+                        sourcePath,
+                        token.text
+                    )
+                );
+            } else {
+                chunks.push(token.text);
+            }
+        }
+        return new SourceNode(null, null, sourcePath, chunks).toStringWithSourceMap();
+    }
+
+    /**
+     * Format the given input.
+     * @param inputText the text to format
+     * @param formattingOptions options specifying formatting preferences
+     */
+    public getFormattedTokens(inputText: string, formattingOptions?: FormattingOptions) {
         let options = normalizeOptions(formattingOptions);
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
@@ -44,13 +87,7 @@ export class Formatter {
         if (options.formatIndent) {
             tokens = this.formatIndentation(tokens, options);
         }
-
-        //join all tokens back together into a single string
-        let outputText = '';
-        for (let token of tokens) {
-            outputText += token.text;
-        }
-        return outputText;
+        return tokens;
     }
 
     /**

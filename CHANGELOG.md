@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [Unreleased]
+### Added 
+ - new method to generate source maps during format.
+
+
+
 ## [1.3.0] - 2020-05-21
 ### Added
  - new option `formatMultiLineObjectsAndArrays` which inserts newlines and indents multi-line objects and arrays
