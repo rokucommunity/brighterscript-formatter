@@ -1,6 +1,6 @@
 import * as globAll from 'glob-all';
 import { IOptions } from 'glob';
-import * as fs from 'fs';
+import * as fsExtra from 'fs-extra';
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 
@@ -11,7 +11,7 @@ export class Runner {
         return runner.run(runnerOptions);
     }
 
-    public run(runnerOptions: RunnerOptions) {
+    public async run(runnerOptions: RunnerOptions) {
         let args = this.normalizeArgs(runnerOptions);
         let filePaths = globAll.sync(args.files, {
             cwd: args.cwd,
@@ -27,13 +27,13 @@ export class Runner {
 
         let unformattedFiles = [] as string[];
 
-        for (let filePath of filePaths) {
-            let text = fs.readFileSync(filePath).toString();
+        await Promise.all(filePaths.map(async filePath => {
+            let text = (await fsExtra.readFile(filePath)).toString();
             let formattedText = formatter.format(text);
 
             //overwrite the file with the formatted version
             if (args.write) {
-                fs.writeFileSync(filePath, text);
+                await fsExtra.writeFile(filePath, text);
             }
 
             //if configured, compare formatted file to unformatted file
@@ -41,8 +41,7 @@ export class Runner {
             if (args.check && text !== formattedText) {
                 unformattedFiles.push(filePath);
             }
-
-        }
+        }));
 
         //print the list of unformatted files if found (and enabled)
         if (args.check) {
@@ -50,7 +49,7 @@ export class Runner {
                 for (let filePath of unformattedFiles) {
                     console.log(filePath);
                 }
-                console.log('Formatting issues found in the above file(s)');
+                throw new Error('Formatting issues found in the above file(s)');
             } else {
                 console.log('All matched files are formatted properly!');
             }

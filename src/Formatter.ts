@@ -10,7 +10,7 @@ export class Formatter {
      */
     public constructor(formattingOptions?: FormattingOptions) {
         if (formattingOptions) {
-            this.formattingOptions = formattingOptions;
+            this.formattingOptions = normalizeOptions(formattingOptions);
         }
     }
 
