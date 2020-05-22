@@ -12,7 +12,8 @@
         "test": "nyc mocha src/**/*.spec.ts --full-trace",
         "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
         "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
-        "format-github": "ts-node test-format.ts"
+        "format-github": "ts-node scripts/format-github.ts",
+        "format-github-compare": "ts-node scripts/format-github.ts --compare"
     },
     "dependencies": {
         "brighterscript": "^0.10.0",
@@ -22,6 +23,7 @@
         "@types/chai": "^4.2.11",
         "@types/fs-extra": "^8.1.0",
         "@types/mocha": "^7.0.2",
+        "@types/yargs": "^15.0.5",
         "@typescript-eslint/eslint-plugin": "^2.29.0",
         "@typescript-eslint/parser": "^2.29.0",
         "chai": "^4.2.0",
@@ -37,7 +39,8 @@
         "ts-node": "^8.2.0",
         "tslint-eslint-rules": "^5.4.0",
         "tslint-origin-ordered-imports-rule": "^1.1.2",
-        "typescript": "^3.9.2"
+        "typescript": "^3.9.2",
+        "yargs": "^15.3.1"
     },
     "files": [
         "dist/**/*"

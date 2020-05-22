@@ -20,6 +20,10 @@ export class Formatter {
             includeWhitespace: true
         });
 
+        if (options.formatMultiLineObjectsAndArrays) {
+            tokens = this.formatMultiLineObjectsAndArrays(tokens);
+        }
+
         if (options.compositeKeywords) {
             tokens = this.formatCompositeKeywords(tokens, options);
         }
@@ -49,6 +53,136 @@ export class Formatter {
         return outputText;
     }
 
+    /**
+     * Determines if the current index is the start of a single-line array or AA.
+     * Walks forward until we find the equal number of open and close curlies/squares, or a newline
+     */
+    private isStartofSingleLineArrayOrAA(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+        let openCount = 0;
+        for (let i = currentIndex; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.kind === openKind) {
+                openCount++;
+            } else if (token.kind === closeKind) {
+                openCount--;
+            }
+            if (openCount === 0) {
+                return true;
+            } else if (token.kind === TokenKind.Newline) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Find the matching closing token for open square or open curly
+     */
+    private getClosingToken(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+        let openCount = 0;
+        for (let i = currentIndex; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.kind === openKind) {
+                openCount++;
+            } else if (token.kind === closeKind) {
+                openCount--;
+            }
+            if (openCount === 0) {
+                return token;
+            }
+        }
+    }
+
+    /**
+     * Given a kind like `}` or `]`, walk backwards until we find its match
+     */
+    private getOpeningToken(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+        let openCount = 0;
+        for (let i = currentIndex; i >= 0; i--) {
+            let token = tokens[i];
+            if (token.kind === openKind) {
+                openCount++;
+            } else if (token.kind === closeKind) {
+                openCount--;
+            }
+            if (openCount === 0) {
+                return token;
+            }
+        }
+    }
+
+    private isMatchingDoubleArrayOrArrayCurly(tokens: Token[], currentIndex: number) {
+        let token = tokens[currentIndex];
+        let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, currentIndex, true);
+        //don't separate multiple open/close pairs
+        if (
+            //is open array
+            token.kind === TokenKind.LeftSquareBracket &&
+            //there is another token on this line
+            nextNonWhitespaceToken &&
+            //is next token an open array or open object
+            (nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket || nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace)
+        ) {
+            let closingToken = this.getClosingToken(tokens, currentIndex, TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
+            //look at the previous token
+            let previous = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closingToken!), true);
+            /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
+            if (previous && (previous.kind === TokenKind.RightSquareBracket || previous.kind === TokenKind.RightCurlyBrace)) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Standardize multi-line objects and arrays by inserting newlines after leading and before trailing.
+     */
+    private formatMultiLineObjectsAndArrays(tokens: Token[]) {
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            let openKind: TokenKind | undefined;
+            let closeKind: TokenKind | undefined;
+
+            if (token.kind === TokenKind.LeftCurlyBrace) {
+                openKind = TokenKind.LeftCurlyBrace;
+                closeKind = TokenKind.RightCurlyBrace;
+            } else if (token.kind === TokenKind.LeftSquareBracket) {
+                openKind = TokenKind.LeftSquareBracket;
+                closeKind = TokenKind.RightSquareBracket;
+            }
+
+            let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i, true);
+            //move contents to new line if this is a multi-line array or AA
+            if (
+                //is open curly or open square
+                openKind && closeKind &&
+                //is a multi-line array or AA
+                !this.isStartofSingleLineArrayOrAA(tokens, i, openKind, closeKind) &&
+                //there is extra stuff on this line that is not the end of the file
+                nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Eof &&
+                //is NOT array like `[[ ...\n ]]`, or `[{ ...\n }]`)
+                !this.isMatchingDoubleArrayOrArrayCurly(tokens, i)
+            ) {
+                tokens.splice(i + 1, 0, <any>{
+                    kind: TokenKind.Newline,
+                    text: '\n'
+                });
+                let closingToken = this.getClosingToken(tokens, i, openKind, closeKind);
+                let closingTokenKindex = tokens.indexOf(closingToken!);
+
+                i++;
+
+                //if there's stuff before the closer, move it to a newline
+                if (this.getPreviousNonWhitespaceToken(tokens, closingTokenKindex, true)) {
+                    tokens.splice(closingTokenKindex, 0, <any>{
+                        kind: TokenKind.Newline,
+                        text: '\n'
+                    });
+                }
+            }
+        }
+        return tokens;
+    }
+
     private dedupeWhitespace(tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let currentToken = tokens[i];
@@ -74,7 +208,7 @@ export class Formatter {
                 //is this a composite token
                 CompositeKeywords.includes(token.kind) &&
                 //is not being used as a key in an AA literal
-                nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
+                (!nextNonWhitespaceToken || nextNonWhitespaceToken.kind !== TokenKind.Colon) &&
                 //is not being used as an object key
                 previousNonWhitespaceToken?.kind !== TokenKind.Dot
             ) {
@@ -222,7 +356,7 @@ export class Formatter {
                         //if this is an indentor token
                         IndentSpacerTokenKinds.includes(token.kind) &&
                         //is not being used as a key in an AA literal
-                        nextNonWhitespaceToken.kind !== TokenKind.Colon
+                        nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon
                     ) {
                         //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                         if (
@@ -240,23 +374,30 @@ export class Formatter {
                         tabCount++;
                         foundIndentorThisLine = true;
 
-                        //don't double indent if square curly on same line
+                        //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
                         if (
-                            //if this is an open square
+                            //is open square
                             token.kind === TokenKind.LeftSquareBracket &&
-                            //the next token is an open curly
-                            nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace &&
+                            //next is an open curly or square
+                            (nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace || nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket) &&
                             //both tokens are on the same line
                             token.range.start.line === nextNonWhitespaceToken.range.start.line
                         ) {
-                            //skip the next token
-                            i++;
+                            //find the closer
+                            let closer = this.getClosingToken(tokens, tokens.indexOf(token), TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
+                            let expectedClosingPreviousKind = nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket ? TokenKind.RightSquareBracket : TokenKind.RightCurlyBrace;
+                            let closingPrevious = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer!), true);
+                            /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
+                            if (closingPrevious && closingPrevious.kind === expectedClosingPreviousKind) {
+                                //skip the next token
+                                i++;
+                            }
                         }
                     } else if (
                         //this is an outdentor token
                         OutdentSpacerTokenKinds.includes(token.kind) &&
                         //is not being used as a key in an AA literal
-                        nextNonWhitespaceToken.kind !== TokenKind.Colon &&
+                        nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
                         //is not a method call
                         !(
                             //certain symbols may appear next to an open paren, so exclude those
@@ -278,17 +419,27 @@ export class Formatter {
                             thisTabCount--;
                         }
 
-                        //don't double un-indent if this is a close curly and the next item is a close square
+                        //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
                         if (
-                            //is closing curly
-                            token.kind === TokenKind.RightCurlyBrace &&
-                            //is closing square
+                            //is closing curly or square
+                            (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
+                            //next is closing square
                             nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
                             //both tokens are on the same line
                             token.range.start.line === nextNonWhitespaceToken.range.start.line
                         ) {
-                            //skip the next token
-                            i++;
+                            let opener = this.getOpeningToken(
+                                tokens,
+                                tokens.indexOf(nextNonWhitespaceToken),
+                                TokenKind.LeftSquareBracket,
+                                TokenKind.RightSquareBracket
+                            );
+                            let openerNext = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener!), true);
+                            if (openerNext && (openerNext.kind === TokenKind.LeftCurlyBrace || openerNext.kind === TokenKind.LeftSquareBracket)) {
+                                //skip this token and the next token
+                                i += 2;
+                                continue;
+                            }
                         }
 
                         //this is an interum token
@@ -500,7 +651,7 @@ export class Formatter {
     ) {
         let i = 0;
         let token: Token = undefined as any;
-        let nextNonWhitespaceToken: Token = undefined as any;
+        let nextNonWhitespaceToken: Token | undefined;
         const setIndex = (newValue) => {
             i = newValue;
             token = tokens[i];
@@ -515,14 +666,14 @@ export class Formatter {
             {
                 let parenToken: Token | undefined;
                 //look for anonymous functions
-                if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.LeftParen) {
+                if (token.kind === TokenKind.Function && nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.LeftParen) {
                     parenToken = nextNonWhitespaceToken;
 
                     //look for named functions
-                } else if (token.kind === TokenKind.Function && nextNonWhitespaceToken.kind === TokenKind.Identifier) {
+                } else if (token.kind === TokenKind.Function && nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.Identifier) {
                     //get the next non-Whitespace token, which SHOULD be the paren
                     let parenCandidate = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(nextNonWhitespaceToken));
-                    if (parenCandidate.kind === TokenKind.LeftParen) {
+                    if (parenCandidate && parenCandidate.kind === TokenKind.LeftParen) {
                         parenToken = parenCandidate;
                     }
                 }
@@ -612,7 +763,7 @@ export class Formatter {
             }
 
             //empty parenthesis (user doesn't have this option, we will always do this one)
-            if (token.kind === TokenKind.LeftParen && nextNonWhitespaceToken.kind === TokenKind.RightParen) {
+            if (token.kind === TokenKind.LeftParen && nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightParen) {
                 this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(nextNonWhitespaceToken));
                 //next loop iteration should be after the closing paren
                 setIndex(
@@ -670,23 +821,22 @@ export class Formatter {
     }
 
     /**
-     * Get the first token after the index that is NOT Whitespace
+     * Get the first token after the index that is NOT Whitespace. Returns undefined if stopAtNewLine===true and found a newline,
+     * or if we found the EOF token
      */
-    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: true): Token | undefined;
-    private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine: false): Token;
-    private getNextNonWhitespaceToken(tokens: Token[], index: number): Token;
     private getNextNonWhitespaceToken(tokens: Token[], index: number, stopAtNewLine = false) {
+        if (index < 0) {
+            return;
+        }
         for (index += 1; index < tokens.length; index++) {
             let token = tokens[index];
             if (stopAtNewLine && token && token.kind === TokenKind.Newline) {
                 return;
             }
             if (token && token.kind !== TokenKind.Whitespace) {
-                return tokens[index];
+                return token;
             }
         }
-        //if we got here, we ran out of tokens. Return the EOF token
-        return tokens[tokens.length - 1];
     }
 
     /**

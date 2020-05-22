@@ -85,8 +85,12 @@ export interface FormattingOptions {
      * If 'original', the comment type is unchanged
      */
     formatSingleLineCommentType?: 'singlequote' | 'rem' | 'original';
+    /**
+     * For multi-line objects and arrays, move everything after the `{` or `[` and everything before
+     * the `}` or `]` onto a new line.
+     */
+    formatMultiLineObjectsAndArrays?: boolean;
 }
-
 
 export function normalizeOptions(options: FormattingOptions | undefined = {}) {
     let fullOptions: FormattingOptions = {
@@ -101,6 +105,7 @@ export function normalizeOptions(options: FormattingOptions | undefined = {}) {
         insertSpaceBeforeFunctionParenthesis: false,
         insertSpaceBetweenEmptyCurlyBraces: false,
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
+        formatMultiLineObjectsAndArrays: true,
 
         //override defaults with the provided values
         ...options
