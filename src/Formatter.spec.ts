@@ -256,9 +256,7 @@ describe('Formatter', () => {
         it(`does not indent object properties called 'class'`, () => {
             formatEqualTrim(`
                 sub main()
-                    if true then
-                        m.class = 123
-                    end if
+                    m.class = 123
                 end sub
             `);
         });

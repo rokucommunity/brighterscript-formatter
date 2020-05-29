@@ -407,10 +407,6 @@ export class Formatter {
                     ) {
                         continue;
                     }
-                    //skip indent for 'class' used as property name
-                    if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
-                        continue;
-                    }
 
                     //skip indent for single-line if statements
                     let ifStatement = ifStatements.get(token);
