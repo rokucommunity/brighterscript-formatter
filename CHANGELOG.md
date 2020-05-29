@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added 
  - new method to generate source maps during format.
+ - new option `insertSpaceBetweenAssociativeArrayLiteralKeyAndColon` which will ensure exactly 1 or 0 spaces between an associative array key and its trailing colon. ([#17](https://github.com/rokucommunity/brighterscript-formatter/issues/17))
 ### Fixed
  - bugs related to formatting single-line if statements
 

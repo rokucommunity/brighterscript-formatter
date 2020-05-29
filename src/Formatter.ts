@@ -2,7 +2,7 @@ import * as trimRight from 'trim-right';
 import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, util as bsUtil } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
-import { IfStatement } from 'brighterscript/dist/parser';
+import { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
 
 export class Formatter {
     /**
@@ -60,9 +60,15 @@ export class Formatter {
      */
     public getFormattedTokens(inputText: string, formattingOptions?: FormattingOptions) {
         let options = normalizeOptions(formattingOptions);
+
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
         });
+
+        let parser = Parser.parse(
+            //strip out whitespace because the parser can't handle that
+            tokens.filter(x => x.kind !== TokenKind.Whitespace)
+        );
 
         if (options.formatMultiLineObjectsAndArrays) {
             tokens = this.formatMultiLineObjectsAndArrays(tokens);
@@ -79,17 +85,14 @@ export class Formatter {
         }
 
         if (options.formatInteriorWhitespace) {
-            tokens = this.formatInteriorWhitespace(tokens, options);
+            tokens = this.formatInteriorWhitespace(tokens, parser, options);
         }
 
         //dedupe side-by-side Whitespace tokens
         this.dedupeWhitespace(tokens);
 
         if (options.formatIndent) {
-            let parser = Parser.parse(
-                //strip out whitespace because the parser can't handle that
-                tokens.filter(x => x.kind !== TokenKind.Whitespace)
-            );
+
             tokens = this.formatIndentation(tokens, options, parser);
         }
         return tokens;
@@ -567,6 +570,7 @@ export class Formatter {
      */
     private formatInteriorWhitespace(
         tokens: Token[],
+        parser: Parser,
         options: FormattingOptions
     ) {
         let addBoth = [
@@ -697,7 +701,36 @@ export class Formatter {
             }
         }
 
-        tokens = this.formatTokenSpacing(tokens, options);
+        tokens = this.formatTokenSpacing(tokens, parser, options);
+        return tokens;
+    }
+
+    /**
+     * Ensure exactly 1 or 0 spaces between all literal associative array keys and the colon after it
+     */
+    private formatSpaceBetweenAssociativeArrayLiteralKeyAndColon(tokens: Token[], parser: Parser, options: FormattingOptions) {
+        //find all of the AA literals
+        let aaLiterals = bsUtil.findAllDeep<AALiteralExpression>(parser.ast, (obj) => obj instanceof AALiteralExpression);
+        for (let aaLiteral of aaLiterals) {
+            for (let element of (aaLiteral.value.elements as AAMemberExpression[])) {
+                //our target elements should have both `key` and `colon` and they should both be on the same line
+                if (element.keyToken && element.colonToken && element.keyToken.range.end.line === element.colonToken.range.end.line) {
+                    let whitespaceToken: Token;
+                    let idx = tokens.indexOf(element.keyToken);
+                    let nextToken = tokens[idx + 1];
+                    if (nextToken.kind === TokenKind.Whitespace) {
+                        whitespaceToken = nextToken;
+                    } else {
+                        whitespaceToken = <any>{
+                            kind: TokenKind.Whitespace,
+                            text: ''
+                        };
+                        tokens.splice(idx + 1, 0, whitespaceToken);
+                    }
+                    whitespaceToken.text = options.insertSpaceBetweenAssociativeArrayLiteralKeyAndColon === true ? ' ' : '';
+                }
+            }
+        }
         return tokens;
     }
 
@@ -706,6 +739,7 @@ export class Formatter {
      */
     private formatTokenSpacing(
         tokens: Token[],
+        parser: Parser,
         options: FormattingOptions
     ) {
         let i = 0;
@@ -829,8 +863,10 @@ export class Formatter {
                     tokens.indexOf(nextNonWhitespaceToken)
                 );
             }
-
         }
+
+        tokens = this.formatSpaceBetweenAssociativeArrayLiteralKeyAndColon(tokens, parser, options);
+
         return tokens;
     }
 

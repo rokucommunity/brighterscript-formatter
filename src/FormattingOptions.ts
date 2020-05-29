@@ -79,6 +79,12 @@ export interface FormattingOptions {
      */
     insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces?: boolean;
     /**
+     * If true, ensure exactly 1 space between an associative array literal key and its colon.
+     * If false, all space between the key and its colon will be removed
+     * @default false
+     */
+    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon?: boolean;
+    /**
      * Forces all single-line comments to use the same style.
      * If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default.
      * If 'rem', all comments are preceeded by `rem`
@@ -105,6 +111,7 @@ export function normalizeOptions(options: FormattingOptions | undefined = {}) {
         insertSpaceBeforeFunctionParenthesis: false,
         insertSpaceBetweenEmptyCurlyBraces: false,
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
+        insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false,
         formatMultiLineObjectsAndArrays: true,
 
         //override defaults with the provided values

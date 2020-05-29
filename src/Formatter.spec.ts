@@ -291,6 +291,56 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        describe('insertSpaceBetweenAssociativeArrayLiteralKeyAndColon', () => {
+            it('adds space for inline objects', () => {
+                formatEqual(`def = { "key": "value" }`, `def = { "key" : "value" }`, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: true
+                });
+            });
+            it('removes space for inline objects', () => {
+                formatEqual(`def = { "key" : "value" }`, `def = { "key": "value" }`, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false
+                });
+            });
+
+            it('adds space for multi-line objects', () => {
+                formatEqualTrim(`
+                    def = {
+                        "key": "value"
+                    }
+                `, `
+                    def = {
+                        "key" : "value"
+                    }
+                `, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: true
+                });
+            });
+
+            it('removes space for multi-line objects', () => {
+                formatEqualTrim(`
+                    def = {
+                        "key" : "value"
+                    }
+                `, `
+                    def = {
+                        "key": "value"
+                    }
+                `, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false
+                });
+            });
+
+            it('handles comment in AA', () => {
+                formatEqualTrim(`
+                    def = {
+                        'comment
+                        "key": "value"
+                    }
+                `);
+            });
+        });
+
         it('handles malformed function Whitespace', () => {
             expect(formatter.format(`function add`,
                 { formatIndent: false }
@@ -1208,7 +1258,7 @@ end sub`;
     function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
         let sources = [
             incoming,
-            incoming ?? expected
+            expected ?? incoming
         ];
         for (let i = 0; i < sources.length; i++) {
             let lines = sources[i].split('\n');
