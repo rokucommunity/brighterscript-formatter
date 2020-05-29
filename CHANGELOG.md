@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added 
  - new method to generate source maps during format.
+### Fixed
+ - bugs related to formatting single-line if statements
 
 
 

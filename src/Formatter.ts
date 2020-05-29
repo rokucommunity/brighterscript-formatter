@@ -1,7 +1,8 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind, AllowedLocalIdentifiers } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, util as bsUtil } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
+import { IfStatement } from 'brighterscript/dist/parser';
 
 export class Formatter {
     /**
@@ -85,7 +86,11 @@ export class Formatter {
         this.dedupeWhitespace(tokens);
 
         if (options.formatIndent) {
-            tokens = this.formatIndentation(tokens, options);
+            let parser = Parser.parse(
+                //strip out whitespace because the parser can't handle that
+                tokens.filter(x => x.kind !== TokenKind.Whitespace)
+            );
+            tokens = this.formatIndentation(tokens, options, parser);
         }
         return tokens;
     }
@@ -353,8 +358,16 @@ export class Formatter {
         return tokens;
     }
 
-    private formatIndentation(tokens: Token[], options: FormattingOptions) {
+    private formatIndentation(tokens: Token[], options: FormattingOptions, parser: Parser) {
         let tabCount = 0;
+
+        //create a map of all if statements for easier lookups
+        let ifStatements = bsUtil
+            .findAllDeep<IfStatement>(parser.ast, (obj) => obj instanceof IfStatement)
+            .reduce((map, obj) => {
+                map.set(obj.value.tokens.if, obj.value);
+                return map;
+            }, new Map<Token, IfStatement>());
 
         let nextLineStartTokenIndex = 0;
         //the list of output tokens
@@ -369,126 +382,139 @@ export class Formatter {
             let foundIndentorThisLine = false;
             let foundNonWhitespaceThisLine = false;
 
-            //if this is a single-line if statement, do nothing with indentation
-            if (this.isSingleLineIfStatement(lineTokens, tokens)) {
-                foundNonWhitespaceThisLine = true;
-                // //if this line has a return statement, outdent
-                // if (this.tokenIndexOf(TokenKind.return, lineTokens) > -1) {
-                //     tabCount--;
-                // } else {
-                //     //do nothing with single-line if statement indentation
-                // }
-            } else {
-                for (let i = 0; i < lineTokens.length; i++) {
-                    let token = lineTokens[i];
-                    let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
-                    let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(lineTokens, i);
 
-                    //keep track of whether we found a non-Whitespace (or Newline) character
-                    if (![TokenKind.Whitespace, TokenKind.Newline].includes(token.kind)) {
-                        foundNonWhitespaceThisLine = true;
+            for (let i = 0; i < lineTokens.length; i++) {
+                let token = lineTokens[i];
+                let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
+                let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(lineTokens, i);
+
+                //keep track of whether we found a non-Whitespace (or Newline) character
+                if (![TokenKind.Whitespace, TokenKind.Newline].includes(token.kind)) {
+                    foundNonWhitespaceThisLine = true;
+                }
+
+                if (
+                    //if this is an indentor token
+                    IndentSpacerTokenKinds.includes(token.kind) &&
+                    //is not being used as a key in an AA literal
+                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon
+                ) {
+                    //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
+                    if (
+                        CallableKeywordTokenKinds.includes(token.kind) &&
+                        //the previous token will be Whitespace, so verify that previousPrevious is 'as'
+                        previousNonWhitespaceToken?.kind === TokenKind.As
+                    ) {
+                        continue;
+                    }
+                    //skip indent for 'class' used as property name
+                    if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
+                        continue;
                     }
 
+                    //skip indent for single-line if statements
+                    let ifStatement = ifStatements.get(token);
                     if (
-                        //if this is an indentor token
-                        IndentSpacerTokenKinds.includes(token.kind) &&
-                        //is not being used as a key in an AA literal
-                        nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon
-                    ) {
-                        //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
-                        if (
-                            CallableKeywordTokenKinds.includes(token.kind) &&
-                            //the previous token will be Whitespace, so verify that previousPrevious is 'as'
-                            previousNonWhitespaceToken?.kind === TokenKind.As
-                        ) {
-                            continue;
-                        }
-                        //skip indent for 'class' used as property name
-                        if (token.kind === TokenKind.Class && AllowedClassIdentifierKinds.includes(nextNonWhitespaceToken.kind) === false) {
-                            continue;
-                        }
-
-                        tabCount++;
-                        foundIndentorThisLine = true;
-
-                        //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
-                        if (
-                            //is open square
-                            token.kind === TokenKind.LeftSquareBracket &&
-                            //next is an open curly or square
-                            (nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace || nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket) &&
-                            //both tokens are on the same line
-                            token.range.start.line === nextNonWhitespaceToken.range.start.line
-                        ) {
-                            //find the closer
-                            let closer = this.getClosingToken(tokens, tokens.indexOf(token), TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
-                            let expectedClosingPreviousKind = nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket ? TokenKind.RightSquareBracket : TokenKind.RightCurlyBrace;
-                            let closingPrevious = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer!), true);
-                            /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
-                            if (closingPrevious && closingPrevious.kind === expectedClosingPreviousKind) {
-                                //skip the next token
-                                i++;
-                            }
-                        }
-                    } else if (
-                        //this is an outdentor token
-                        OutdentSpacerTokenKinds.includes(token.kind) &&
-                        //is not being used as a key in an AA literal
-                        nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
-                        //is not a method call
-                        !(
-                            //certain symbols may appear next to an open paren, so exclude those
-                            ![TokenKind.RightSquareBracket].includes(token.kind) &&
-                            //open paren means method call
-                            nextNonWhitespaceToken.kind === TokenKind.LeftParen
+                        ifStatement &&
+                        (
+                            //does not have an end if
+                            !ifStatement.tokens.endIf ||
+                            //end if is on same line as if
+                            ifStatement.tokens.if.range.end.line === ifStatement.tokens.endIf.range.end.line
                         )
                     ) {
-                        //do not un-indent if this is a `next` or `endclass` token preceeded by a period
-                        if (
-                            [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
-                            previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
-                        ) {
-                            continue;
+                        //if there's an `else`, skip past it since it'll cause de-indent otherwise
+                        if (ifStatement.tokens.else) {
+                            i = tokens.indexOf(ifStatement.tokens.else);
+
+                            //if there's no else, but there is an `else if`, skip past it since it'll cause de-indent otherwise
+                        } else if (ifStatement.tokens.elseIfs && ifStatement.elseIfs.length > 0) {
+                            i = tokens.indexOf(ifStatement.elseIfs[ifStatement.elseIfs.length - 1].elseIfToken);
                         }
 
-                        tabCount--;
-                        if (foundIndentorThisLine === false) {
-                            thisTabCount--;
-                        }
+                        continue;
+                    }
 
-                        //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
-                        if (
-                            //is closing curly or square
-                            (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
-                            //next is closing square
-                            nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
-                            //both tokens are on the same line
-                            token.range.start.line === nextNonWhitespaceToken.range.start.line
-                        ) {
-                            let opener = this.getOpeningToken(
-                                tokens,
-                                tokens.indexOf(nextNonWhitespaceToken),
-                                TokenKind.LeftSquareBracket,
-                                TokenKind.RightSquareBracket
-                            );
-                            let openerNext = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener!), true);
-                            if (openerNext && (openerNext.kind === TokenKind.LeftCurlyBrace || openerNext.kind === TokenKind.LeftSquareBracket)) {
-                                //skip this token and the next token
-                                i += 2;
-                                continue;
-                            }
-                        }
+                    tabCount++;
+                    foundIndentorThisLine = true;
 
-                        //this is an interum token
-                    } else if (InterumSpacingTokenKinds.includes(token.kind)) {
-                        //these need outdented, but don't change the tabCount
+                    //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
+                    if (
+                        //is open square
+                        token.kind === TokenKind.LeftSquareBracket &&
+                        //next is an open curly or square
+                        (nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace || nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket) &&
+                        //both tokens are on the same line
+                        token.range.start.line === nextNonWhitespaceToken.range.start.line
+                    ) {
+                        //find the closer
+                        let closer = this.getClosingToken(tokens, tokens.indexOf(token), TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
+                        let expectedClosingPreviousKind = nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket ? TokenKind.RightSquareBracket : TokenKind.RightCurlyBrace;
+                        let closingPrevious = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer!), true);
+                        /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
+                        if (closingPrevious && closingPrevious.kind === expectedClosingPreviousKind) {
+                            //skip the next token
+                            i++;
+                        }
+                    }
+                } else if (
+                    //this is an outdentor token
+                    OutdentSpacerTokenKinds.includes(token.kind) &&
+                    //is not being used as a key in an AA literal
+                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
+                    //is not a method call
+                    !(
+                        //certain symbols may appear next to an open paren, so exclude those
+                        ![TokenKind.RightSquareBracket].includes(token.kind) &&
+                        //open paren means method call
+                        nextNonWhitespaceToken.kind === TokenKind.LeftParen
+                    )
+                ) {
+                    //do not un-indent if this is a `next` or `endclass` token preceeded by a period
+                    if (
+                        [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                        previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
+                    ) {
+                        continue;
+                    }
+
+                    tabCount--;
+                    if (foundIndentorThisLine === false) {
                         thisTabCount--;
                     }
-                    //  else if (token.kind === TokenKind.return && foundIndentorThisLine) {
-                    //     //a return statement on the same line as an indentor means we don't want to indent
-                    //     tabCount--;
-                    // }
+
+                    //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
+                    if (
+                        //is closing curly or square
+                        (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
+                        //next is closing square
+                        nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                        //both tokens are on the same line
+                        token.range.start.line === nextNonWhitespaceToken.range.start.line
+                    ) {
+                        let opener = this.getOpeningToken(
+                            tokens,
+                            tokens.indexOf(nextNonWhitespaceToken),
+                            TokenKind.LeftSquareBracket,
+                            TokenKind.RightSquareBracket
+                        );
+                        let openerNext = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener!), true);
+                        if (openerNext && (openerNext.kind === TokenKind.LeftCurlyBrace || openerNext.kind === TokenKind.LeftSquareBracket)) {
+                            //skip the next token
+                            i += 1;
+                            continue;
+                        }
+                    }
+
+                    //this is an interum token
+                } else if (InterumSpacingTokenKinds.includes(token.kind)) {
+                    //these need outdented, but don't change the tabCount
+                    thisTabCount--;
                 }
+                //  else if (token.kind === TokenKind.return && foundIndentorThisLine) {
+                //     //a return statement on the same line as an indentor means we don't want to indent
+                //     tabCount--;
+                // }
             }
             //if the tab counts are less than zero, something is wrong. However, at least try to do formatting as best we can by resetting to 0
             thisTabCount = thisTabCount < 0 ? 0 : thisTabCount;
@@ -943,19 +969,6 @@ export class Formatter {
     }
 
     /**
-     * Find the next index of the token with the specified TokenKind
-     */
-    private firstTokenIndexOf(tokenType: TokenKind, tokens: Token[]) {
-        for (let i = 0; i < tokens.length; i++) {
-            let token = tokens[i];
-            if (token.kind === tokenType) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
      * Get the tokens for the whole line starting at the given index (including the Newline or EOF token at the end)
      * @param startIndex
      * @param tokens
@@ -979,42 +992,6 @@ export class Formatter {
             stopIndex: index,
             tokens: outputTokens
         };
-    }
-
-    private isSingleLineIfStatement(lineTokens: Token[], allTokens: Token[]) {
-        let ifIndex = this.firstTokenIndexOf(TokenKind.If, lineTokens);
-        if (ifIndex === -1) {
-            return false;
-        }
-        let thenIndex = this.firstTokenIndexOf(TokenKind.Then, lineTokens);
-        let elseIndex = this.firstTokenIndexOf(TokenKind.Else, lineTokens);
-        //if there's an else on this line, assume this is a one-line if statement
-        if (elseIndex > -1) {
-            return true;
-        }
-        //if there's no then, then it can't be a one line statement
-        if (thenIndex === -1) {
-            return false;
-        }
-        //if there's a comment at the end, this is a multi-line if statement
-        if (this.firstTokenIndexOf(TokenKind.Comment, lineTokens) > -1 || this.firstTokenIndexOf(TokenKind.Comment, lineTokens) > -1) {
-            return false;
-        }
-
-        //see if there is anything after the "then". If so, assume it's a one-line if statement
-        for (let i = thenIndex + 1; i < lineTokens.length; i++) {
-            let token = lineTokens[i];
-            if (
-                token.kind === TokenKind.Whitespace ||
-                token.kind === TokenKind.Newline
-            ) {
-                //do nothing with Whitespace and newlines
-            } else {
-                //we encountered a non Whitespace and non Newline token, so this line must be a single-line if statement
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

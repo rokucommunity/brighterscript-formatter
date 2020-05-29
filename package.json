@@ -16,7 +16,7 @@
         "format-github-compare": "ts-node scripts/format-github.ts --compare"
     },
     "dependencies": {
-        "brighterscript": "^0.10.0",
+        "brighterscript": "^0.10.4",
         "source-map": "^0.7.3",
         "trim-right": "^1.0.1"
     },

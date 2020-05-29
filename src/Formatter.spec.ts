@@ -40,6 +40,131 @@ describe('Formatter', () => {
         it('does not explode on unmatched pairs', () => {
             formatEqual(`sub main()\n    val = [\n        [ }]`);
         });
+        it('supports "single-line" if statement with multiple lines', () => {
+            formatEqual(`sub main()\n    if true content.Push({\n        someProp: true\n    })\nend sub`);
+        });
+
+        it('handles various multi-line if statement types', () => {
+            formatEqualTrim(`
+                sub main()
+                    b = 1
+                    if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+
+                    if true then
+                        return "hls"
+                    else if url.instr(".mpd") >= 0
+                        return "dash"
+                    else
+                        return "hls"
+                    end if
+                end sub
+            `);
+        });
+
+        it('does not mess up triple array', () => {
+            formatEqualTrim(`
+                sub main()
+                    stuff = [[[1]]]
+                end sub
+            `);
+        });
+
+        it('handles various single-line if statement types', () => {
+            formatEqualTrim(`
+                sub main()
+                    if someFunc({ a: [[{ a: 1 }, b, 21, [42]]] }) then return [
+                        1, 2, 3, 4, 5
+                    ]
+                    if b = 1 return b
+                    if b = 1 then b = 2
+                    if b = 1 then b = 4 ' but this one breaks indentation
+                    if b = 1 then return 2 else return 1
+                    if b = 1 then return 2 else if b = 2 return 1
+                    if b = 1 then return 2 else if b = 2 then return 1
+                    if b = 1 then return 2 else if b = 2 then return 1 else return 1
+                    if true content.Push({
+                        someProp: true
+                    })
+                    if true then content.push({
+                        someProp: true
+                    })
+                end sub
+           `);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
@@ -129,7 +254,13 @@ describe('Formatter', () => {
         });
 
         it(`does not indent object properties called 'class'`, () => {
-            formatEqual(`sub main()\n    if m.class = 123\n        print true\n    end if\nend sub`);
+            formatEqualTrim(`
+                sub main()
+                    if true then
+                        m.class = 123
+                    end if
+                end sub
+            `);
         });
 
         it(`does not outdent for object properties called 'endclass'`, () => {
@@ -535,13 +666,12 @@ end sub`;
         });
 
         it('handles single-line if-then statements', () => {
-            let program = `sub test()\n    if true then break\nend sub`;
+            let program = `sub test()\n    if true then print "true"\nend sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
         it('handles single-line if-then-else statements', () => {
-            let program = `sub test()\n    if true then break else break\nend sub`;
-            expect(formatter.format(program)).to.equal(program);
+            formatEqual(`sub test()\n    if true then print "true" else print "true"\nend sub`);
         });
 
         it('handles resetting outdent when gone into the negative', () => {
@@ -1070,6 +1200,42 @@ end sub`;
 
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
         expected = expected ?? incoming;
-        expect(formatter.format(incoming, options)).to.equal(expected);
+        let formatted = formatter.format(incoming, options);
+        expect(formatted).to.equal(expected);
     }
+
+    /**
+     * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
+     */
+    function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
+        let sources = [
+            incoming,
+            incoming ?? expected
+        ];
+        for (let i = 0; i < sources.length; i++) {
+            let lines = sources[i].split('\n');
+            //throw out leading newlines
+            while (lines[0].length === 0) {
+                lines.splice(0, 1);
+            }
+            let trimStartIndex = null as number | null;
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                //if we don't have a starting trim count, compute it
+                if (!trimStartIndex) {
+                    trimStartIndex = lines[lineIndex].length - lines[lineIndex].trim().length;
+                }
+
+                if (lines[lineIndex].length > 0) {
+                    lines[lineIndex] = lines[lineIndex].substring(trimStartIndex);
+                }
+            }
+            //trim trailing newlines
+            while (lines[lines.length - 1].length === 0) {
+                lines.splice(lines.length - 1);
+            }
+            sources[i] = lines.join('\n');
+        }
+        formatEqual(sources[0], sources[1], options);
+    }
+
 });
