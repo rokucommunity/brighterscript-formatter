@@ -1246,6 +1246,38 @@ end sub`;
         });
     });
 
+
+    describe('template string', () => {
+        it('leaves template string unchanged', () => {
+            let expected = `function getItemXML(item)
+    return \`<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+      <title>smithsonian</title>
+      <item>
+      <title>\${item.title}</title>
+      <guid>\${item.vamsId}</guid>
+      <media:rating scheme="urn:v-chip">\${item.ratings.first.code.name}</media:rating>
+      </item>
+      </channel>
+      </rss>\`
+end function`;
+
+            let current = `    function getItemXML(item)
+            return \`<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+      <title>smithsonian</title>
+      <item>
+      <title>\${item.title}</title>
+      <guid>\${item.vamsId}</guid>
+      <media:rating scheme="urn:v-chip">\${item.ratings.first.code.name}</media:rating>
+      </item>
+      </channel>
+      </rss>\`
+     end function`;
+            expect(formatter.format(current)).to.equal(expected);
+        });
+    });
+
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
         expected = expected ?? incoming;
         let formatted = formatter.format(incoming, options);
