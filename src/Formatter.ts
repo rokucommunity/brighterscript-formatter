@@ -64,7 +64,6 @@ export class Formatter {
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true
         });
-
         let parser = Parser.parse(
             //strip out whitespace because the parser can't handle that
             tokens.filter(x => x.kind !== TokenKind.Whitespace)
@@ -427,7 +426,7 @@ export class Formatter {
                             i = tokens.indexOf(ifStatement.tokens.else);
 
                             //if there's no else, but there is an `else if`, skip past it since it'll cause de-indent otherwise
-                        } else if (ifStatement.tokens.elseIfs && ifStatement.elseIfs.length > 0) {
+                        } else if (ifStatement.elseIfs && ifStatement.elseIfs.length > 0) {
                             i = tokens.indexOf(ifStatement.elseIfs[ifStatement.elseIfs.length - 1].elseIfToken);
                         }
 
