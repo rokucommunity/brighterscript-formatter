@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.4.0] - 2020-05-29
+### Added 
+ - new method to generate source maps during format.
+ - new option `insertSpaceBetweenAssociativeArrayLiteralKeyAndColon` which will ensure exactly 1 or 0 spaces between an associative array key and its trailing colon. ([#17](https://github.com/rokucommunity/brighterscript-formatter/issues/17))
+### Fixed
+ - bugs related to formatting single-line if statements ([#13](https://github.com/rokucommunity/brighterscript-formatter/issues/13))
+
+
+
+## [1.3.0] - 2020-05-21
+### Added
+ - new option `formatMultiLineObjectsAndArrays` which inserts newlines and indents multi-line objects and arrays
+
+
+
 ## [1.2.0] - 2020-05-20
 ### Added
  - new option `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces` which...does what it says. ([#16](https://github.com/rokucommunity/brighterscript-formatter/issues/16)
@@ -106,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.4.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.3.0...v1.4.0
+[1.3.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.2.0...v1.3.0
 [1.2.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.8...v1.2.0
 [1.1.8]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.7...v1.1.8
 [1.1.7]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.6...v1.1.7

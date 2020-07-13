@@ -33,7 +33,7 @@ export class Runner {
 
             //overwrite the file with the formatted version
             if (args.write) {
-                await fsExtra.writeFile(filePath, text);
+                await fsExtra.writeFile(filePath, formattedText);
             }
 
             //if configured, compare formatted file to unformatted file

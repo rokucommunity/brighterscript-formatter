@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 import { TokenKind } from 'brighterscript';
+import { SourceMapConsumer } from 'source-map';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -11,7 +12,13 @@ describe('Formatter', () => {
         formatter = new Formatter();
     });
 
-    describe('formatIndentation', () => {
+    describe('getNextNonWhitespaceToken', () => {
+        it('returns undefined when index is out of bounds', () => {
+            expect((formatter as any).getNextNonWhitespaceToken([], -1)).to.be.undefined;
+        });
+    });
+
+    describe('formatIndent', () => {
         it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
@@ -22,8 +29,236 @@ describe('Formatter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
         });
 
+        it('does not de-indent on double closing squares', () => {
+            formatEqual(`sub main()\n    if true then\n        stuff = [[1], [2], [3]]\n    end if\nend sub`);
+        });
+
+        it('properly indents arrays of objects', () => {
+            formatEqual('sub main()\n    val = [{\n        alive: true\n    }, {\n        alive: true\n    }]\nend sub');
+        });
+
+        it('does not explode on unmatched pairs', () => {
+            formatEqual(`sub main()\n    val = [\n        [ }]`);
+        });
+        it('supports "single-line" if statement with multiple lines', () => {
+            formatEqual(`sub main()\n    if true content.Push({\n        someProp: true\n    })\nend sub`);
+        });
+
+        it('handles various multi-line if statement types', () => {
+            formatEqualTrim(`
+                sub main()
+                    b = 1
+                    if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+                
+                    if b = 1 then
+                        print "1"
+                    else if b = 1 then
+                        print "1"
+                    else
+                        print "1"
+                    end if
+
+                    if true then
+                        return "hls"
+                    else if url.instr(".mpd") >= 0
+                        return "dash"
+                    else
+                        return "hls"
+                    end if
+                end sub
+            `);
+        });
+
+        it('does not mess up triple array', () => {
+            formatEqualTrim(`
+                sub main()
+                    stuff = [[[1]]]
+                end sub
+            `);
+        });
+
+        it('handles various single-line if statement types', () => {
+            formatEqualTrim(`
+                sub main()
+                    if someFunc({ a: [[{ a: 1 }, b, 21, [42]]] }) then return [
+                        1, 2, 3, 4, 5
+                    ]
+                    if b = 1 return b
+                    if b = 1 then b = 2
+                    if b = 1 then b = 4 ' but this one breaks indentation
+                    if b = 1 then return 2 else return 1
+                    if b = 1 then return 2 else if b = 2 return 1
+                    if b = 1 then return 2 else if b = 2 then return 1
+                    if b = 1 then return 2 else if b = 2 then return 1 else return 1
+                    if true content.Push({
+                        someProp: true
+                    })
+                    if true then content.push({
+                        someProp: true
+                    })
+                end sub
+           `);
+        });
+    });
+
+    describe('formatMultiLineObjectsAndArrays', () => {
+        it('does nothing when option is disabled', () => {
+            formatEqual(`person = { a: 1\n}`, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+        });
+
+        it('does not lose trailing line', () => {
+            formatEqual(
+                `function GetPerson()\n    person = { exists: true,\n    }\nend function`,
+                `function GetPerson()\n    person = {\n        exists: true,\n    }\nend function`
+            );
+        });
+
+        it('does not insert extra newline when no newline is found', () => {
+            formatEqual(`person = { `);
+        });
+
+        describe('associative arrays', () => {
+            it('does not affect single-line items', () => {
+                formatEqual(`person = { a: 1, b: 2 }`);
+            });
+
+            it('moves items off of brace lines when spanning multiple lines', () => {
+                formatEqual(`person = { a: 1,\n b: 2 }`, `person = {\n    a: 1,\n    b: 2\n}`);
+            });
+
+            it('removes spaces for single-line when non-empty', () => {
+                formatEqual(`{ a: 1,\n b: 2 }`, `{\n    a: 1,\n    b: 2\n}`);
+            });
+
+            it('keeps multiple statements on same line', () => {
+                formatEqual(`{ a: 1, b: 2\nc: 3, d: 4}`, `{\n    a: 1, b: 2\n    c: 3, d: 4\n}`);
+            });
+
+            it('supports same-line nested objects', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4 } }`);
+            });
+
+            it('keeps same-line nested objects together', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4}\n}`, `{\n    a: 1, b: { c: 3, d: 4 }\n}`);
+            });
+
+            it('standardizes nested objects', () => {
+                formatEqual(`{ a: 1, b: { c: 3, d: 4\n}}`, `{\n    a: 1, b: {\n        c: 3, d: 4\n    }\n}`);
+            });
+        });
+
+        describe('arrays', () => {
+            it('does not affect single-line items', () => {
+                formatEqual(`person = [1, 2]`);
+            });
+
+            it('moves items off of brace lines when spanning multiple lines', () => {
+                formatEqual(`person = [ 1,\n2]`, `person = [\n    1,\n    2\n]`);
+            });
+
+            it('removes spaces for single-line when non-empty', () => {
+                formatEqual(`[ 1,\n 2]`, `[\n    1,\n    2\n]`);
+            });
+
+            it('keeps multiple statements on same line', () => {
+                formatEqual(`[ 1, 2,\n 3, 4]`, `[\n    1, 2,\n    3, 4\n]`);
+            });
+
+            it('supports same-line nested objects', () => {
+                formatEqual(`[ 1, [ 3, 4 ] ]`, `[1, [3, 4]]`);
+            });
+
+            it('keeps same-line nested objects together', () => {
+                formatEqual(`[1, [3, 4]\n]`, `[\n    1, [3, 4]\n]`);
+            });
+
+            it('standardizes nested arrays', () => {
+                formatEqual(`[1, [3, 4\n]]`, `[\n    1, [\n        3, 4\n    ]\n]`);
+            });
+        });
+
+        it('does not separate [{ when closed by }] ', () => {
+            formatEqual(`[{\n    exists: true\n}]`);
+        });
+
+        it('does not separate [[ when closed by ]]', () => {
+            formatEqual(`[[\n    true\n]]`);
+        });
+
         it(`does not indent object properties called 'class'`, () => {
-            formatEqual(`sub main()\n    if m.class = 123\n        print true\n    end if\nend sub`);
+            formatEqualTrim(`
+                sub main()
+                    m.class = 123
+                end sub
+            `);
         });
 
         it(`does not outdent for object properties called 'endclass'`, () => {
@@ -56,6 +291,56 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        describe('insertSpaceBetweenAssociativeArrayLiteralKeyAndColon', () => {
+            it('adds space for inline objects', () => {
+                formatEqual(`def = { "key": "value" }`, `def = { "key" : "value" }`, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: true
+                });
+            });
+            it('removes space for inline objects', () => {
+                formatEqual(`def = { "key" : "value" }`, `def = { "key": "value" }`, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false
+                });
+            });
+
+            it('adds space for multi-line objects', () => {
+                formatEqualTrim(`
+                    def = {
+                        "key": "value"
+                    }
+                `, `
+                    def = {
+                        "key" : "value"
+                    }
+                `, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: true
+                });
+            });
+
+            it('removes space for multi-line objects', () => {
+                formatEqualTrim(`
+                    def = {
+                        "key" : "value"
+                    }
+                `, `
+                    def = {
+                        "key": "value"
+                    }
+                `, {
+                    insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false
+                });
+            });
+
+            it('handles comment in AA', () => {
+                formatEqualTrim(`
+                    def = {
+                        'comment
+                        "key": "value"
+                    }
+                `);
+            });
+        });
+
         it('handles malformed function Whitespace', () => {
             expect(formatter.format(`function add`,
                 { formatIndent: false }
@@ -145,7 +430,7 @@ end sub`;
 
         it('removes Whitespace after square brace and paren', () => {
             formatEqual(`[ 1, 2, 3 ]`, `[1, 2, 3]`);
-            formatEqual(`[ 1,\n2,\n 3\n]`, `[1,\n    2,\n    3\n]`);
+            formatEqual(`[ 1,\n2,\n 3\n]`, `[\n    1,\n    2,\n    3\n]`);
             formatEqual(`{name: "john"}`, `{ name: "john" }`);
             formatEqual(`doSomething( 1, 2 )`, `doSomething(1, 2)`);
         });
@@ -367,8 +652,8 @@ end sub`;
             formatEqual(`theVar = [{\n    name = "bob"\n}]`);
         });
 
-        it.skip('works for arrays with objects in them on separate lines', () => {
-            formatEqual(`theVar = [\n    {\n        name = bob"\n    }\n]`);
+        it('works for arrays with objects in them on separate lines', () => {
+            formatEqual(`theVar = [\n    {\n        name = "bob"\n    }\n]`);
         });
     });
 
@@ -429,13 +714,12 @@ end sub`;
         });
 
         it('handles single-line if-then statements', () => {
-            let program = `sub test()\n    if true then break\nend sub`;
+            let program = `sub test()\n    if true then print "true"\nend sub`;
             expect(formatter.format(program)).to.equal(program);
         });
 
         it('handles single-line if-then-else statements', () => {
-            let program = `sub test()\n    if true then break else break\nend sub`;
-            expect(formatter.format(program)).to.equal(program);
+            formatEqual(`sub test()\n    if true then print "true" else print "true"\nend sub`);
         });
 
         it('handles resetting outdent when gone into the negative', () => {
@@ -895,48 +1179,143 @@ end sub`;
         });
 
         it('adds spaces for multi-line when non-empty', () => {
-            formatEqual(`{a: 1,\nb: 2}`, `{ a: 1,\nb: 2 }`, {
+            formatEqual(`{a: 1,\nb: 2}`, `{\n    a: 1,\n    b: 2\n}`, {
                 insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true
             });
         });
 
         it('removes spaces for single-line when non-empty', () => {
-            formatEqual(`{ a: 1,\n b: 2 }`, `{a: 1,\nb: 2}`, {
+            formatEqual(`{ a: 1,\n b: 2 }`, `{\n    a: 1,\n    b: 2\n}`, {
                 insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
             });
         });
     });
 
-    describe('indentStyle for conditional block', () => {
-        it('correctly fixes the indentation', () => {
-            let expected = `#if isDebug\n    doSomething()\n#end if`;
-            let current = `#if isDebug\n doSomething()\n#end if`;
+    describe('indentStyle', () => {
+        describe('conditional block', () => {
+            it('correctly fixes the indentation', () => {
+                let expected = `#if isDebug\n    doSomething()\n#end if`;
+                let current = `#if isDebug\n doSomething()\n#end if`;
+                expect(formatter.format(current)).to.equal(expected);
+            });
+
+            it('skips indentation when formatIndent===false for conditional block', () => {
+                let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
+                expect(formatter.format(program, { formatIndent: false })).to.equal(program);
+            });
+
+            it('correctly fixes the indentation', () => {
+                let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
+
+            it('correctly fixes the indentation nested if in conditional block', () => {
+                let program = `#if isDebug\n    if true then\n        doSomething()\n    end if\n#end if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
+
+            it('correctly fixes the indentation nested #if in if block', () => {
+                let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
+                expect(formatter.format(program)).to.equal(program);
+            });
+        });
+    });
+
+    describe('formatWithCodeAndMap', () => {
+        it('generates valid sourcemap', async () => {
+            let result = formatter.formatWithSourceMap(`sub main()\nprint    "hello"   \nendsub`, 'file.brs');
+            expect(result.code).to.equal(`sub main()\n    print "hello"\nend sub`);
+            let consumer = await SourceMapConsumer.fromSourceMap(result.map);
+
+            expect(consumer.generatedPositionFor({
+                line: 2,
+                column: 0,
+                source: 'file.brs'
+            })).to.include({
+                line: 2,
+                column: 4
+            });
+
+            expect(consumer.originalPositionFor({
+                line: 2,
+                column: 4
+            })).to.include({
+                line: 2,
+                column: 0
+            });
+        });
+    });
+
+
+    describe('template string', () => {
+        it('leaves template string unchanged', () => {
+            let expected = `function getItemXML(item)
+    return \`<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+      <title>smithsonian</title>
+      <item>
+      <title>\${item.title}</title>
+      <guid>\${item.vamsId}</guid>
+      <media:rating scheme="urn:v-chip">\${item.ratings.first.code.name}</media:rating>
+      </item>
+      </channel>
+      </rss>\`
+end function`;
+
+            let current = `    function getItemXML(item)
+            return \`<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+      <channel>
+      <title>smithsonian</title>
+      <item>
+      <title>\${item.title}</title>
+      <guid>\${item.vamsId}</guid>
+      <media:rating scheme="urn:v-chip">\${item.ratings.first.code.name}</media:rating>
+      </item>
+      </channel>
+      </rss>\`
+     end function`;
             expect(formatter.format(current)).to.equal(expected);
-        });
-
-        it('skips indentation when formatIndent===false for conditional block', () => {
-            let program = `#if isDebug\n    doSomething()\n#else\n doSomethingElse\n   #end if`;
-            expect(formatter.format(program, { formatIndent: false })).to.equal(program);
-        });
-
-        it('correctly fixes the indentation', () => {
-            let program = `#if isDebug\n    doSomething()\n#else if isPartialDebug\n    doSomethingElse()\n#else\n    doFinalThing()\n#end if`;
-            expect(formatter.format(program)).to.equal(program);
-        });
-
-        it('correctly fixes the indentation nested if in conditional block', () => {
-            let program = `#if isDebug\n    if true then\n        doSomething()\n    end if\n#end if`;
-            expect(formatter.format(program)).to.equal(program);
-        });
-
-        it('correctly fixes the indentation nested #if in if block', () => {
-            let program = `if true then\n    #if isDebug\n        doSomething()\n    #end if\nend if`;
-            expect(formatter.format(program)).to.equal(program);
         });
     });
 
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
         expected = expected ?? incoming;
-        expect(formatter.format(incoming, options)).to.equal(expected);
+        let formatted = formatter.format(incoming, options);
+        expect(formatted).to.equal(expected);
     }
+
+    /**
+     * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
+     */
+    function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
+        let sources = [
+            incoming,
+            expected ?? incoming
+        ];
+        for (let i = 0; i < sources.length; i++) {
+            let lines = sources[i].split('\n');
+            //throw out leading newlines
+            while (lines[0].length === 0) {
+                lines.splice(0, 1);
+            }
+            let trimStartIndex = null as number | null;
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                //if we don't have a starting trim count, compute it
+                if (!trimStartIndex) {
+                    trimStartIndex = lines[lineIndex].length - lines[lineIndex].trim().length;
+                }
+
+                if (lines[lineIndex].length > 0) {
+                    lines[lineIndex] = lines[lineIndex].substring(trimStartIndex);
+                }
+            }
+            //trim trailing newlines
+            while (lines[lines.length - 1].length === 0) {
+                lines.splice(lines.length - 1);
+            }
+            sources[i] = lines.join('\n');
+        }
+        formatEqual(sources[0], sources[1], options);
+    }
+
 });

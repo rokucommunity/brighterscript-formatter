@@ -1,6 +1,6 @@
 {
     "name": "brighterscript-formatter",
-    "version": "1.2.0",
+    "version": "1.4.0",
     "description": "A formatter for BrighterScript, a superset of Roku's BrightScript language, written in JavaScript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -12,7 +12,8 @@
         "test": "nyc mocha src/**/*.spec.ts --full-trace",
         "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
         "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
-        "format-github": "ts-node test-format.ts",
+        "format-github": "ts-node scripts/format-github.ts",
+        "format-github-compare": "ts-node scripts/format-github.ts --compare",
         "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts"
     },
     "bin": {
@@ -20,8 +21,9 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.10.0",
+        "brighterscript": "^0.10.4",
         "glob-all": "^3.2.1",
+        "source-map": "^0.7.3",
         "trim-right": "^1.0.1",
         "yargs": "^15.3.1"
     },
@@ -31,7 +33,7 @@
         "@types/glob": "^7.1.1",
         "@types/mocha": "^7.0.2",
         "@types/sinon": "^9.0.0",
-        "@types/yargs": "^15.0.4",
+        "@types/yargs": "^15.0.5",
         "@typescript-eslint/eslint-plugin": "^2.29.0",
         "@typescript-eslint/parser": "^2.29.0",
         "chai": "^4.2.0",
@@ -48,7 +50,8 @@
         "ts-node": "^8.2.0",
         "tslint-eslint-rules": "^5.4.0",
         "tslint-origin-ordered-imports-rule": "^1.1.2",
-        "typescript": "^3.9.2"
+        "typescript": "^3.9.2",
+        "yargs": "^15.3.1"
     },
     "files": [
         "dist/**/*"

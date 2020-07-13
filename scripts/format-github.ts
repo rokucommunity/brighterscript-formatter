@@ -8,8 +8,11 @@ import { exec } from 'child-process-promise';
 import * as fsExtra from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as path from 'path';
+import { execSync } from 'child_process';
 
-import { Formatter } from './src/Formatter';
+import { Formatter } from '../src/Formatter';
+
+var argv = require('yargs').argv;
 
 const repositoryUrls = [
     'https://github.com/georgejecook/rokuNavSpike',
@@ -31,17 +34,26 @@ const repositoryUrls = [
     'https://github.com/trystant/Roku',
     'https://github.com/glanza2311/rokuToyProject',
     'https://github.com/exegersha/2048',
-    'https://github.com/paulcullin/roku-ci-test',
-    'https://github.com/VerizonAdPlatforms/VerizonVideoPartnerSDK-Roku',
+    'https://github.com/paulcullin/roku-ci-test'
 ];
 
-let tempPath = path.join(__dirname, '.temp');
+let tempPath = path.join(__dirname, '../', 'temp');
+console.log(tempPath);
 
 //clean the working directory
 console.log('Removing temp directory');
 fsExtra.removeSync(tempPath);
 console.log('Creating empty temp directory');
-fsExtra.ensureDir(tempPath);
+fsExtra.ensureDirSync(tempPath);
+
+if (argv.compare) {
+    console.log('Installing latest brighterscript-formatter from github');
+    execSync(`npm init -y && npm i brighterscript-formatter@latest`, {
+        cwd: tempPath,
+        stdio: 'inherit'
+    });
+    var bsfmtFromNpm = require(path.join(__dirname, '../temp/node_modules/brighterscript-formatter'));
+}
 
 //create a vscode-workspace file so we can compare all of the contents at one time
 let workspace = {
@@ -64,6 +76,33 @@ let workspace = {
                 cwd: projectFolderPath
             });
 
+            //format using version from npm and then commit
+            if (argv.compare) {
+                console.log('Formatting first using npm version of formatter');
+                await Promise.all(
+                    files.map(async (filePath) => {
+                        const formatter = new bsfmtFromNpm.Formatter();
+                        let fullFilePath = path.join(projectFolderPath, filePath);
+                        console.log(`Loading file contents for "${fullFilePath}"`);
+                        const fileContents = await fsExtra.readFile(fullFilePath);
+
+                        console.log(`Formatting "${fullFilePath}"`);
+                        const formattedFileContents = formatter.format(fileContents.toString(), {
+                            keywordCase: null
+                        });
+
+
+                        console.log(`Saving formatting changes for "${fullFilePath}"`);
+                        await fsExtra.writeFile(fullFilePath, formattedFileContents);
+                    })
+                );
+                console.log('Committing changes');
+                await exec(`git add --all && git commit -m "testing"`, {
+                    cwd: projectFolderPath,
+                    stdio: 'inherit'
+                });
+            }
+
             await Promise.all(
                 files.map(async (filePath) => {
                     const formatter = new Formatter();
@@ -77,11 +116,11 @@ let workspace = {
                     });
 
                     console.log(`Saving formatting changes for "${fullFilePath}"`);
-                    fsExtra.writeFile(fullFilePath, formattedFileContents);
+                    await fsExtra.writeFile(fullFilePath, formattedFileContents);
                 })
             );
         })
     );
-
+    console.log('Writing workspace');
     await fsExtra.writeFile(path.join(tempPath, 'workspace.code-workspace'), JSON.stringify(workspace));
-})();
+})().catch(console.error.bind(console));

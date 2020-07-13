@@ -7,7 +7,7 @@ import { createSandbox, SinonSandbox } from 'sinon';
 let rootDir = s`${process.cwd()}/testRootDir`;
 let baseOptions: RunnerOptions;
 
-describe.only('Runner', () => {
+describe('Runner', () => {
     let sinon: SinonSandbox;
     beforeEach(() => {
         sinon = createSandbox();
@@ -37,11 +37,11 @@ describe.only('Runner', () => {
     });
 
     describe('check', () => {
-        it('catches unformatted files', () => {
+        it('catches unformatted files', async () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\nreturn 1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            run({
+            await run({
                 check: true,
                 files: [
                     s`${rootDir}/lib.brs`
@@ -50,11 +50,11 @@ describe.only('Runner', () => {
             expect(consoleOutput).to.include('Formatting issues found in the above file(s)');
         });
 
-        it('passes for perfectly formatted files', () => {
+        it('passes for perfectly formatted files', async () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\n    return 1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            run({
+            await run({
                 check: true,
                 files: [
                     s`${rootDir}/lib.brs`
@@ -64,11 +64,11 @@ describe.only('Runner', () => {
             expect(consoleOutput).to.include('All matched files are formatted properly!');
         });
 
-        it('does not change the file on disk unless configured to do so', () => {
+        it('does not change the file on disk unless configured to do so', async () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\nreturn1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            run({
+            await run({
                 check: true,
                 files: [
                     s`${rootDir}/lib.brs`
@@ -81,11 +81,11 @@ describe.only('Runner', () => {
     });
 
     describe('write', () => {
-        it('overwerites the file when the --write flag is provided', () => {
+        it('overwerites the file when the --write flag is provided', async () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\nreturn 1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            run({
+            await run({
                 write: true,
                 files: [
                     s`${rootDir}/lib.brs`

@@ -7,7 +7,7 @@
         "**/.DS_Store": true,
         "**/node_modules": true,
         "**/coverage": true,
-        ".temp": true,
+        "**/*temp": true,
         ".nyc_output": true
     },
     "editor.tabSize": 4,
