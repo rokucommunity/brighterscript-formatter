@@ -68,6 +68,9 @@ export interface RunnerOptions extends FormattingOptions {
      * A list of file paths or globs
      */
     files: string[];
+    /**
+     * The current working directory that should be used when running this runner.
+     */
     cwd?: string;
     /**
      * This rewrites all processed in place. It is recommended to commit your files before using this option.

@@ -21,7 +21,7 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.10.4",
+        "brighterscript": "^0.12.0",
         "glob-all": "^3.2.1",
         "source-map": "^0.7.3",
         "trim-right": "^1.0.1",

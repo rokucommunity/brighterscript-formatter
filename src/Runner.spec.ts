@@ -41,13 +41,18 @@ describe('Runner', () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\nreturn 1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            await run({
-                check: true,
-                files: [
-                    s`${rootDir}/lib.brs`
-                ]
-            });
-            expect(consoleOutput).to.include('Formatting issues found in the above file(s)');
+            let errorMessage = '';
+            try {
+                await run({
+                    check: true,
+                    files: [
+                        s`${rootDir}/lib.brs`
+                    ]
+                });
+            } catch (e) {
+                errorMessage = e.message;
+            }
+            expect(errorMessage).to.include('Formatting issues found in the above file(s)');
         });
 
         it('passes for perfectly formatted files', async () => {
@@ -68,12 +73,17 @@ describe('Runner', () => {
             let filePath = s`${rootDir}/lib.brs`;
             let originalContents = `sub main()\nreturn1\nend sub`;
             fsExtra.writeFileSync(filePath, originalContents);
-            await run({
-                check: true,
-                files: [
-                    s`${rootDir}/lib.brs`
-                ]
-            });
+            try {
+                await run({
+                    check: true,
+                    write: false,
+                    files: [
+                        s`${rootDir}/lib.brs`
+                    ]
+                });
+            } catch (e) {
+
+            }
 
             //the check command should not overwrite the file
             expect(fsExtra.readFileSync(filePath).toString()).to.equal(originalContents);
