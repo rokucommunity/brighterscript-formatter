@@ -193,7 +193,7 @@ export class Formatter {
         ) {
             let closingToken = this.getClosingToken(tokens, currentIndex, TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
             //look at the previous token
-            let previous = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closingToken!), true);
+            let previous = closingToken && this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closingToken), true);
             /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
             if (previous && (previous.kind === TokenKind.RightSquareBracket || previous.kind === TokenKind.RightCurlyBrace)) {
                 return true;
@@ -235,7 +235,7 @@ export class Formatter {
                     text: '\n'
                 });
                 let closingToken = this.getClosingToken(tokens, i, openKind, closeKind);
-                let closingTokenKindex = tokens.indexOf(closingToken!);
+                let closingTokenKindex = closingToken ? tokens.indexOf(closingToken) : -1;
 
                 i++;
 
@@ -472,7 +472,7 @@ export class Formatter {
                         //find the closer
                         let closer = this.getClosingToken(tokens, tokens.indexOf(token), TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
                         let expectedClosingPreviousKind = nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket ? TokenKind.RightSquareBracket : TokenKind.RightCurlyBrace;
-                        let closingPrevious = this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer!), true);
+                        let closingPrevious = closer && this.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer), true);
                         /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
                         if (closingPrevious && closingPrevious.kind === expectedClosingPreviousKind) {
                             //skip the next token
@@ -520,7 +520,7 @@ export class Formatter {
                             TokenKind.LeftSquareBracket,
                             TokenKind.RightSquareBracket
                         );
-                        let openerNext = this.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener!), true);
+                        let openerNext = opener && this.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener), true);
                         if (openerNext && (openerNext.kind === TokenKind.LeftCurlyBrace || openerNext.kind === TokenKind.LeftSquareBracket)) {
                             //skip the next token
                             i += 1;
@@ -648,8 +648,8 @@ export class Formatter {
         let isPastFirstTokenOfLine = false;
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
-            let nextTokenType: TokenKind = <any>(tokens[i + 1] ? tokens[i + 1].kind : undefined);
-            let previousTokenType: TokenKind = <any>(tokens[i - 1] ? tokens[i - 1].kind : undefined);
+            let nextTokenType: TokenKind | undefined = (tokens[i + 1] ? tokens[i + 1].kind : undefined);
+            let previousTokenType: TokenKind | undefined = (tokens[i - 1] ? tokens[i - 1].kind : undefined);
 
             //reset token indicator on Newline
             if (token.kind === TokenKind.Newline) {
@@ -676,7 +676,7 @@ export class Formatter {
                         this.removeWhitespace(tokens, i + 1);
                     }
                     //ensure a space token to the right, only if we have more tokens to the right available
-                } else if (![TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].includes(nextTokenType)) {
+                } else if (nextTokenType && ![TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].includes(nextTokenType)) {
                     //don't add Whitespace if the next token is the Newline
 
                     tokens.splice(i + 1, 0, <any>{
