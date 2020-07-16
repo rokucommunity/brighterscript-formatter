@@ -80,10 +80,10 @@ export class Formatter {
          *  2. The options from this instance property
          *  3. The default options
          */
-        let options = {
+        let options = normalizeOptions({
             ...this.formattingOptions,
-            ...normalizeOptions(formattingOptions)
-        };
+            ...formattingOptions
+        });
 
         let { tokens } = Lexer.scan(inputText, {
             includeWhitespace: true

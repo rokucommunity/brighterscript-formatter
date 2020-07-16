@@ -69,15 +69,15 @@ export interface RunnerOptions extends FormattingOptions {
      */
     files: string[];
     /**
-     * The current working directory that should be used when running this runner.
+     * The current working directory that should be used when running this runner
      */
     cwd?: string;
     /**
-     * This rewrites all processed in place. It is recommended to commit your files before using this option.
+     * This rewrites all processed in place. It is recommended to commit your files before using this option
      */
     write?: boolean;
     /**
-     * Will list any unformatted files and return a nonzero eror code if any were found.
+     * Will list any unformatted files and return a nonzero eror code if any were found
      */
     check?: boolean;
     /**
