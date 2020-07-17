@@ -115,7 +115,7 @@ describe('Runner', () => {
                 cwd: process.cwd()
             });
         });
-    })
+    });
 
     function run(options: RunnerOptions) {
         return Runner.run({
