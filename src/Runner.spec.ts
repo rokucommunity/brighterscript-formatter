@@ -118,8 +118,7 @@ describe('Runner', () => {
     })
 
     function run(options: RunnerOptions) {
-        let runner = new Runner();
-        return runner.run({
+        return Runner.run({
             ...baseOptions,
             ...options
         });
