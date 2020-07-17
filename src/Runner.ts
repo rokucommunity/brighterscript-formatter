@@ -6,6 +6,7 @@ import { FormattingOptions } from './FormattingOptions';
 
 export class Runner {
 
+    /* istanbul ignore next */
     public static run(runnerOptions: RunnerOptions) {
         let runner = new Runner();
         return runner.run(runnerOptions);

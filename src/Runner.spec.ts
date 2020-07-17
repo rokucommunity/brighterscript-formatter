@@ -107,6 +107,16 @@ describe('Runner', () => {
         });
     });
 
+    describe('normalizeArgs', () => {
+        it('applies default values', () => {
+            let runner = new Runner();
+            expect(runner.normalizeArgs({} as RunnerOptions)).to.deep.equal({
+                files: [],
+                cwd: process.cwd()
+            });
+        });
+    })
+
     function run(options: RunnerOptions) {
         let runner = new Runner();
         return runner.run({

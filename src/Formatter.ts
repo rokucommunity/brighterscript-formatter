@@ -235,6 +235,7 @@ export class Formatter {
                     text: '\n'
                 });
                 let closingToken = this.getClosingToken(tokens, i, openKind, closeKind);
+                /* istanbul ignore next */
                 let closingTokenKindex = closingToken ? tokens.indexOf(closingToken) : -1;
 
                 i++;
