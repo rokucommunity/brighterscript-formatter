@@ -7,7 +7,42 @@ A code formatter for [BrighterScript](https://github.com/RokuCommunity/brighters
 [![Coverage Status](https://coveralls.io/repos/github/rokucommunity/brighterscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/rokucommunity/brighterscript-formatter?branch=master)
 [![npm](https://img.shields.io/npm/v/brighterscript-formatter.svg?branch=master)](https://www.npmjs.com/package/brighterscript-formatter)
 
-## Usage
+## Formatting Options
+
+There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface](https://github.com/rokucommunity/brighterscript-formatter/blob/master/src/FormattingOptions.ts#L7).
+
+## CLI
+
+The command line looks up formatting options in an optional `./bsfmt.json` (see formatting options section) which should look like:
+
+```json
+{
+    "indentStyle": "spaces",
+    "indentSpaceCount": 2
+}
+```
+
+### Usage
+
+```bash
+# WARNING: commit before running formatting
+
+bsfmt <files...> [<options>]
+
+# help
+bsfmt --help
+
+# format one
+bsfmt source/main.brs --write
+
+# check many
+bsfmt source/**/*.brs --check
+```
+
+## Library
+
+### General usage
+
 ```javascript
 import { Formatter } from 'brighterscript-formatter';
 
@@ -20,20 +55,14 @@ var unformattedFileContents = getFileAsStringSomehow();
 var formattingOptions = {};
 //get a formatted version of the BrighterScript/BrightScript file
 var formattedFileContents = formatter.format(unformattedFileContents, formattingOptions);
-
 ```
 
-## Source Maps
+### Source Maps
+
 The formatter also supports source maps, which can be generated alongside of the formatted code by calling `formatWithSourceMap`
 
-### Usage
 ```javascript
-
 var result = formatter.formatWithSourceMap(unformattedFileContents);
 var formattedFileContents = result.code;
 var sourceMap = result.map;
 ```
-
-## Formatting Options
-
-There are many formatting options. Rather than listing them all out here, you should look at the [typescript interface](https://github.com/rokucommunity/brighterscript-formatter/blob/master/src/FormattingOptions.ts#L7).

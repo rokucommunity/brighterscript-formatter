@@ -98,7 +98,7 @@ export interface FormattingOptions {
     formatMultiLineObjectsAndArrays?: boolean;
 }
 
-export function normalizeOptions(options: FormattingOptions | undefined = {}) {
+export function normalizeOptions(options: FormattingOptions) {
     let fullOptions: FormattingOptions = {
         indentStyle: 'spaces',
         indentSpaceCount: Formatter.DEFAULT_INDENT_SPACE_COUNT,
