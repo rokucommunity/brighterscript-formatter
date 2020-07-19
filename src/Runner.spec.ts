@@ -3,7 +3,9 @@ import { standardizePath as s } from 'brighterscript';
 import { Runner, RunnerOptions } from './Runner';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox } from 'sinon';
+import { FormattingOptions } from './FormattingOptions';
 
+let cwd = process.cwd();
 let rootDir = s`${process.cwd()}/testRootDir`;
 let baseOptions: RunnerOptions;
 
@@ -14,6 +16,7 @@ describe('Runner', () => {
     });
     afterEach(() => {
         sinon.restore();
+        process.chdir(cwd);
     });
 
     let consoleOutput = '';
@@ -117,10 +120,59 @@ describe('Runner', () => {
         });
     });
 
-    function run(options: RunnerOptions) {
-        return Runner.run({
-            ...baseOptions,
-            ...options
+    describe('bsfmt.json', () => {
+        it('gets loaded from default cwd during run', async () => {
+            process.chdir(rootDir);
+            fsExtra.writeFileSync(s`${rootDir}/bsfmt.json`, JSON.stringify({
+                formatIndent: false,
+                keywordCaseOverride: {
+                    'not-real-key': 'lower'
+                }
+            } as FormattingOptions));
+            //delete cwd so the runner uses the one from process
+            delete baseOptions.cwd;
+            let runner = await run();
+            let options = runner.formatter!.formattingOptions;
+            expect(options?.formatIndent).to.be.false;
+            expect(options?.keywordCaseOverride).to.have.key('not-real-key');
         });
+
+        it('gets loaded from parameter cwd during run', async () => {
+            fsExtra.ensureDirSync(s`${rootDir}/testFolder`);
+            fsExtra.writeFileSync(s`${rootDir}/testFolder/bsfmt.json`, JSON.stringify({
+                formatIndent: false,
+                keywordCaseOverride: {
+                    'not-real-key': 'lower'
+                }
+            } as FormattingOptions));
+            let runner = await run({
+                cwd: s`${rootDir}/testFolder`,
+                files: []
+            });
+            let options = runner.formatter!.formattingOptions;
+            expect(options?.formatIndent).to.be.false;
+            expect(options?.keywordCaseOverride).to.have.key('not-real-key');
+        });
+
+        it('throws exception when parsing invalid json', async () => {
+            fsExtra.writeFileSync(s`${rootDir}/bsfmt.json`, `{asdf`);
+            let threw: boolean;
+            try {
+                await run();
+                threw = false;
+            } catch (e) {
+                threw = true;
+            }
+            expect(threw).to.be.true;
+        });
+    });
+
+    async function run(options?: RunnerOptions) {
+        const runner = new Runner();
+        await runner.run({
+            ...baseOptions,
+            ...(options ?? {})
+        });
+        return runner;
     }
 });

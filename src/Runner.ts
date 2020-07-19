@@ -3,22 +3,33 @@ import { IOptions } from 'glob';
 import * as fsExtra from 'fs-extra';
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
+import * as path from 'path';
+import { parse as parseJsonc, ParseError, printParseErrorCode } from 'jsonc-parser';
 
+/**
+ * Runs the formatter for an entire project.
+ */
 export class Runner {
 
-    public static run(runnerOptions: RunnerOptions) {
-        let runner = new Runner();
-        return runner.run(runnerOptions);
-    }
+    public formatter?: Formatter;
 
     public async run(runnerOptions: RunnerOptions) {
-        let args = this.normalizeArgs(runnerOptions);
+        //load options from bsfmt.json if exists
+        const bsfmtOptions = this.loadOptionsFromFile(runnerOptions.cwd ?? process.cwd());
+
+        let args = this.normalizeArgs({
+            //load any options from bsfmt.json
+            ...bsfmtOptions,
+            //then override with the options from the parameter
+            ...runnerOptions
+        });
+
         let filePaths = globAll.sync(args.files, {
             cwd: args.cwd,
             absolute: true
         } as IOptions);
 
-        let formatter = new Formatter(args);
+        this.formatter = new Formatter(args);
 
         //print the list of unformatted files if found (and enabled)
         if (args.check) {
@@ -29,7 +40,7 @@ export class Runner {
 
         await Promise.all(filePaths.map(async filePath => {
             let text = (await fsExtra.readFile(filePath)).toString();
-            let formattedText = formatter.format(text);
+            let formattedText = this.formatter!.format(text);
 
             //overwrite the file with the formatted version
             if (args.write) {
@@ -55,6 +66,26 @@ export class Runner {
             }
         }
     }
+
+    /**
+     * Load the config from the `bsconfig.json` file in the cwd
+     */
+    public loadOptionsFromFile(cwd: string) {
+        const configFilePath = path.join(cwd, 'bsfmt.json');
+        if (fsExtra.pathExistsSync(configFilePath)) {
+            const contents = fsExtra.readFileSync(configFilePath);
+            const parseErrors = [] as ParseError[];
+            const config = parseJsonc(contents.toString(), parseErrors);
+            //if there were errors parsing the bsfmt.json, fail now
+            if (parseErrors.length > 0) {
+                throw new Error(`Error parsing "${configFilePath}": ${printParseErrorCode(parseErrors[0].error)}`);
+            }
+            return config;
+        } else {
+            return {} as FormattingOptions;
+        }
+    }
+
 
     public normalizeArgs(args: RunnerOptions): RunnerOptions {
         args.files = Array.isArray(args.files) ? args.files : [];
