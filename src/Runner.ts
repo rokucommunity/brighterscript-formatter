@@ -45,6 +45,11 @@ export class Runner {
             //overwrite the file with the formatted version
             if (args.write) {
                 await fsExtra.writeFile(filePath, formattedText);
+            } else if (!args.check) {
+                //print the file to the console (only if the user didnt specify --write and didnt specify --check
+                //This is what prettier's CLI does, so it makes sense. You can leverage this when running single files at a time
+                //to pipe to a separate file
+                console.log(formattedText);
             }
 
             //if configured, compare formatted file to unformatted file
