@@ -39,6 +39,25 @@ describe('Runner', () => {
         fsExtra.emptyDirSync(rootDir);
     });
 
+    it('skips directories', async () => {
+        fsExtra.mkdirSync(s`${rootDir}/source`);
+        fsExtra.writeFileSync(s`${rootDir}/source/main.brs`, ``);
+        const runner = new Runner();
+        const spy = sinon.spy((runner as any), 'getFilePaths');
+        await runner.run({
+            cwd: rootDir,
+            files: [
+                '**/*'
+            ]
+        });
+        expect(spy.callCount).to.equal(1);
+        expect(
+            spy.getCalls()[0].returnValue.map(x => s(x))
+        ).to.eql([
+            s`${rootDir}/source/main.brs`
+        ]);
+    });
+
     describe('check', () => {
         it('catches unformatted files', async () => {
             let filePath = s`${rootDir}/lib.brs`;

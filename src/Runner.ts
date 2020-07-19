@@ -24,10 +24,7 @@ export class Runner {
             ...runnerOptions
         });
 
-        let filePaths = globAll.sync(args.files, {
-            cwd: args.cwd,
-            absolute: true
-        } as IOptions);
+        const filePaths = this.getFilePaths(args.files, args.cwd!);
 
         this.formatter = new Formatter(args);
 
@@ -70,6 +67,19 @@ export class Runner {
                 console.log('All matched files are formatted properly!');
             }
         }
+    }
+
+    /**
+     * Get the list of file paths for this run.
+     */
+    private getFilePaths(files: string[], cwd: string) {
+        const filePaths = globAll.sync(files, {
+            cwd: cwd,
+            absolute: true,
+            //skip all directories
+            nodir: true
+        } as IOptions);
+        return filePaths;
     }
 
     /**
