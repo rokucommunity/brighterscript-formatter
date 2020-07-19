@@ -10,7 +10,7 @@ yargs //eslint-disable-line
         const runner = new Runner();
         runner.run(argv).catch((e) => {
             console.error(e?.message || e);
-            process.exit(-1);
+            process.exit(1);
         });
     })
     .option('cwd', { description: 'The current working directory that should be used when running this runner', type: 'string' })
