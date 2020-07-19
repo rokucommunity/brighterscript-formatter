@@ -47,10 +47,10 @@
         "rimraf": "^2.6.2",
         "sinon": "^9.0.2",
         "source-map-support": "^0.5.3",
-        "ts-node": "^8.2.0",
+        "ts-node": "^8.10.2",
         "tslint-eslint-rules": "^5.4.0",
         "tslint-origin-ordered-imports-rule": "^1.1.2",
-        "typescript": "^3.9.2",
+        "typescript": "^3.9.7",
         "yargs": "^15.3.1"
     },
     "files": [
