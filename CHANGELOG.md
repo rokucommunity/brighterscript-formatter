@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.0] - 2020-07-18
+### Added
+ - command line interface (CLI) to support running the formatter against projects from a terminal.
+ - support for loading config options from a bsfmt.json file found in the same working directory.
+
+
+
 ## [1.4.0] - 2020-05-29
 ### Added 
  - new method to generate source maps during format.
@@ -121,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.5.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.3.0...v1.4.0
 [1.4.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.3.0...v1.4.0
 [1.3.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.2.0...v1.3.0
 [1.2.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.1.8...v1.2.0
