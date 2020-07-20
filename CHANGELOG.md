@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.1] - 2020-07-19
+### Added
+ - public method `Runner#getBsfmtOptions` which allows external api consumers to use the standard file loading logic.
+ - cli option to disable `bsfmt.json` loading.
+ - cli option to provide custom `bsfmt.json` path.
+### Changed
+ - removed method `Runner#loadOptionsFromFile` introduced in v1.5.0 in favor of `getBsfmtOptions`. Although this is technically a breaking change, it is very unlikely that anyone is actively calling that new method.
+
+
+
 ## [1.5.0] - 2020-07-18
 ### Added
  - command line interface (CLI) to support running the formatter against projects from a terminal.
@@ -128,6 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.5.1]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.0...v1.5.1
 [1.5.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.4.0...v1.5.0
 [1.4.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.3.0...v1.4.0
 [1.3.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.2.0...v1.3.0
