@@ -184,9 +184,22 @@ describe('Runner', () => {
             }
             expect(threw).to.be.true;
         });
+
+        it('throws exception when custom bsfmt file is provided but does not exist', async () => {
+            let threw: boolean;
+            try {
+                await run({
+                    bsfmtPath: './does-not-exist.json'
+                });
+                threw = false;
+            } catch (e) {
+                threw = true;
+            }
+            expect(threw).to.be.true;
+        });
     });
 
-    async function run(options?: RunnerOptions) {
+    async function run(options?: Partial<RunnerOptions>) {
         const runner = new Runner();
         await runner.run({
             ...baseOptions,

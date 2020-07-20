@@ -17,5 +17,7 @@ yargs //eslint-disable-line
     .option('write', { description: 'This rewrites all processed in place. It is recommended to commit your files before using this option', type: 'boolean', default: false })
     .option('check', { description: 'Will list any unformatted files and return a nonzero eror code if any were found', type: 'boolean', default: false })
     .option('absolute', { description: 'If true, absolute paths are printed instead of relative paths', type: 'boolean', default: false })
+    .option('noBsfmt', { description: 'Don\t read a bsfmt.json file', type: 'boolean', default: false })
+    .option('bsfmtPath', { description: 'Use a specified path to bsfmt.json instead of the default', type: 'string' })
     .argv;
 

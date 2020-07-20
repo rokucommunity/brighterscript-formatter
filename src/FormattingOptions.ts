@@ -6,7 +6,7 @@ import { TokenKind } from 'brighterscript';
  */
 export interface FormattingOptions {
     /**
-     * The type of indentation to use when indenting the beginning of lines.
+     * The type of whitespace to use when indenting the beginning of lines.
      * Has no effect if `formatIndent` is false
      */
     indentStyle?: 'tabs' | 'spaces';
@@ -89,6 +89,7 @@ export interface FormattingOptions {
      * If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default.
      * If 'rem', all comments are preceeded by `rem`
      * If 'original', the comment type is unchanged
+     * @default "original"
      */
     formatSingleLineCommentType?: 'singlequote' | 'rem' | 'original';
     /**

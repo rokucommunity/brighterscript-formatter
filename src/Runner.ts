@@ -14,12 +14,9 @@ export class Runner {
     public formatter?: Formatter;
 
     public async run(runnerOptions: RunnerOptions) {
-        //load options from bsfmt.json if exists
-        const bsfmtOptions = this.loadOptionsFromFile(runnerOptions.cwd ?? process.cwd());
-
         let args = this.normalizeArgs({
-            //load any options from bsfmt.json
-            ...bsfmtOptions,
+            //load options from bsfmt.json
+            ...this.getBsfmtOptions(runnerOptions) ?? {},
             //then override with the options from the parameter
             ...runnerOptions
         });
@@ -83,24 +80,44 @@ export class Runner {
     }
 
     /**
-     * Load the config from the `bsconfig.json` file in the cwd
+     * Load the options from bsfmt.json
+     * @throws whenever a custom bsfmt path is provided and does not exist
+     * @returns {FormattingOptions} when found, or null if not found
      */
-    public loadOptionsFromFile(cwd: string) {
-        const configFilePath = path.join(cwd, 'bsfmt.json');
-        if (fsExtra.pathExistsSync(configFilePath)) {
-            const contents = fsExtra.readFileSync(configFilePath);
-            const parseErrors = [] as ParseError[];
-            const config = parseJsonc(contents.toString(), parseErrors);
-            //if there were errors parsing the bsfmt.json, fail now
-            if (parseErrors.length > 0) {
-                throw new Error(`Error parsing "${configFilePath}": ${printParseErrorCode(parseErrors[0].error)}`);
-            }
-            return config;
-        } else {
-            return {} as FormattingOptions;
-        }
-    }
+    public getBsfmtOptions(runnerOptions: RunnerOptions): FormattingOptions | null {
 
+        //if options says not to load bsfmt, then return an empty object
+        if (runnerOptions.noBsfmt) {
+            return null;
+        }
+
+        const cwd = runnerOptions.cwd ?? process.cwd();
+        const bsfmtPath = runnerOptions.bsfmtPath
+            //use custom path
+            ? path.resolve(cwd, runnerOptions.bsfmtPath)
+            //use default path
+            : path.resolve(cwd, 'bsfmt.json');
+
+        const configFileExists = fsExtra.pathExistsSync(bsfmtPath);
+
+        //if using custom bsfmt.json path, then throw error if it doesn't exist.
+        if (runnerOptions.bsfmtPath && configFileExists === false) {
+            throw new Error(`bsfmt file does not exist at "${bsfmtPath}"`);
+
+            //using the default bsfmt.json path, and it doesn't exist, so just return an empty object
+        } else if (configFileExists === false) {
+            return null;
+        }
+
+        const contents = fsExtra.readFileSync(bsfmtPath);
+        const parseErrors = [] as ParseError[];
+        const config = parseJsonc(contents.toString(), parseErrors);
+        //if there were errors parsing the bsfmt.json, fail now
+        if (parseErrors.length > 0) {
+            throw new Error(`Error parsing "${bsfmtPath}": ${printParseErrorCode(parseErrors[0].error)}`);
+        }
+        return config;
+    }
 
     public normalizeArgs(args: RunnerOptions): RunnerOptions {
         args.files = Array.isArray(args.files) ? args.files : [];
@@ -119,15 +136,23 @@ export interface RunnerOptions extends FormattingOptions {
      */
     cwd?: string;
     /**
-     * This rewrites all processed in place. It is recommended to commit your files before using this option
+     * Rewrites all processed in place. It is recommended to commit your files before using this option
      */
     write?: boolean;
     /**
-     * Will list any unformatted files and return a nonzero eror code if any were found
+     * List any unformatted files and return a nonzero eror code if any were found
      */
     check?: boolean;
     /**
-     * If true, absolute paths are printed instead of relative paths
+     * Print absolute file paths instead of relative paths
      */
     absolute?: boolean;
+    /**
+     * Don't read a bsfmt.json file
+     */
+    noBsfmt?: boolean;
+    /**
+     * Use a specified path to bsfmt.json insead of the default
+     */
+    bsfmtPath?: string;
 }
