@@ -199,6 +199,15 @@ describe('Runner', () => {
         });
     });
 
+    describe('getBsfmtOptions', () => {
+        it('does not load bsfmt from file when noBsfmt is provided', () => {
+            expect(new Runner().getBsfmtOptions({
+                ...baseOptions,
+                noBsfmt: true
+            })).to.be.null;
+        });
+    });
+
     async function run(options?: Partial<RunnerOptions>) {
         const runner = new Runner();
         await runner.run({
