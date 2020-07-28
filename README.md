@@ -1,6 +1,6 @@
 # brighterscript-formatter
 
-A code formatter for [BrighterScript](https://github.com/RokuCommunity/brighterscript), a superset of Roku's BrightScript language
+A code formatter for BrightScript and [BrighterScript](https://github.com/RokuCommunity/brighterscript).
 
 
 [![Build Status](https://travis-ci.org/RokuCommunity/brighterscript-formatter.svg?branch=master)](https://travis-ci.org/RokuCommunity/brighterscript-formatter)
