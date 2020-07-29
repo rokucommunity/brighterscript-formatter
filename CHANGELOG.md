@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.4] - 2020-07-29
+### Fixed
+ - bug that was not including `bsconfig.schema.json` in the npm package when published (because it was not included in the `files` array in `package.json`). 
+
+
+
 ## [1.5.3] - 2020-07-19
 ### Added
  - `bsfmt.schema.json` file in the package for use in tooling.
@@ -150,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.5.4]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.3...v1.5.4
 [1.5.3]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.2...v1.5.3
 [1.5.2]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.1...v1.5.2
 [1.5.1]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.0...v1.5.1
