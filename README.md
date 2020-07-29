@@ -1,6 +1,6 @@
 # brighterscript-formatter
 
-A code formatter for [BrighterScript](https://github.com/RokuCommunity/brighterscript), a superset of Roku's BrightScript language
+A code formatter for BrightScript and [BrighterScript](https://github.com/RokuCommunity/brighterscript).
 
 
 [![Build Status](https://travis-ci.org/RokuCommunity/brighterscript-formatter.svg?branch=master)](https://travis-ci.org/RokuCommunity/brighterscript-formatter)
@@ -59,12 +59,12 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 ## bsfmt.json options
 | Option | Type | Default | Description |
 |-|-|-|-|
-|indentStyle| `"tabs" | "spaces"`|`"spaces"`| The type of whitespace to use when indenting the beginning of lines. Has no effect if `formatIndent` is false |
+|indentStyle| `"tabs", "spaces"`|`"spaces"`| The type of whitespace to use when indenting the beginning of lines. Has no effect if `formatIndent` is false |
 |indentSpaceCount| `number` | `4` | The number of spaces to use when indentStyle is 'spaces'. Default is 4. Has no effect if `formatIndent` is false or if `indentStype` is set to `"tabs"`|
 |formatIndent| `boolean` | `true` | If true, the code is indented. If false, the existing indentation is left intact. | 
-|keywordCase| `"lower" | "upper" | "title | "original"` | `"lower"` |  Replaces all keywords with the upper or lower case settings specified (excluding types...see `typeCase`). If set to `'original'`, they are not modified at all.|
-|typeCase| `"lower" | "upper" | "title | "original"` | Value from `keywordCase` | Replaces all type keywords (`function`, `integer`, `string`, etc...) with the upper or lower case settings specified. If set to `"original"`, they are not modified at all. If falsey (or omitted), it defaults to the value in `keywordCase`|
-|compositeKeywords| `"split" | "combine" | "original"`| `"split"` | Forces all composite keywords (i.e. `elseif`, `endwhile`, etc...) to be consistent. If `"split"`, they are split into their alternatives (`else if`, `end while`). If `"combine"`', they are combined (`elseif`, `endwhile`). If `"original"` or falsey, they are not modified. |
+|keywordCase| `"lower", "upper", "title", "original"` | `"lower"` |  Replaces all keywords with the upper or lower case settings specified (excluding types...see `typeCase`). If set to `'original'`, they are not modified at all.|
+|typeCase| `"lower", "upper", "title", "original"` | Value from `keywordCase` | Replaces all type keywords (`function`, `integer`, `string`, etc...) with the upper or lower case settings specified. If set to `"original"`, they are not modified at all. If falsey (or omitted), it defaults to the value in `keywordCase`|
+|compositeKeywords| `"split", "combine", "original"`| `"split"` | Forces all composite keywords (i.e. `elseif`, `endwhile`, etc...) to be consistent. If `"split"`, they are split into their alternatives (`else if`, `end while`). If `"combine"`', they are combined (`elseif`, `endwhile`). If `"original"` or falsey, they are not modified. |
 |removeTrailingWhiteSpace|`boolean`|`true`| Remove (or don't remove) trailing whitespace at the end of each line | 
 |keywordCaseOverride| `object`| `undefined`| Provides a way to override keyword case at the individual TokenType level|
 |typeCaseOverride|`object`|`undefined`| Provides a way to override type keyword case at the individual TokenType level.Types are defined as keywords that are preceeded by an `as` token.|
@@ -73,7 +73,7 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |insertSpaceBetweenEmptyCurlyBraces|`boolean`|`false`| If true, empty curly braces will contain exactly 1 whitespace char (i.e. `{ }`). If false, there will be zero whitespace chars between empty curly braces (i.e. `{}`) |
 |insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces|`boolean`|`true`| If true, ensure exactly 1 space after leading and before trailing curly braces. If false, REMOVE all whitespace after leading and before trailing curly braces (excluding beginning-of-line indentation spacing)|
 |insertSpaceBetweenAssociativeArrayLiteralKeyAndColon|`boolean`|`false`| If true, ensure exactly 1 space between an associative array literal key and its colon. If false, all space between the key and its colon will be removed |
-|formatSingleLineCommentType|`"singlequote" | "rem" | "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem`", all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
+|formatSingleLineCommentType|`"singlequote" , "rem" | "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem`", all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
 |formatMultiLineObjectsAndArrays|`boolean`| `true`|For multi-line objects and arrays, move everything after the `{` or `[` and everything before the `}` or `]` onto a new line.`|
 
 ## Library
