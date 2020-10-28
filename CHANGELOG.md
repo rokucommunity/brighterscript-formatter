@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.5.5] - 2020-10-28
+### Added
+ - formatting support for BrighterScript annotations
+### Changed
+ - updated to [brighterscript@0.17.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0170---2020-10-27)
+ - use BrighterScript's AST walking functionality for improved performance
+
+
+
 ## [1.5.4] - 2020-07-29
 ### Fixed
  - bug that was not including `bsconfig.schema.json` in the npm package when published (because it was not included in the `files` array in `package.json`). 
@@ -156,6 +165,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.5.5]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.4...v1.5.5
 [1.5.4]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.3...v1.5.4
 [1.5.3]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.2...v1.5.3
 [1.5.2]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.1...v1.5.2
