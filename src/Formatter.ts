@@ -1,5 +1,5 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, util as bsUtil } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 import { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
@@ -388,13 +388,16 @@ export class Formatter {
     private formatIndentation(tokens: Token[], options: FormattingOptions, parser: Parser) {
         let tabCount = 0;
 
+        const ifStatements = new Map<Token, IfStatement>();
+
         //create a map of all if statements for easier lookups
-        let ifStatements = bsUtil
-            .findAllDeep<IfStatement>(parser.ast, (obj) => obj instanceof IfStatement)
-            .reduce((map, obj) => {
-                map.set(obj.value.tokens.if, obj.value);
-                return map;
-            }, new Map<Token, IfStatement>());
+        parser.ast.walk(createVisitor({
+            IfStatement: (statement) => {
+                ifStatements.set(statement.tokens.if, statement);
+            }
+        }), {
+            walkMode: WalkMode.visitAllRecursive
+        });
 
         let nextLineStartTokenIndex = 0;
         //the list of output tokens
@@ -733,10 +736,18 @@ export class Formatter {
      * Ensure exactly 1 or 0 spaces between all literal associative array keys and the colon after it
      */
     private formatSpaceBetweenAssociativeArrayLiteralKeyAndColon(tokens: Token[], parser: Parser, options: FormattingOptions) {
+        const aaLiterals = [] as AALiteralExpression[];
+        parser.ast.walk(createVisitor({
+            AALiteralExpression: (expression) => {
+                aaLiterals.push(expression);
+            }
+        }), {
+            walkMode: WalkMode.visitAllRecursive
+        });
+
         //find all of the AA literals
-        let aaLiterals = bsUtil.findAllDeep<AALiteralExpression>(parser.ast, (obj) => obj instanceof AALiteralExpression);
         for (let aaLiteral of aaLiterals) {
-            for (let element of (aaLiteral.value.elements as AAMemberExpression[])) {
+            for (let element of (aaLiteral.elements as AAMemberExpression[])) {
                 //our target elements should have both `key` and `colon` and they should both be on the same line
                 if (element.keyToken && element.colonToken && element.keyToken.range.end.line === element.colonToken.range.end.line) {
                     let whitespaceToken: Token;
