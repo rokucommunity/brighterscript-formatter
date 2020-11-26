@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [1.6.0] - 2020-11-25
+### Added
+ - formatting support for `try`/`catch`/`throw`/`end try`
 ### Changed
  - updated to [brighterscript@0.22.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0220---2020-11-23)
 
