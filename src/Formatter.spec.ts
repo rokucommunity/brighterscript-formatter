@@ -19,6 +19,16 @@ describe('Formatter', () => {
     });
 
     describe('formatIndent', () => {
+        it('property indents try catch statements', () => {
+            formatEqualTrim(`
+                try
+                    throw "message"
+                catch e
+                    print "thrown"
+                end try
+            `);
+        });
+
         it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
@@ -875,6 +885,20 @@ end sub`;
             )).to.equal(
                 `function a()\nend   function`
             );
+        });
+
+        it('handles endtry', () => {
+            formatEqualTrim(`
+                try
+                catch
+                endtry
+            `, `
+                try
+                catch
+                end try
+            `, {
+                compositeKeywords: 'split'
+            });
         });
     });
 
