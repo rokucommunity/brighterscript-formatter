@@ -950,6 +950,22 @@ end sub`;
             );
         });
 
+        it('formats try/catch/throw/endtry', () => {
+            formatEqualTrim(`
+                TRY
+                    THROW "message"
+                CATCH e
+                    PRINT "thrown"
+                END TRY
+            `, `
+                try
+                    throw "message"
+                catch e
+                    print "thrown"
+                end try
+            `);
+        });
+
         it('formats title case', () => {
             expect(formatter.format(
                 `sub add()\n    IF true then\n        a=1\n    ELSEIF true THEN\n        a=1\n    end if\nENDSUB`,

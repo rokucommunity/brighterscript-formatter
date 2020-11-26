@@ -1138,7 +1138,8 @@ export const BasicKeywords = [
     TokenKind.Namespace,
     TokenKind.Import,
     TokenKind.Try,
-    TokenKind.Catch
+    TokenKind.Catch,
+    TokenKind.Throw
 ];
 
 export let Keywords: TokenKind[] = [];
