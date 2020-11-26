@@ -1092,7 +1092,8 @@ export const CompositeKeywords = [
     TokenKind.HashElseIf,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
-    TokenKind.EndNamespace
+    TokenKind.EndNamespace,
+    TokenKind.EndTry
 ];
 
 export const BasicKeywords = [
@@ -1135,7 +1136,10 @@ export const BasicKeywords = [
     TokenKind.HashConst,
     TokenKind.Class,
     TokenKind.Namespace,
-    TokenKind.Import
+    TokenKind.Import,
+    TokenKind.Try,
+    TokenKind.Catch,
+    TokenKind.Throw
 ];
 
 export let Keywords: TokenKind[] = [];
@@ -1156,7 +1160,8 @@ export let IndentSpacerTokenKinds = [
     TokenKind.While,
     TokenKind.HashIf,
     TokenKind.Class,
-    TokenKind.Namespace
+    TokenKind.Namespace,
+    TokenKind.Try
 ];
 /**
  * The list of tokens that should cause an outdent
@@ -1172,7 +1177,8 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.Next,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
-    TokenKind.EndNamespace
+    TokenKind.EndNamespace,
+    TokenKind.EndTry
 ];
 /**
  * The list of tokens that should cause an outdent followed by an immediate indent
@@ -1181,7 +1187,8 @@ export let InterumSpacingTokenKinds = [
     TokenKind.Else,
     TokenKind.ElseIf,
     TokenKind.HashElse,
-    TokenKind.HashElseIf
+    TokenKind.HashElseIf,
+    TokenKind.Catch
 ];
 
 export let CallableKeywordTokenKinds = [

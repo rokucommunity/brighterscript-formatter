@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.0] - 2020-11-25
+### Changed
+ - updated to [brighterscript@0.22.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0220---2020-11-23)
+
+
+
 ## [1.5.5] - 2020-10-28
 ### Added
  - formatting support for BrighterScript annotations
@@ -165,6 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+[1.6.0]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.5...v1.6.0
 [1.5.5]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.4...v1.5.5
 [1.5.4]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.3...v1.5.4
 [1.5.3]:  https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.5.2...v1.5.3
