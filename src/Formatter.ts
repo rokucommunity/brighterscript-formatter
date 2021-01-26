@@ -1,5 +1,5 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement, createToken } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 import { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
@@ -272,7 +272,6 @@ export class Formatter {
             (token as any).startIndex += indexOffset;
             let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(tokens, i);
             let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(tokens, i);
-
             if (
                 //is this a composite token
                 CompositeKeywords.includes(token.kind) &&
@@ -296,6 +295,27 @@ export class Formatter {
                 }
                 let offsetDifference = token.text.length - tokenValue.length;
                 indexOffset += offsetDifference;
+
+                //`else if` is a special case
+            } else if (token.kind === TokenKind.Else && nextNonWhitespaceToken?.kind === TokenKind.If) {
+                const nextToken = tokens[i + 1];
+
+                //remove separating Whitespace
+                if (options.compositeKeywords === 'combine') {
+                    //if there is a whitespace token between the `else` and `if`
+                    if (nextToken?.kind === TokenKind.Whitespace) {
+                        //remove the whitespace token
+                        tokens.splice(i + 1, 1);
+                    }
+
+                    //separate with exactly 1 space
+                } else if (options.compositeKeywords === 'split') {
+                    if (nextToken?.kind !== TokenKind.Whitespace) {
+                        tokens.splice(i + 1, 0, createToken(TokenKind.Whitespace, ' '));
+                    } else {
+                        nextToken.text = ' ';
+                    }
+                }
             }
         }
         return tokens;
@@ -1105,7 +1125,6 @@ export const CompositeKeywords = [
     TokenKind.ExitWhile,
     TokenKind.ExitFor,
     TokenKind.EndFor,
-    [TokenKind.Else, TokenKind.If],
     TokenKind.HashElseIf,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
