@@ -1,5 +1,5 @@
 import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode } from 'brighterscript';
+import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { FormattingOptions, normalizeOptions } from './FormattingOptions';
 import { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
@@ -418,6 +418,11 @@ export class Formatter {
                 let previousNonWhitespaceToken = this.getPreviousNonWhitespaceToken(lineTokens, i);
                 let nextNonWhitespaceToken = this.getNextNonWhitespaceToken(lineTokens, i);
 
+                //if the previous token was `else` and this token is `if`, skip this token. (we used to have a single token for `elseif` but it got split out in an update of brighterscript)
+                if (previousNonWhitespaceToken?.kind === TokenKind.Else && token.kind === TokenKind.If) {
+                    continue;
+                }
+
                 //keep track of whether we found a non-Whitespace (or Newline) character
                 if (![TokenKind.Whitespace, TokenKind.Newline].includes(token.kind)) {
                     foundNonWhitespaceThisLine = true;
@@ -440,22 +445,19 @@ export class Formatter {
 
                     //skip indent for single-line if statements
                     let ifStatement = ifStatements.get(token);
+                    const endIfToken = this.getEndIfToken(ifStatement);
                     if (
                         ifStatement &&
                         (
                             //does not have an end if
-                            !ifStatement.tokens.endIf ||
+                            !endIfToken ||
                             //end if is on same line as if
-                            ifStatement.tokens.if.range.end.line === ifStatement.tokens.endIf.range.end.line
+                            ifStatement.tokens.if.range.end.line === endIfToken.range.end.line
                         )
                     ) {
                         //if there's an `else`, skip past it since it'll cause de-indent otherwise
                         if (ifStatement.tokens.else) {
                             i = tokens.indexOf(ifStatement.tokens.else);
-
-                            //if there's no else, but there is an `else if`, skip past it since it'll cause de-indent otherwise
-                        } else if (ifStatement.elseIfs && ifStatement.elseIfs.length > 0) {
-                            i = tokens.indexOf(ifStatement.elseIfs[ifStatement.elseIfs.length - 1].elseIfToken);
                         }
 
                         continue;
@@ -590,6 +592,21 @@ export class Formatter {
             }
         }
         return outputTokens;
+    }
+
+    /**
+     * if and elseIf statements are chained within the if statement. So we need to walk all the if stataments' elseBranch chains until we find the final one.
+     * Then return the endIf token if it exists
+     */
+    private getEndIfToken(ifStatement: IfStatement | undefined) {
+        while (true) {
+            if (!isIfStatement(ifStatement?.elseBranch)) {
+                break;
+            } else {
+                ifStatement = ifStatement?.elseBranch;
+            }
+        }
+        return ifStatement?.tokens.endIf;
     }
 
     /**
@@ -1088,7 +1105,7 @@ export const CompositeKeywords = [
     TokenKind.ExitWhile,
     TokenKind.ExitFor,
     TokenKind.EndFor,
-    TokenKind.ElseIf,
+    [TokenKind.Else, TokenKind.If],
     TokenKind.HashElseIf,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
@@ -1185,7 +1202,6 @@ export let OutdentSpacerTokenKinds = [
  */
 export let InterumSpacingTokenKinds = [
     TokenKind.Else,
-    TokenKind.ElseIf,
     TokenKind.HashElse,
     TokenKind.HashElseIf,
     TokenKind.Catch

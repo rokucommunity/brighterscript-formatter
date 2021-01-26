@@ -61,47 +61,47 @@ describe('Formatter', () => {
                     if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1
@@ -109,7 +109,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1
@@ -117,7 +117,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1 then
@@ -125,7 +125,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1 then
