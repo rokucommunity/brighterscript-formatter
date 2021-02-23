@@ -6,22 +6,17 @@ A code formatter for BrightScript and [BrighterScript](https://github.com/RokuCo
 [![Build Status](https://travis-ci.org/RokuCommunity/brighterscript-formatter.svg?branch=master)](https://travis-ci.org/RokuCommunity/brighterscript-formatter)
 [![Coverage Status](https://coveralls.io/repos/github/rokucommunity/brighterscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/rokucommunity/brighterscript-formatter?branch=master)
 [![npm](https://img.shields.io/npm/v/brighterscript-formatter.svg?branch=master)](https://www.npmjs.com/package/brighterscript-formatter)
-
-## CLI
-
-The command line looks up formatting options in an optional `./bsfmt.json` (see formatting options section) which should look like:
-
-```json
-{
-    "indentStyle": "spaces",
-    "indentSpaceCount": 2
-}
+## Installation
+### npm
+```bash
+npm install brighterscript-formatter -g
 ```
 
-### Usage
-
+## Usage
+### CLI
+**:exclamation: WARNING**: be sure to commit your files before using the `--write` flag, as that will overwrite your files
 ```bash
-# WARNING: commit before running formatting
+
 
 bsfmt <files...> [<options>]
 
@@ -39,6 +34,17 @@ bsfmt "source/**/*.brs" --no-bsfmt
 
 #path to custom bsfmt.json
 bsfmt "source/**/*.brs" --bsfmt-path "../common/bsfmt.json"
+```
+
+## bsfmt.json
+
+The CLI reads formatting options from an optional `./bsfmt.json` (see formatting options section) which should look like:
+
+```json
+{
+    "indentStyle": "spaces",
+    "indentSpaceCount": 2
+}
 ```
 
 
