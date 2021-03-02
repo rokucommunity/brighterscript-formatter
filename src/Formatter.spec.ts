@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
-import { createToken, Token, TokenKind, util } from 'brighterscript';
+import { createToken, Token, TokenKind } from 'brighterscript';
 import { SourceMapConsumer } from 'source-map';
 
 describe('Formatter', () => {
