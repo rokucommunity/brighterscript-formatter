@@ -19,6 +19,21 @@ describe('Formatter', () => {
     });
 
     describe('formatIndent', () => {
+        it('formats simple if statement', () => {
+            formatEqualTrim(`
+                if true then
+                    print "if"
+                end if
+                if true then
+                    print "if"
+                else if false then
+                    print "else if"
+                else
+                    print "else"
+                end if
+            `);
+        });
+
         it('property indents try catch statements', () => {
             formatEqualTrim(`
                 try
@@ -833,6 +848,17 @@ end sub`;
     });
 
     describe('compositeKeywords', () => {
+        it(`works for 'combine'`, () => {
+            expect(formatter.format(
+                `elseif`,
+                {
+                    compositeKeywords: 'combine'
+                }
+            )).to.equal(
+                `elseif`
+            );
+        });
+
         it(`works for 'combine'`, () => {
             expect(formatter.format(
                 `function a()\nend function`,

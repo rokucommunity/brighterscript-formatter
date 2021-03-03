@@ -297,20 +297,20 @@ export class Formatter {
                 indexOffset += offsetDifference;
 
                 //`else if` is a special case
-            } else if (token.kind === TokenKind.Else && nextNonWhitespaceToken?.kind === TokenKind.If) {
+            } else if (token.kind === TokenKind.Else && nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.If) {
                 const nextToken = tokens[i + 1];
 
                 //remove separating Whitespace
                 if (options.compositeKeywords === 'combine') {
                     //if there is a whitespace token between the `else` and `if`
-                    if (nextToken?.kind === TokenKind.Whitespace) {
+                    if (nextToken.kind === TokenKind.Whitespace) {
                         //remove the whitespace token
                         tokens.splice(i + 1, 1);
                     }
 
                     //separate with exactly 1 space
                 } else if (options.compositeKeywords === 'split') {
-                    if (nextToken?.kind !== TokenKind.Whitespace) {
+                    if (nextToken.kind !== TokenKind.Whitespace) {
                         tokens.splice(i + 1, 0, createToken(TokenKind.Whitespace, ' '));
                     } else {
                         nextToken.text = ' ';
@@ -619,14 +619,16 @@ export class Formatter {
      * Then return the endIf token if it exists
      */
     private getEndIfToken(ifStatement: IfStatement | undefined) {
-        while (true) {
-            if (!isIfStatement(ifStatement?.elseBranch)) {
-                break;
-            } else {
-                ifStatement = ifStatement?.elseBranch;
+        if (isIfStatement(ifStatement)) {
+            while (true) {
+                if (isIfStatement(ifStatement.elseBranch)) {
+                    ifStatement = ifStatement.elseBranch;
+                } else {
+                    break;
+                }
             }
+            return ifStatement.tokens.endIf;
         }
-        return ifStatement?.tokens.endIf;
     }
 
     /**
