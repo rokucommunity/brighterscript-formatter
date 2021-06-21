@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
-import { TokenKind } from 'brighterscript';
+import { createToken, Token, TokenKind } from 'brighterscript';
 import { SourceMapConsumer } from 'source-map';
 
 describe('Formatter', () => {
@@ -19,6 +19,21 @@ describe('Formatter', () => {
     });
 
     describe('formatIndent', () => {
+        it('formats simple if statement', () => {
+            formatEqualTrim(`
+                if true then
+                    print "if"
+                end if
+                if true then
+                    print "if"
+                else if false then
+                    print "else if"
+                else
+                    print "else"
+                end if
+            `);
+        });
+
         it('property indents try catch statements', () => {
             formatEqualTrim(`
                 try
@@ -61,47 +76,47 @@ describe('Formatter', () => {
                     if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1 then
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1
@@ -109,7 +124,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1
@@ -117,7 +132,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1
                         print "1"
                     else if b = 1 then
@@ -125,7 +140,7 @@ describe('Formatter', () => {
                     else
                         print "1"
                     end if
-                
+
                     if b = 1 then
                         print "1"
                     else if b = 1 then
@@ -835,6 +850,17 @@ end sub`;
     describe('compositeKeywords', () => {
         it(`works for 'combine'`, () => {
             expect(formatter.format(
+                `elseif`,
+                {
+                    compositeKeywords: 'combine'
+                }
+            )).to.equal(
+                `elseif`
+            );
+        });
+
+        it(`works for 'combine'`, () => {
+            expect(formatter.format(
                 `function a()\nend function`,
                 {
                     compositeKeywords: 'combine'
@@ -1137,13 +1163,14 @@ end sub`;
     });
 
     describe('break composite keywords', () => {
-        function format(text: string, kind: TokenKind) {
-            let tokens = (formatter as any).formatCompositeKeywords([{
-                text: text,
-                kind: kind,
-                startIndex: 0
-            }], { compositeKeywords: 'split' });
-            return tokens[0].text;
+        function format(...params: Array<[string, TokenKind]>) {
+            let tokens = [] as Token[];
+            for (let i = 0; i < params.length; i++) {
+                tokens.push(createToken(params[i][1], params[i][0]));
+            }
+            tokens = formatter['formatCompositeKeywords'](tokens, { compositeKeywords: 'split' });
+            //join all provided tokens together
+            return tokens.map(x => x.text).join('');
         }
 
         it('handles edge cases', () => {
@@ -1160,14 +1187,14 @@ end sub`;
         });
 
         it('adds spaces at proper locations when supposed to', () => {
-            expect(format('endfunction', TokenKind.EndFunction)).to.equal('end function');
-            expect(format('endif', TokenKind.EndIf)).to.equal('end if');
-            expect(format('endsub', TokenKind.EndSub)).to.equal('end sub');
-            expect(format('endwhile', TokenKind.EndWhile)).to.equal('end while');
-            expect(format('exitwhile', TokenKind.ExitWhile)).to.equal('exit while');
-            expect(format('exitfor', TokenKind.ExitFor)).to.equal('exit for');
-            expect(format('endfor', TokenKind.EndFor)).to.equal('end for');
-            expect(format('elseif', TokenKind.ElseIf)).to.equal('else if');
+            expect(format(['else', TokenKind.Else], ['if', TokenKind.If])).to.equal('else if');
+            expect(format(['endfunction', TokenKind.EndFunction])).to.equal('end function');
+            expect(format(['endif', TokenKind.EndIf])).to.equal('end if');
+            expect(format(['endsub', TokenKind.EndSub])).to.equal('end sub');
+            expect(format(['endwhile', TokenKind.EndWhile])).to.equal('end while');
+            expect(format(['exitwhile', TokenKind.ExitWhile])).to.equal('exit while');
+            expect(format(['exitfor', TokenKind.ExitFor])).to.equal('exit for');
+            expect(format(['endfor', TokenKind.EndFor])).to.equal('end for');
 
             expect(formatter.format(
                 `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
@@ -1180,7 +1207,7 @@ end sub`;
         });
 
         it('honors case', () => {
-            expect(format('endFUNCTION', TokenKind.EndFunction)).to.equal('end FUNCTION');
+            expect(format(['endFUNCTION', TokenKind.EndFunction])).to.equal('end FUNCTION');
         });
 
         it('handles multi-line arrays', () => {
