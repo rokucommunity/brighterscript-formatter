@@ -67,13 +67,13 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |-|-|-|-|
 |indentStyle| `"tabs", "spaces"`|`"spaces"`| The type of whitespace to use when indenting the beginning of lines. Has no effect if `formatIndent` is false |
 |indentSpaceCount| `number` | `4` | The number of spaces to use when indentStyle is 'spaces'. Default is 4. Has no effect if `formatIndent` is false or if `indentStype` is set to `"tabs"`|
-|formatIndent| `boolean` | `true` | If true, the code is indented. If false, the existing indentation is left intact. | 
+|formatIndent| `boolean` | `true` | If true, the code is indented. If false, the existing indentation is left intact. |
 |keywordCase| `"lower", "upper", "title", "original"` | `"lower"` |  Replaces all keywords with the upper or lower case settings specified (excluding types...see `typeCase`). If set to `'original'`, they are not modified at all.|
 |typeCase| `"lower", "upper", "title", "original"` | Value from `keywordCase` | Replaces all type keywords (`function`, `integer`, `string`, etc...) with the upper or lower case settings specified. If set to `"original"`, they are not modified at all. If falsey (or omitted), it defaults to the value in `keywordCase`|
 |compositeKeywords| `"split", "combine", "original"`| `"split"` | Forces all composite keywords (i.e. `elseif`, `endwhile`, etc...) to be consistent. If `"split"`, they are split into their alternatives (`else if`, `end while`). If `"combine"`', they are combined (`elseif`, `endwhile`). If `"original"` or falsey, they are not modified. |
-|removeTrailingWhiteSpace|`boolean`|`true`| Remove (or don't remove) trailing whitespace at the end of each line | 
-|keywordCaseOverride| `object`| `undefined`| Provides a way to override keyword case at the individual TokenType level|
-|typeCaseOverride|`object`|`undefined`| Provides a way to override type keyword case at the individual TokenType level.Types are defined as keywords that are preceeded by an `as` token.|
+|removeTrailingWhiteSpace|`boolean`|`true`| Remove (or don't remove) trailing whitespace at the end of each line |
+|[keywordCaseOverride](#keywordCaseOverride)| `object`| `undefined`| Provides a way to override keyword case at the individual TokenType level|
+|[typeCaseOverride](#typeCaseOverride)|`object`|`undefined`| Provides a way to override type keyword case at the individual TokenType level.Types are defined as keywords that are preceeded by an `as` token.|
 |formatInteriorWhitespace|`boolean`|`true`| All whitespace between items is reduced to exactly 1 space character and certain keywords and operators are padded with whitespace.  This is a catchall property that will also disable the following rules: `insertSpaceBeforeFunctionParenthesis`, `insertSpaceBetweenEmptyCurlyBraces` `insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces`|
 |insertSpaceBeforeFunctionParenthesis|`boolean`|`false`| If true, a space is inserted to the left of an opening function declaration parenthesis. (i.e. `function main ()` or `function ()`). If false, all spacing is removed (i.e. `function main()` or `function()`).|
 |insertSpaceBetweenEmptyCurlyBraces|`boolean`|`false`| If true, empty curly braces will contain exactly 1 whitespace char (i.e. `{ }`). If false, there will be zero whitespace chars between empty curly braces (i.e. `{}`) |
@@ -81,6 +81,40 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |insertSpaceBetweenAssociativeArrayLiteralKeyAndColon|`boolean`|`false`| If true, ensure exactly 1 space between an associative array literal key and its colon. If false, all space between the key and its colon will be removed |
 |formatSingleLineCommentType|`"singlequote" , "rem" | "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem`", all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
 |formatMultiLineObjectsAndArrays|`boolean`| `true`|For multi-line objects and arrays, move everything after the `{` or `[` and everything before the `}` or `]` onto a new line.`|
+
+### keywordCaseOverride
+For more flexibility in how to format the case of keywords, you can specify the case preference for each individual keyword. Here's an example:
+
+```js
+{
+    //by default, force all keywords to lower case
+    "keywordCase": "lower",
+    //override these specific keywords to upper case
+    "keywordCaseOverride": {
+        "and": "upper",
+        "or": "upper"
+    }
+}
+```
+
+The full list of keywords detected by this option can be found [here](https://github.com/rokucommunity/brighterscript-formatter/blob/095f9dc5ec418d46d3ea6197712f5d11f71d922f/src/Formatter.ts#L1145).
+
+### typeCaseOverride
+For more flexibility in how to format the case of types, you can specify the case preference for each individual type. Here's an example:
+
+```js
+{
+    //by default, force all types to lower case
+    "typeCase": "lower",
+    //override these specific type tokens to upper case
+    "typeCaseOverride": {
+        "string": "upper",
+        "boolean": "upper"
+    },
+}
+```
+
+A type is any token found directly after an `as` keyword.
 
 ## Library
 
