@@ -1,6 +1,6 @@
 {
     "name": "brighterscript-formatter",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "description": "A formatter for BrighterScript, a superset of Roku's BrightScript language, written in JavaScript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
