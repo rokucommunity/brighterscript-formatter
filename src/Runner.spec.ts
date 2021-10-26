@@ -1,9 +1,11 @@
 import * as fsExtra from 'fs-extra';
 import { standardizePath as s } from 'brighterscript';
-import { Runner, RunnerOptions } from './Runner';
+import type { RunnerOptions } from './Runner';
+import { Runner } from './Runner';
 import { expect } from 'chai';
-import { createSandbox, SinonSandbox } from 'sinon';
-import { FormattingOptions } from './FormattingOptions';
+import type { SinonSandbox } from 'sinon';
+import { createSandbox } from 'sinon';
+import type { FormattingOptions } from './FormattingOptions';
 
 let cwd = process.cwd();
 let rootDir = s`${process.cwd()}/testRootDir`;
@@ -72,7 +74,7 @@ describe('Runner', () => {
                     ]
                 });
             } catch (e) {
-                errorMessage = e.message;
+                errorMessage = (e as Error).message;
             }
             expect(errorMessage).to.include('Formatting issues found in the above file(s)');
         });

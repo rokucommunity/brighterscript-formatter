@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as yargs from 'yargs';
-import { Runner, RunnerOptions } from './Runner';
+import type { RunnerOptions } from './Runner';
+import { Runner } from './Runner';
 
 yargs //eslint-disable-line
     .usage('Usage: $0 <command> [options]')

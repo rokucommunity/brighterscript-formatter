@@ -1,8 +1,9 @@
-import * as trimRight from 'trim-right';
-import { Lexer, Token, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement, createToken } from 'brighterscript';
+import type { Token } from 'brighterscript';
+import { Lexer, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement, createToken } from 'brighterscript';
 import { SourceNode } from 'source-map';
-import { FormattingOptions, normalizeOptions } from './FormattingOptions';
-import { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
+import type { FormattingOptions } from './FormattingOptions';
+import { normalizeOptions } from './FormattingOptions';
+import type { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
 
 export class Formatter {
     /**
@@ -230,10 +231,10 @@ export class Formatter {
                 //is NOT array like `[[ ...\n ]]`, or `[{ ...\n }]`)
                 !this.isMatchingDoubleArrayOrArrayCurly(tokens, i)
             ) {
-                tokens.splice(i + 1, 0, <any>{
+                tokens.splice(i + 1, 0, {
                     kind: TokenKind.Newline,
                     text: '\n'
-                });
+                } as TokenWithStartIndex);
                 let closingToken = this.getClosingToken(tokens, i, openKind, closeKind);
                 /* istanbul ignore next */
                 let closingTokenKindex = closingToken ? tokens.indexOf(closingToken) : -1;
@@ -242,10 +243,10 @@ export class Formatter {
 
                 //if there's stuff before the closer, move it to a newline
                 if (this.getPreviousNonWhitespaceToken(tokens, closingTokenKindex, true)) {
-                    tokens.splice(closingTokenKindex, 0, <any>{
+                    tokens.splice(closingTokenKindex, 0, {
                         kind: TokenKind.Newline,
                         text: '\n'
-                    });
+                    } as TokenWithStartIndex);
                 }
             }
         }
@@ -581,11 +582,11 @@ export class Formatter {
             }
             //create a Whitespace token if there isn't one
             if (lineTokens[0] && lineTokens[0].kind !== TokenKind.Whitespace) {
-                lineTokens.unshift(<any>{
+                lineTokens.unshift({
                     startIndex: -1,
                     kind: TokenKind.Whitespace,
                     text: ''
-                });
+                } as TokenWithStartIndex);
             }
 
             //replace the Whitespace with the formatted Whitespace
@@ -594,7 +595,7 @@ export class Formatter {
             //if this is a line filled only with Whitespace, throw out the Whitespace
             if (foundNonWhitespaceThisLine === false) {
                 //only keep the traling Newline
-                lineTokens = [lineTokens.pop() as Token];
+                lineTokens = [lineTokens.pop()!];
             }
 
             //add this list of tokens
@@ -725,11 +726,11 @@ export class Formatter {
                 } else if (nextTokenType && ![TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].includes(nextTokenType)) {
                     //don't add Whitespace if the next token is the Newline
 
-                    tokens.splice(i + 1, 0, <any>{
+                    tokens.splice(i + 1, 0, {
                         startIndex: -1,
                         kind: TokenKind.Whitespace,
                         text: ' '
-                    });
+                    } as TokenWithStartIndex);
                 }
             }
 
@@ -741,11 +742,11 @@ export class Formatter {
             ) {
                 //ensure a space token to the left
                 if (previousTokenType && previousTokenType !== TokenKind.Whitespace) {
-                    tokens.splice(i, 0, <any>{
+                    tokens.splice(i, 0, {
                         startIndex: -1,
                         kind: TokenKind.Whitespace,
                         text: ' '
-                    });
+                    } as TokenWithStartIndex);
                     //increment i by 1 since we added a token
                     i++;
                 }
@@ -853,11 +854,11 @@ export class Formatter {
                     this.removeWhitespaceTokensBackwards(tokens, tokens.indexOf(parenToken));
                     if (options.insertSpaceBeforeFunctionParenthesis) {
                         //insert a Whitespace token
-                        tokens.splice(tokens.indexOf(parenToken), 0, <any>{
+                        tokens.splice(tokens.indexOf(parenToken), 0, {
                             kind: TokenKind.Whitespace,
                             text: ' ',
                             startIndex: -1
-                        });
+                        } as TokenWithStartIndex);
                     }
                     //next loop iteration should be after the open paren
                     setIndex(
@@ -921,11 +922,11 @@ export class Formatter {
             //empty curly braces
             if (token.kind === TokenKind.RightCurlyBrace && this.getPreviousNonWhitespaceToken(tokens, i, true)?.kind === TokenKind.LeftCurlyBrace) {
                 this.removeWhitespaceTokensBackwards(tokens, i);
-                tokens.splice(tokens.indexOf(token), 0, <any>{
+                tokens.splice(tokens.indexOf(token), 0, {
                     kind: TokenKind.Whitespace,
                     startIndex: -1,
                     text: options.insertSpaceBetweenEmptyCurlyBraces ? ' ' : ''
-                });
+                } as TokenWithStartIndex);
                 //next loop iteration should be after the closing curly brace
                 setIndex(
                     tokens.indexOf(token)
@@ -1058,9 +1059,7 @@ export class Formatter {
                 } else if (
                     whitespaceTokenCandidate.kind === TokenKind.Comment
                 ) {
-                    whitespaceTokenCandidate.text = trimRight(
-                        whitespaceTokenCandidate.text
-                    );
+                    whitespaceTokenCandidate.text = whitespaceTokenCandidate.text.trimRight();
                 }
             }
 
@@ -1120,6 +1119,10 @@ export class Formatter {
             text.substring(index + 1).toLowerCase();
         return text;
     }
+}
+
+interface TokenWithStartIndex extends Token {
+    startIndex: number;
 }
 
 export const CompositeKeywords = [

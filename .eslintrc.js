@@ -24,6 +24,7 @@ module.exports = {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/init-declarations': 'off',
         '@typescript-eslint/member-ordering': 'off',
+        '@typescript-eslint/naming-convention': 'off',
         '@typescript-eslint/no-base-to-string': 'off',
         '@typescript-eslint/no-dynamic-delete': 'off',
         '@typescript-eslint/no-empty-function': 'off',
@@ -34,8 +35,9 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-parameter-properties': 'off',
         '@typescript-eslint/no-this-alias': 'off',
-        //possibly disable this once we have converted all throw statements to actual errors
-        '@typescript-eslint/no-throw-literal': 'off',
+        //this is a good rule, but using optional chaining causes coverage report misses.
+        '@typescript-eslint/prefer-optional-chain': 'off',
+        '@typescript-eslint/sort-type-union-intersection-members': 'off',
         '@typescript-eslint/no-type-alias': 'off',
         '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
         '@typescript-eslint/no-unnecessary-condition': 'off',
@@ -45,6 +47,10 @@ module.exports = {
         '@typescript-eslint/no-unsafe-return': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars-experimental': 'off',
+        '@typescript-eslint/object-curly-spacing': [
+            'error',
+            'always'
+        ],
         '@typescript-eslint/no-use-before-define': 'off',
         '@typescript-eslint/prefer-for-of': 'off',
         '@typescript-eslint/prefer-readonly': 'off',
@@ -127,10 +133,7 @@ module.exports = {
         'no-unneeded-ternary': 'off',
         'no-useless-escape': 'off',
         'no-warning-comments': 'off',
-        'object-curly-spacing': [
-            'error',
-            'always'
-        ],
+        'object-curly-spacing': 'off',
         'object-property-newline': 'off',
         'object-shorthand': [
             'error',
@@ -161,6 +164,7 @@ module.exports = {
         {
             files: ['*.spec.ts'],
             rules: {
+                '@typescript-eslint/dot-notation': 'off',
                 '@typescript-eslint/no-unsafe-assignment': 'off',
                 '@typescript-eslint/no-unsafe-call': 'off',
                 '@typescript-eslint/no-unsafe-member-access': 'off',
