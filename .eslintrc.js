@@ -38,8 +38,6 @@ module.exports = {
         //this is a good rule, but using optional chaining causes coverage report misses.
         '@typescript-eslint/prefer-optional-chain': 'off',
         '@typescript-eslint/sort-type-union-intersection-members': 'off',
-        //possibly disable this once we have converted all throw statements to actual errors
-        '@typescript-eslint/no-throw-literal': 'off',
         '@typescript-eslint/no-type-alias': 'off',
         '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
         '@typescript-eslint/no-unnecessary-condition': 'off',
