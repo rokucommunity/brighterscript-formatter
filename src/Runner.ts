@@ -1,10 +1,11 @@
 import * as globAll from 'glob-all';
-import { IOptions } from 'glob';
+import type { IOptions } from 'glob';
 import * as fsExtra from 'fs-extra';
 import { Formatter } from './Formatter';
-import { FormattingOptions } from './FormattingOptions';
+import type { FormattingOptions } from './FormattingOptions';
 import * as path from 'path';
-import { parse as parseJsonc, ParseError, printParseErrorCode } from 'jsonc-parser';
+import type { ParseError } from 'jsonc-parser';
+import { parse as parseJsonc, printParseErrorCode } from 'jsonc-parser';
 
 /**
  * Runs the formatter for an entire project.
@@ -32,7 +33,7 @@ export class Runner {
 
         let unformattedFiles = [] as string[];
 
-        await Promise.all(filePaths.map(async filePath => {
+        await Promise.all(filePaths.map(async (filePath) => {
             let text = (await fsExtra.readFile(filePath)).toString();
             let formattedText = this.formatter!.format(text);
 
@@ -76,7 +77,7 @@ export class Runner {
             //skip all directories
             nodir: true
         } as IOptions);
-        return filePaths;
+        return filePaths as string[];
     }
 
     /**

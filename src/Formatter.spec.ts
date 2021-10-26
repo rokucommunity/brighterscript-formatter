@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { Formatter } from './Formatter';
-import { FormattingOptions } from './FormattingOptions';
-import { createToken, Token, TokenKind } from 'brighterscript';
+import type { FormattingOptions } from './FormattingOptions';
+import type { Token } from 'brighterscript';
+import { createToken, TokenKind } from 'brighterscript';
 import { SourceMapConsumer } from 'source-map';
 
 describe('Formatter', () => {
