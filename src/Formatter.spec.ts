@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-
 import { Formatter } from './Formatter';
 import { FormattingOptions } from './FormattingOptions';
 import { createToken, Token, TokenKind } from 'brighterscript';
@@ -316,6 +315,18 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        it('inserts space around `as` token', () => {
+            formatEqualTrim(`
+                function GetBoolean(   as    as    string  )as boolean
+                    return true
+                end function
+            `, `
+                function GetBoolean(as as string) as boolean
+                    return true
+                end function
+            `);
+        });
+
         describe('insertSpaceBetweenAssociativeArrayLiteralKeyAndColon', () => {
             it('adds space for inline objects', () => {
                 formatEqual(`def = { "key": "value" }`, `def = { "key" : "value" }`, {
