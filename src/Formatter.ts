@@ -661,7 +661,10 @@ export class Formatter {
             TokenKind.LessEqual,
             TokenKind.GreaterEqual,
             TokenKind.Greater,
-            TokenKind.Less
+            TokenKind.Less,
+
+            //keywords
+            TokenKind.As
         ];
         let addLeft = [
             ...addBoth,
