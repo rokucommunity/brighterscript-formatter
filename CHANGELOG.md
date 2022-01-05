@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.4](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.3...v1.6.4) - 2022-01-05
+### Changed
+ - updated to [brighterscript@0.40.6](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0416---2022-01-05)
+### Fixed
+ - formatting issue with ternary operator and square brace in the consequent ([#44](https://github.com/rokucommunity/brighterscript-formatter/pull/44))
+
+
+
 ## [1.6.3](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.2...v1.6.3) - 2021-10-27
 ### Changed
  - updated to [brighterscript@0.40.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0413---2021-10-27)
