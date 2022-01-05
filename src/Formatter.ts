@@ -506,19 +506,7 @@ export class Formatter {
                             i++;
                         }
                     }
-                } else if (
-                    //this is an outdentor token
-                    OutdentSpacerTokenKinds.includes(token.kind) &&
-                    //is not being used as a key in an AA literal
-                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon &&
-                    //is not a method call
-                    !(
-                        //certain symbols may appear next to an open paren, so exclude those
-                        ![TokenKind.RightSquareBracket].includes(token.kind) &&
-                        //open paren means method call
-                        nextNonWhitespaceToken.kind === TokenKind.LeftParen
-                    )
-                ) {
+                } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
                     //do not un-indent if this is a `next` or `endclass` token preceeded by a period
                     if (
                         [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
@@ -537,7 +525,7 @@ export class Formatter {
                         //is closing curly or square
                         (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
                         //next is closing square
-                        nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                        nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
                         //both tokens are on the same line
                         token.range.start.line === nextNonWhitespaceToken.range.start.line
                     ) {
@@ -613,6 +601,39 @@ export class Formatter {
             }
         }
         return outputTokens;
+    }
+
+    /**
+     * Determines if this is an outdent token
+     */
+    private isOutdentToken(token: Token, nextNonWhitespaceToken?: Token) {
+        //this is a temporary fix for broken indentation for brighterscript ternary operations.
+        const isSymbol = [TokenKind.RightCurlyBrace, TokenKind.RightSquareBracket].includes(token.kind);
+        if (
+            //this is an outdentor token
+            OutdentSpacerTokenKinds.includes(token.kind) &&
+            nextNonWhitespaceToken &&
+            (
+                //is not a letter
+                isSymbol ||
+                //is not a symbol and is not being used as a key in an AA literal
+                (
+                    !isSymbol &&
+                    nextNonWhitespaceToken.kind !== TokenKind.Colon
+                )
+            ) &&
+            //is not a method call
+            !(
+                //certain symbols may appear next to an open paren, so exclude those
+                ![TokenKind.RightSquareBracket].includes(token.kind) &&
+                //open paren means method call
+                nextNonWhitespaceToken.kind === TokenKind.LeftParen
+            )
+        ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -1207,6 +1228,7 @@ export let IndentSpacerTokenKinds = [
     TokenKind.Namespace,
     TokenKind.Try
 ];
+
 /**
  * The list of tokens that should cause an outdent
  */
@@ -1224,6 +1246,7 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.EndNamespace,
     TokenKind.EndTry
 ];
+
 /**
  * The list of tokens that should cause an outdent followed by an immediate indent
  */
