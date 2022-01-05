@@ -190,6 +190,24 @@ describe('Formatter', () => {
                 end sub
            `);
         });
+
+        it('handles array in ternary properly', () => {
+            formatEqualTrim(`
+                sub main()
+                    a = true ? [] : true
+                    print a
+                end sub
+           `);
+        });
+
+        it('handles wrapped anon function in ternary properly', () => {
+            formatEqualTrim(`
+                sub main()
+                    a = true ? (sub() : print hello : end sub) : true
+                    print a
+                end sub
+           `);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
