@@ -1225,6 +1225,7 @@ export let IndentSpacerTokenKinds = [
     TokenKind.While,
     TokenKind.HashIf,
     TokenKind.Class,
+    TokenKind.Interface,
     TokenKind.Namespace,
     TokenKind.Try
 ];
@@ -1243,6 +1244,7 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.Next,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
+    TokenKind.EndInterface,
     TokenKind.EndNamespace,
     TokenKind.EndTry
 ];

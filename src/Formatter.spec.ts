@@ -598,6 +598,14 @@ end sub`;
             );
         });
 
+        it('correctly indents interface declarations', () => {
+            expect(formatter.format(
+                'interface Person\nname as string\nend interface'
+            )).to.equal(
+                'interface Person\n    name as string\nend interface'
+            );
+        });
+
         it('correctly indents class methods with access modifiers', () => {
             expect(formatter.format(
                 'class Person\npublic sub a()\nend sub\nprotected sub b()\nend sub\nprivate sub c()\nend sub\nend class'
