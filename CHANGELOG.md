@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.5](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.4...v1.6.5) - 2022-01-14
+### Changed
+ - updated to [brighterscript@0.42.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0420---2022-01-10)
+### Fixed
+ - `interface` indentation ([#45](https://github.com/rokucommunity/brighterscript-formatter/pull/45))
+
+
+
 ## [1.6.4](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.3...v1.6.4) - 2022-01-05
 ### Changed
  - updated to [brighterscript@0.40.6](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0416---2022-01-05)
