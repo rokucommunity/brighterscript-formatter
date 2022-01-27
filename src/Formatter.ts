@@ -760,6 +760,12 @@ export class Formatter {
                         this.removeWhitespace(tokens, i + 1);
                     }
                     //ensure a space token to the right, only if we have more tokens to the right available
+                } else if (this.looksLikeNegativeVariable(tokens, i)) {
+                    //throw out the space to the right of the minus symbol if present
+                    if (i + 1 < tokens.length && tokens[i + 1].kind === TokenKind.Whitespace) {
+                        this.removeWhitespace(tokens, i + 1);
+                    }
+                    //ensure a space token to the right, only if we have more tokens to the right available
                 } else if (nextTokenType && ![TokenKind.Whitespace, TokenKind.Newline, TokenKind.Eof].includes(nextTokenType)) {
                     //don't add Whitespace if the next token is the Newline
 
@@ -1021,6 +1027,27 @@ export class Formatter {
                 nextToken &&
                 //next non-Whitespace token is a numeric literal
                 NumericLiteralTokenKinds.includes(nextToken.kind) &&
+                previousToken &&
+                TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determine if the current token appears to be the negative sign for a variable identifier token
+     */
+    private looksLikeNegativeVariable(tokens: Token[], index: number) {
+        let thisToken = tokens[index];
+        if (thisToken.kind === TokenKind.Minus) {
+            let nextToken = this.getNextNonWhitespaceToken(tokens, index);
+            let previousToken = this.getPreviousNonWhitespaceToken(tokens, index);
+            if (
+                nextToken &&
+                //next non-Whitespace token is an identifier
+                nextToken.kind === TokenKind.Identifier &&
                 previousToken &&
                 TokensBeforeNegativeNumericLiteral.includes(previousToken.kind)
             ) {
@@ -1331,7 +1358,12 @@ export let TokensBeforeNegativeNumericLiteral = [
     TokenKind.Semicolon,
     TokenKind.Comma,
     TokenKind.LeftSquareBracket,
-    TokenKind.LeftParen
+    TokenKind.LeftParen,
+    TokenKind.If,
+    TokenKind.Print,
+    TokenKind.While,
+    TokenKind.Or,
+    TokenKind.And
 ];
 
 export const TypeTokens = [
