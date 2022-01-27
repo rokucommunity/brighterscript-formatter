@@ -311,6 +311,10 @@ describe('Formatter', () => {
         it(`does not indent object properties called 'endnamespace'`, () => {
             formatEqual(`sub main()\n    if m.endnamespace = 123\n        print true\n    end if\nend sub`);
         });
+
+        it(`does not indent object properties called 'endinterface'`, () => {
+            formatEqual(`sub main()\n    if m.endinterface = 123\n        print true\n    end if\nend sub`);
+        });
     });
 
     describe('dedupeWhitespace', () => {
@@ -603,6 +607,22 @@ end sub`;
                 'interface Person\nname as string\nend interface'
             )).to.equal(
                 'interface Person\n    name as string\nend interface'
+            );
+        });
+
+        it('correctly indents interface declarations that contain functions or subs', () => {
+            expect(formatter.format(
+                'interface Person\nname as string\nsub talk(words as string)\nfunction getAge() as integer\nend interface'
+            )).to.equal(
+                'interface Person\n    name as string\n    sub talk(words as string)\n    function getAge() as integer\nend interface'
+            );
+        });
+
+        it('correctly indents multiple interfaces', () => {
+            expect(formatter.format(
+                'interface IFaceA\na as string\nsub doA()\nend interface\ninterface IFaceB\nb as string\nsub doB()\nend interface'
+            )).to.equal(
+                'interface IFaceA\n    a as string\n    sub doA()\nend interface\ninterface IFaceB\n    b as string\n    sub doB()\nend interface'
             );
         });
 
