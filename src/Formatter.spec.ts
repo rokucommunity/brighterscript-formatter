@@ -618,6 +618,14 @@ end sub`;
             );
         });
 
+        it('correctly indents multiple interfaces', () => {
+            expect(formatter.format(
+                'interface IFaceA\na as string\nsub doA()\nend interface\ninterface IFaceB\nb as string\nsub doB()\nend interface'
+            )).to.equal(
+                'interface IFaceA\n    a as string\n    sub doA()\nend interface\ninterface IFaceB\n    b as string\n    sub doB()\nend interface'
+            );
+        });
+
         it('correctly indents class methods with access modifiers', () => {
             expect(formatter.format(
                 'class Person\npublic sub a()\nend sub\nprotected sub b()\nend sub\nprivate sub c()\nend sub\nend class'
