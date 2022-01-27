@@ -1248,7 +1248,8 @@ export let IndentSpacerTokenKinds = [
 ];
 
 /**
- * The list of tokens that should not cause an indent in an interface
+ * A map of tokenKinds that should not cause an indent keyed by the parent token kind
+ * E.g. In 'interface', 'sub' and 'function' should not be indented
  */
 export let IgnoreIndentSpacerByParentTokenKind = new Map<TokenKind, TokenKind[]>([
     [TokenKind.Interface, [
