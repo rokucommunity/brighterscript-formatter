@@ -161,6 +161,15 @@
                         "original"
                     ]
                 },
+                "endinterface": {
+                    "type": "string",
+                    "enum": [
+                        "lower",
+                        "upper",
+                        "title",
+                        "original"
+                    ]
+                },
                 "endnamespace": {
                     "type": "string",
                     "enum": [

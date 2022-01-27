@@ -421,6 +421,12 @@ export class Formatter {
         });
 
         let nextLineStartTokenIndex = 0;
+        let parentIndentTokenKinds: TokenKind[] = [];
+
+        const getParentIndentTokenKind = () => {
+            return parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+        };
+
         //the list of output tokens
         let outputTokens: Token[] = [];
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
@@ -484,8 +490,17 @@ export class Formatter {
                         continue;
                     }
 
+                    // check for specifically mentioned tokens to NOT indent
+                    const parentIndentTokenKind = getParentIndentTokenKind();
+                    if (parentIndentTokenKind && IgnoreIndentSpacerByParentTokenKind.get(parentIndentTokenKind)?.includes(token.kind)) {
+                        // This particular token should not be indented because it is listed in the ignore group for its parent
+                        continue;
+                    }
+
                     tabCount++;
                     foundIndentorThisLine = true;
+                    parentIndentTokenKinds.push(token.kind);
+
 
                     //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
                     if (
@@ -519,6 +534,7 @@ export class Formatter {
                     if (foundIndentorThisLine === false) {
                         thisTabCount--;
                     }
+                    parentIndentTokenKinds.pop();
 
                     //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
                     if (
@@ -1157,6 +1173,7 @@ export const CompositeKeywords = [
     TokenKind.HashElseIf,
     TokenKind.HashEndIf,
     TokenKind.EndClass,
+    TokenKind.EndInterface,
     TokenKind.EndNamespace,
     TokenKind.EndTry
 ];
@@ -1229,6 +1246,17 @@ export let IndentSpacerTokenKinds = [
     TokenKind.Namespace,
     TokenKind.Try
 ];
+
+/**
+ * The list of tokens that should not cause an indent in an interface
+ */
+export let IgnoreIndentSpacerByParentTokenKind = new Map<TokenKind, TokenKind[]>([
+    [TokenKind.Interface, [
+        TokenKind.Sub,
+        TokenKind.Function
+    ]]
+]);
+
 
 /**
  * The list of tokens that should cause an outdent
