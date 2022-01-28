@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.6](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.5...v1.6.6) - 2022-01-28
+### Changed
+ - updated to [brighterscript@0.43.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0430---2022-01-28)
+### Fixed
+ - properly formats an interface that includes subs and functions ([#46](https://github.com/rokucommunity/brighterscript-formatter/pull/46))
+ - better support for appropriate whitespace between minus and numbers/identifiers ([#47](https://github.com/rokucommunity/brighterscript-formatter/pull/47))
+
+
+
 ## [1.6.5](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.4...v1.6.5) - 2022-01-14
 ### Changed
  - updated to [brighterscript@0.42.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0420---2022-01-10)
