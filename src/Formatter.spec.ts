@@ -465,6 +465,28 @@ describe('Formatter', () => {
             formatEqual(`a = [1, -24]`);
             formatEqual(`a = [-24]`);
             formatEqual(`a(-24)`);
+            formatEqual(`if -1 = value\nend if`);
+            formatEqual(`while -1 = value\nend while`);
+            formatEqual(`print -1 + 2`);
+            formatEqual(`print -1 + -1`);
+            expect(formatter.format(`print - 1 + - 1`)).to.equal(`print -1 + -1`);
+            formatEqual(`if condition and -1 <> value\nend if`);
+            formatEqual(`if condition or -1 <> value\nend if`);
+            formatEqual(`if condition and not -1 <> value\nend if`);
+        });
+
+        it('correctly formats negated variable identifier', () => {
+            formatEqual(`value = -value`);
+            expect(formatter.format(`value=1-value`)).to.equal(`value = 1 - value`);
+            expect(formatter.format(`value=1- -value`)).to.equal(`value = 1 - -value`);
+            expect(formatter.format(`value=1- -  value`)).to.equal(`value = 1 - -value`);
+            expect(formatter.format(`value=-value- -value`)).to.equal(`value = -value - -value`);
+            formatEqual(`while -value < 0\nend while`);
+            formatEqual(`if condition and -value <> -1\nend if`);
+            formatEqual(`if condition or -1 <> -value\nend if`);
+            formatEqual(`if condition and not -1 <> -value\nend if`);
+            expect(formatter.format(`if condition and not - 1 <> - value\nend if`)).to.equal(`if condition and not -1 <> -value\nend if`);
+
         });
 
         it('works for special cases', () => {
