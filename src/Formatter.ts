@@ -1,9 +1,8 @@
-import type { Token } from 'brighterscript';
-import { Lexer, TokenKind, AllowedLocalIdentifiers, Parser, createVisitor, WalkMode, isIfStatement, createToken } from 'brighterscript';
+import type { AALiteralExpression, AAMemberExpression, IfStatement, Token } from 'brighterscript';
+import { AllowedLocalIdentifiers, createToken, createVisitor, isIfStatement, Lexer, Parser, TokenKind, WalkMode } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import type { FormattingOptions } from './FormattingOptions';
 import { normalizeOptions } from './FormattingOptions';
-import type { IfStatement, AALiteralExpression, AAMemberExpression } from 'brighterscript/dist/parser';
 
 export class Formatter {
     /**
