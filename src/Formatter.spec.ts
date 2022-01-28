@@ -479,6 +479,7 @@ describe('Formatter', () => {
             formatEqual(`value = -value`);
             expect(formatter.format(`value=1-value`)).to.equal(`value = 1 - value`);
             expect(formatter.format(`value=1- -value`)).to.equal(`value = 1 - -value`);
+            expect(formatter.format(`value=1- -  value`)).to.equal(`value = 1 - -value`);
             expect(formatter.format(`value=-value- -value`)).to.equal(`value = -value - -value`);
             formatEqual(`while -value < 0\nend while`);
             formatEqual(`if condition and -value <> -1\nend if`);
