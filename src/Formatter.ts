@@ -1010,7 +1010,6 @@ export class Formatter {
     private removeWhitespace(tokens: Token[], index: number) {
         while (tokens[index] && tokens[index].kind === TokenKind.Whitespace) {
             tokens.splice(index, 1);
-            index++;
         }
     }
 
