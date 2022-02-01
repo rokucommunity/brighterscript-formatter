@@ -460,7 +460,7 @@ describe('Formatter', () => {
             //DOES remove the Whitespace between them when applicable
             expect(formatter.format(`num = - 1`)).to.equal(`num = -1`);
             expect(formatter.format(`call(a, -1)`)).to.equal(`call(a, -1)`);
-
+            expect(formatter.format(`for   i=-1    to   10`)).to.equal(`for i = -1 to 10`);
             expect(formatter.format(`for   i=-1    to   -1    step   -1`)).to.equal(`for i = -1 to -1 step -1`);
             formatEqual(`a = [1, -24]`);
             formatEqual(`a = [-24]`);
@@ -486,7 +486,10 @@ describe('Formatter', () => {
             formatEqual(`if condition or -1 <> -value\nend if`);
             formatEqual(`if condition and not -1 <> -value\nend if`);
             expect(formatter.format(`if condition and not - 1 <> - value\nend if`)).to.equal(`if condition and not -1 <> -value\nend if`);
-
+            expect(formatter.format(`for i = - buffer to buffer`)).to.equal(`for i = -buffer to buffer`);
+            expect(formatter.format(`for   i    =    -    buffer    to    buffer`)).to.equal(`for i = -buffer to buffer`);
+            expect(formatter.format(`for i = - buffer to buffer step - stepVal`)).to.equal(`for i = -buffer to buffer step -stepVal`);
+            expect(formatter.format(`for i = -     buffer    to    buffer   step  -  stepVal`)).to.equal(`for i = -buffer to buffer step -stepVal`);
         });
 
         it('works for special cases', () => {
