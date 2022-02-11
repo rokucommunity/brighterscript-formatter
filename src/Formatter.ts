@@ -1200,7 +1200,8 @@ export const CompositeKeywords = [
     TokenKind.EndClass,
     TokenKind.EndInterface,
     TokenKind.EndNamespace,
-    TokenKind.EndTry
+    TokenKind.EndTry,
+    TokenKind.EndEnum
 ];
 
 export const BasicKeywords = [
@@ -1269,7 +1270,8 @@ export let IndentSpacerTokenKinds = [
     TokenKind.Class,
     TokenKind.Interface,
     TokenKind.Namespace,
-    TokenKind.Try
+    TokenKind.Try,
+    TokenKind.Enum
 ];
 
 /**
@@ -1282,7 +1284,6 @@ export let IgnoreIndentSpacerByParentTokenKind = new Map<TokenKind, TokenKind[]>
         TokenKind.Function
     ]]
 ]);
-
 
 /**
  * The list of tokens that should cause an outdent
@@ -1300,7 +1301,8 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.EndClass,
     TokenKind.EndInterface,
     TokenKind.EndNamespace,
-    TokenKind.EndTry
+    TokenKind.EndTry,
+    TokenKind.EndEnum
 ];
 
 /**

@@ -611,6 +611,22 @@ end sub`;
     });
 
     describe('indentStyle', () => {
+        it('indents enums', () => {
+            expect(formatter.format(
+                'enum Direction\nup="up"\ndown="down"\nendenum'
+            )).to.equal(
+                'enum Direction\n    up = "up"\n    down = "down"\nend enum'
+            );
+        });
+
+        it('indents namespaced enums', () => {
+            expect(formatter.format(
+                'namespace stuff\nenum Direction\nup="up"\ndown="down"\nend enum\nend namespace'
+            )).to.equal(
+                'namespace stuff\n    enum Direction\n        up = "up"\n        down = "down"\n    end enum\nend namespace'
+            );
+        });
+
         it('correctly fixes indentation for namespace', () => {
             expect(formatter.format(
                 'namespace A.B\nsub main()\nend sub\nend namespace'
