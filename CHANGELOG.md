@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.8](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.7...v1.6.8) - 2022-02-11
+### Changed
+ - updated to [brighterscript@0.45.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0430---2022-01-28)
+### Fixed
+ - properly indent enums and enum members
+
+
+
 ## [1.6.7](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.6...v1.6.7) - 2022-02-01
 ### Fixed
  - ensures that `removeWhitespace` function looks at all tokens to the right ([#49](https://github.com/rokucommunity/brighterscript-formatter/pull/49))
