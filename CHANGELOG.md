@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.9](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.8...v1.6.9) - 2022-02-24
+### Changed
+ - updated to [brighterscript@0.45.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0452---2022-02-24)
+    - fixed significant memory leak [brighterscript#527](https://github.com/rokucommunity/brighterscript/pull/527)
+
+
+
 ## [1.6.8](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.7...v1.6.8) - 2022-02-11
 ### Changed
  - updated to [brighterscript@0.45.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0430---2022-01-28)
