@@ -2,10 +2,13 @@
 
 A code formatter for BrightScript and [BrighterScript](https://github.com/RokuCommunity/brighterscript).
 
+[![build status](https://img.shields.io/github/workflow/status/rokucommunity/brighterscript-formatter/build.svg?logo=github)](https://github.com/rokucommunity/brighterscript-formatter/actions?query=workflow%3Abuild)
+[![coverage status](https://img.shields.io/coveralls/github/rokucommunity/brighterscript-formatter?logo=coveralls)](https://coveralls.io/github/rokucommunity/brighterscript-formatter?branch=master)
+[![monthly downloads](https://img.shields.io/npm/dm/brighterscript-formatter.svg?sanitize=true&logo=npm&logoColor=)](https://npmcharts.com/compare/brighterscript-formatter?minimal=true)
+[![npm version](https://img.shields.io/npm/v/brighterscript-formatter.svg?logo=npm)](https://www.npmjs.com/package/brighterscript-formatter)
+[![license](https://img.shields.io/github/license/rokucommunity/brighterscript-formatter.svg)](LICENSE)
+[![Slack](https://img.shields.io/badge/Slack-RokuCommunity-4A154B?logo=slack)](https://join.slack.com/t/rokudevelopers/shared_invite/zt-4vw7rg6v-NH46oY7hTktpRIBM_zGvwA)
 
-[![Build Status](https://travis-ci.org/RokuCommunity/brighterscript-formatter.svg?branch=master)](https://travis-ci.org/RokuCommunity/brighterscript-formatter)
-[![Coverage Status](https://coveralls.io/repos/github/rokucommunity/brighterscript-formatter/badge.svg?branch=master)](https://coveralls.io/github/rokucommunity/brighterscript-formatter?branch=master)
-[![npm](https://img.shields.io/npm/v/brighterscript-formatter.svg?branch=master)](https://www.npmjs.com/package/brighterscript-formatter)
 ## Installation
 ### npm
 ```bash
