@@ -84,8 +84,8 @@
         "type": "git",
         "url": "git+https://github.com/RokuCommunity/brighterscript-formatter.git"
     },
-    "author": "",
-    "license": "ISC",
+    "author": "RokuCommunity",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/RokuCommunity/brighterscript-formatter/issues"
     },
