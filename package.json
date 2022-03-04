@@ -7,6 +7,7 @@
     "scripts": {
         "preversion": "npm run build && npm run lint && npm run test",
         "build": "rimraf dist && tsc",
+        "watch": "rimraf out && tsc --watch",
         "prepublishOnly": "npm run build && npm run test && npm run lint",
         "lint": "eslint \"src/**\"",
         "test": "nyc mocha src/**/*.spec.ts --full-trace",
