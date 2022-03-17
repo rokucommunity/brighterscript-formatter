@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "brighterscript": "^0.45.6",
-        "glob-all": "^3.2.1",
+        "glob-all": "^3.3.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "^0.7.3",
         "yargs": "^17.2.1"
