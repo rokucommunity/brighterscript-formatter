@@ -34,6 +34,16 @@
                 "clear": true
             },
             "problemMatcher": []
-        }
+        },
+        {
+            "label": "watch",
+            "type": "npm",
+            "script": "watch",
+            "presentation": {
+                "group": "watch"
+            },
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch"
+        },
     ]
 }
