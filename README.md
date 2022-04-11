@@ -51,6 +51,13 @@ The CLI reads formatting options from an optional `./bsfmt.json` (see formatting
 ```
 
 
+## Excluding files
+bsfmt supports excluding files as well. Consider this example. It will include all files, and then exclude the files found in `roku_modules`
+```bash
+bsfmt "source/**/*.brs" "!**/roku_modules/*.*"
+```
+
+
 ### CLI Options
 | Option | Type | Default | Description |
 |-|-|-|-|
