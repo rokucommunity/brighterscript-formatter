@@ -338,6 +338,70 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        it('does not separate optional chaining tokens', () => {
+            formatEqualTrim(`
+                print arr?[0]
+                print arr ?[0]
+
+                print arr?.[0]
+                print arr ?.[ 0]
+
+                print obj?()
+                print obj ?( )
+
+                print obj?@attr
+                print obj ?@ attr
+
+                print obj?.prop
+                print obj ?. prop
+            `, `
+                print arr?[0]
+                print arr ?[0]
+
+                print arr?.[0]
+                print arr ?.[0]
+
+                print obj?()
+                print obj ?()
+
+                print obj?@attr
+                print obj ?@ attr
+
+                print obj?.prop
+                print obj ?. prop
+            `);
+        });
+
+        it('formats optional chaning and ternary properly', () => {
+            formatEqualTrim(`
+                print true ? [1] : val()
+                print true ?[1] : val()
+                print arr ?[0]
+            `);
+        });
+
+        it('handles various optional chaining expressions', () => {
+            formatEqualTrim(`
+                print arr ?[0]
+                print arr ?.["0"]
+                print arr?.value
+                print assocArray?.[0]
+                print assocArray?.getName()?.first?.second
+                print createObject("roByteArray")?.value
+                print createObject("roByteArray")?["0"]
+                print createObject("roList")?.value
+                print createObject("roList")?["0"]
+                print createObject("roXmlList")?["0"]
+                print createObject("roDateTime")?.value
+                print createObject("roDateTime")?.GetTimeZoneOffset
+                print createObject("roSGNode", "Node")?[0]
+                print pi?.first?.second
+                print success?.first?.second
+                print a.b.xmlThing?@someAttr
+                print a.b.localFunc?()
+            `);
+        });
+
         it('inserts space around `as` token', () => {
             formatEqualTrim(`
                 function GetBoolean(   as    as    string  )as boolean
