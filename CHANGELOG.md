@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.12](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.11...v1.6.12) - 2022-04-13
+### Changed
+ - updated to [brighterscript@0.48.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0480---2022-04-13)
+    - adds syntax support for optional chaining operator
+
+
+
 ## [1.6.11](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.10...v1.6.11) - 2022-04-07
 ### Changed
  - updated to [brighterscript@0.47.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0472---2022-04-07)
