@@ -338,6 +338,22 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        it('normalizes whitespace for import statements', () => {
+            formatEqualTrim(`
+                import"something"
+                import "something"
+                import   "something"
+                import\t"something"
+                import\t \t"something"
+            `, `
+                import "something"
+                import "something"
+                import "something"
+                import "something"
+                import "something"
+            `);
+        });
+
         it('does not separate optional chaining tokens', () => {
             formatEqualTrim(`
                 print arr?[0]

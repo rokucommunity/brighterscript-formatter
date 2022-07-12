@@ -711,7 +711,8 @@ export class Formatter {
             ...addBoth,
             TokenKind.LeftCurlyBrace,
             TokenKind.Comma,
-            TokenKind.Colon
+            TokenKind.Colon,
+            TokenKind.Import
         ];
         let removeBoth = [];
         let removeLeft = [
