@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.13](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.12...1.6.13) - 2022-07-16
+### Changed
+ - Bump moment from 2.29.2 to 2.29.4 ([#56](https://github.com/rokucommunity/brighterscript-formatter/pull/56))
+ - Fix import statement formatting. ([#55](https://github.com/rokucommunity/brighterscript-formatter/pull/55))
+ - upgrade to [brighterscript@0.53.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0531---2022-07-15). Notable changes since 0.48.0:
+     - New Language Feature: Constants ([brighterscript#632](https://github.com/rokucommunity/brighterscript/pull/632))
+     - Use `util.createLocation`, not `Location.create()` ([brighterscript#637](https://github.com/rokucommunity/brighterscript/pull/637))
+     - Fix missing range on interface statement ([brighterscript#623](https://github.com/rokucommunity/brighterscript/pull/623))
+     - Catch class circular extends ([brighterscript#619](https://github.com/rokucommunity/brighterscript/pull/619))
+     - Load projects based on bsconfig.json presence ([brighterscript#613](https://github.com/rokucommunity/brighterscript/pull/613))
+     - Better super handling ([brighterscript#590](https://github.com/rokucommunity/brighterscript/pull/590))
+     - Don't push synthetic constructor into each class ([brighterscript#586](https://github.com/rokucommunity/brighterscript/pull/586))
+     - Allow interfaces and enums as function param types ([brighterscript#580](https://github.com/rokucommunity/brighterscript/pull/580))
+
+
+
 ## [1.6.12](https://github.com/RokuCommunity/brighterscript-formatter/compare/v1.6.11...v1.6.12) - 2022-04-13
 ### Changed
  - updated to [brighterscript@0.48.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0480---2022-04-13)
