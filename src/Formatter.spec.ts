@@ -338,6 +338,17 @@ describe('Formatter', () => {
     });
 
     describe('formatInteriorWhitespace', () => {
+        it('normalizes whitespace for const statements', () => {
+            formatEqualTrim(`
+                const TOKEN = '123'
+                const    TOKEN    =    '123'
+                const TOKEN='123'
+            `, `
+                const TOKEN = '123'
+                const TOKEN = '123'
+                const TOKEN = '123'
+            `);
+        });
         it('normalizes whitespace for import statements', () => {
             formatEqualTrim(`
                 import"something"
