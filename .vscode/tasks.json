@@ -19,12 +19,7 @@
             },
             "label": "test",
             "type": "shell",
-            "command": "npm",
-            "args": [
-                "run",
-                "test:nocoverage",
-                "--silent"
-            ],
+            "command": "npm run test:nocover --silent",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

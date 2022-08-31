@@ -10,8 +10,8 @@
         "watch": "rimraf dist && tsc --watch",
         "prepublishOnly": "npm run build && npm run test && npm run lint",
         "lint": "eslint \"src/**\"",
-        "test": "nyc mocha src/**/*.spec.ts --full-trace",
-        "test:nocoverage": "mocha -r ts-node/register src/**/*.spec.ts",
+        "test": "nyc mocha \"src/**/*.spec.ts\" --full-trace",
+        "test:nocover": "mocha \"src/**/*.spec.ts\"",
         "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
         "format-github": "ts-node scripts/format-github.ts",
         "format-github-compare": "ts-node scripts/format-github.ts --compare",
@@ -49,12 +49,23 @@
         "sinon": "^11.1.2",
         "source-map-support": "^0.5.20",
         "ts-node": "^10.4.0",
-        "typescript": "^4.4.4"
+        "typescript": "^4.4.4",
+        "undent": "^0.1.0"
     },
     "files": [
         "dist/**/*",
         "bsfmt.schema.json"
     ],
+    "mocha": {
+        "require": [
+            "source-map-support/register",
+            "ts-node/register"
+        ],
+        "fullTrace": true,
+        "watchExtensions": [
+            "ts"
+        ]
+    },
     "nyc": {
         "include": [
             "src/**/!(*.spec).ts"
