@@ -135,4 +135,11 @@ export class Formatter {
         return tokens;
     }
 
+    /**
+     * Convert the character at the specified index to upper case
+     * @deprecated
+     */
+    //TODO this was moved, and has been left here for backwards compatibility reasons. Remove in the next major release.
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    public upperCaseLetter = KeywordCaseProcessor.prototype['upperCaseLetter'];
 }
