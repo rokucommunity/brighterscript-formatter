@@ -172,6 +172,7 @@ module.exports = {
                 '@typescript-eslint/no-unused-expressions': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',
                 '@typescript-eslint/no-unused-vars-experimental': 'off',
+                '@typescript-eslint/no-unsafe-argument': 'off',
                 'new-cap': 'off',
                 'no-shadow': 'off'
             }

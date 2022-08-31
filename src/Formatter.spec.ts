@@ -12,12 +12,6 @@ describe('Formatter', () => {
         formatter = new Formatter();
     });
 
-    describe('getNextNonWhitespaceToken', () => {
-        it('returns undefined when index is out of bounds', () => {
-            expect((formatter as any).getNextNonWhitespaceToken([], -1)).to.be.undefined;
-        });
-    });
-
     describe('formatIndent', () => {
         it('formats simple if statement', () => {
             formatEqualTrim(`
@@ -314,26 +308,6 @@ describe('Formatter', () => {
 
         it(`does not indent object properties called 'endinterface'`, () => {
             formatEqual(`sub main()\n    if m.endinterface = 123\n        print true\n    end if\nend sub`);
-        });
-    });
-
-    describe('dedupeWhitespace', () => {
-        it('dedupes Whitespace', () => {
-            const tokens = [{
-                kind: TokenKind.Whitespace,
-                text: ' ',
-                startIndex: 0
-            }, {
-                kind: TokenKind.Whitespace,
-                text: ' ',
-                startIndex: 1
-            }, {
-                kind: TokenKind.Whitespace,
-                text: ' ',
-                startIndex: 2
-            }];
-            (formatter as any).dedupeWhitespace(tokens);
-            expect(tokens).to.be.lengthOf(1);
         });
     });
 
@@ -673,31 +647,6 @@ end sub`;
             expect(formatter.format(`a=1`, {
                 formatInteriorWhitespace: false
             })).to.equal('a=1');
-        });
-    });
-
-    describe('getCompositeKeywordParts', () => {
-        it('works', () => {
-            let parts;
-            parts = (formatter as any).getCompositeKeywordParts({ text: 'endif' });
-            expect(parts[0]).to.equal('end');
-            expect(parts[1]).to.equal('if');
-
-            parts = (formatter as any).getCompositeKeywordParts({ text: 'end if' });
-            expect(parts[0]).to.equal('end');
-            expect(parts[1]).to.equal('if');
-
-            parts = (formatter as any).getCompositeKeywordParts({ text: 'elseif' });
-            expect(parts[0]).to.equal('else');
-            expect(parts[1]).to.equal('if');
-
-            parts = (formatter as any).getCompositeKeywordParts({ text: 'else if' });
-            expect(parts[0]).to.equal('else');
-            expect(parts[1]).to.equal('if');
-
-            parts = (formatter as any).getCompositeKeywordParts({ text: '#else if' });
-            expect(parts[0]).to.equal('#else');
-            expect(parts[1]).to.equal('if');
         });
     });
 
@@ -1358,13 +1307,13 @@ end sub`;
             for (let i = 0; i < params.length; i++) {
                 tokens.push(createToken(params[i][1], params[i][0]));
             }
-            tokens = formatter['formatCompositeKeywords'](tokens, { compositeKeywords: 'split' });
+            tokens = formatter['compositeKeywordProcessor'].process(tokens, { compositeKeywords: 'split' });
             //join all provided tokens together
             return tokens.map(x => x.text).join('');
         }
 
         it('handles edge cases', () => {
-            let tokens = (formatter as any).formatCompositeKeywords([{
+            let tokens = (formatter['compositeKeywordProcessor'] as any).process([{
                 text: 'endfunction',
                 kind: TokenKind.EndFunction,
                 startIndex: 0
@@ -1403,22 +1352,6 @@ end sub`;
         it('handles multi-line arrays', () => {
             let program = `function DoSomething()\ndata=[\n1,\n2\n]\nend function`;
             expect(formatter.format(program)).to.equal(`function DoSomething()\n    data = [\n        1,\n        2\n    ]\nend function`);
-        });
-    });
-
-    describe('upperCaseLetter()', () => {
-        it('works for beginning of word', () => {
-            expect(formatter.upperCaseLetter('hello', 0)).to.equal('Hello');
-        });
-        it('works for middle of word', () => {
-            expect(formatter.upperCaseLetter('hello', 2)).to.equal('heLlo');
-        });
-        it('works for end of word', () => {
-            expect(formatter.upperCaseLetter('hello', 4)).to.equal('hellO');
-        });
-        it('handles out-of-bounds indexes', () => {
-            expect(formatter.upperCaseLetter('hello', -1)).to.equal('hello');
-            expect(formatter.upperCaseLetter('hello', 5)).to.equal('hello');
         });
     });
 
