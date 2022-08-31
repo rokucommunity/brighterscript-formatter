@@ -1,32 +1,32 @@
 import { expect } from 'chai';
-import { CompositeKeywordProcessor } from './CompositeKeywordProcessor';
+import { CompositeKeywordFormatter } from './CompositeKeywordFormatter';
 
-describe('CompositeKeywordProcessor', () => {
-    let processor: CompositeKeywordProcessor;
+describe('CompositeKeywordFormatter', () => {
+    let Formatter: CompositeKeywordFormatter;
     beforeEach(() => {
-        processor = new CompositeKeywordProcessor();
+        Formatter = new CompositeKeywordFormatter();
     });
 
     describe('getCompositeKeywordParts', () => {
         it('works', () => {
             let parts;
-            parts = processor['getCompositeKeywordParts']({ text: 'endif' } as any);
+            parts = Formatter['getCompositeKeywordParts']({ text: 'endif' } as any);
             expect(parts[0]).to.equal('end');
             expect(parts[1]).to.equal('if');
 
-            parts = processor['getCompositeKeywordParts']({ text: 'end if' } as any);
+            parts = Formatter['getCompositeKeywordParts']({ text: 'end if' } as any);
             expect(parts[0]).to.equal('end');
             expect(parts[1]).to.equal('if');
 
-            parts = processor['getCompositeKeywordParts']({ text: 'elseif' } as any);
+            parts = Formatter['getCompositeKeywordParts']({ text: 'elseif' } as any);
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
 
-            parts = processor['getCompositeKeywordParts']({ text: 'else if' } as any);
+            parts = Formatter['getCompositeKeywordParts']({ text: 'else if' } as any);
             expect(parts[0]).to.equal('else');
             expect(parts[1]).to.equal('if');
 
-            parts = processor['getCompositeKeywordParts']({ text: '#else if' } as any);
+            parts = Formatter['getCompositeKeywordParts']({ text: '#else if' } as any);
             expect(parts[0]).to.equal('#else');
             expect(parts[1]).to.equal('if');
         });

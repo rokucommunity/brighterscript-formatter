@@ -5,7 +5,7 @@ import { TokensBeforeNegativeNumericLiteral, NumericLiteralTokenKinds } from '..
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
-export class InteriorWhitespaceProcessor {
+export class InteriorWhitespaceFormatter {
     /**
      * Force all Whitespace between tokens to be exactly 1 space wide
      */

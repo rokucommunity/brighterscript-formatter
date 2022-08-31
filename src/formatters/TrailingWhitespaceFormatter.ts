@@ -3,7 +3,7 @@ import { TokenKind } from 'brighterscript';
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
-export class TrailingWhitespaceProcessor {
+export class TrailingWhitespaceFormatter {
     /**
      * Remove all trailing Whitespace
      */

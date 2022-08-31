@@ -4,7 +4,7 @@ import { CompositeKeywords } from '../constants';
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
-export class CompositeKeywordProcessor {
+export class CompositeKeywordFormatter {
     /**
      * Handle indentation for an array of tokens
      */

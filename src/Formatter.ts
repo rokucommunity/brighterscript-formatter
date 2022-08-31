@@ -3,12 +3,12 @@ import { SourceNode } from 'source-map';
 import { DEFAULT_INDENT_SPACE_COUNT } from './constants';
 import type { FormattingOptions } from './FormattingOptions';
 import { normalizeOptions } from './FormattingOptions';
-import { CompositeKeywordProcessor } from './processors/CompositeKeywordProcessor';
-import { IndentProcessor } from './processors/IndentProcessor';
-import { InteriorWhitespaceProcessor } from './processors/InteriorWhitespaceProcessor';
-import { KeywordCaseProcessor } from './processors/KeywordCaseProcessor';
-import { MultiLineItemProcessor } from './processors/MultiLineItemProcessor';
-import { TrailingWhitespaceProcessor } from './processors/TrailingWhitespaceProcessor';
+import { CompositeKeywordFormatter } from './formatters/CompositeKeywordFormatter';
+import { IndentFormatter } from './formatters/IndentFormatter';
+import { InteriorWhitespaceFormatter } from './formatters/InteriorWhitespaceFormatter';
+import { KeywordCaseFormatter } from './formatters/KeywordCaseFormatter';
+import { MultiLineItemFormatter } from './formatters/MultiLineItemFormatter';
+import { TrailingWhitespaceFormatter } from './formatters/TrailingWhitespaceFormatter';
 import { util } from './util';
 
 export class Formatter {
@@ -32,17 +32,14 @@ export class Formatter {
      */
     public static DEFAULT_INDENT_SPACE_COUNT = DEFAULT_INDENT_SPACE_COUNT;
 
-    private indentProcessor = new IndentProcessor();
-
-    private multiLineItemProcessor = new MultiLineItemProcessor();
-
-    private compositeKeywordProcessor = new CompositeKeywordProcessor();
-
-    private keywordCaseProcessor = new KeywordCaseProcessor();
-
-    private trailingWhitespaceProcessor = new TrailingWhitespaceProcessor();
-
-    private interiorWhitespaceProcessor = new InteriorWhitespaceProcessor();
+    private formatters = {
+        indent: new IndentFormatter(),
+        multiLineItem: new MultiLineItemFormatter(),
+        compositeKeyword: new CompositeKeywordFormatter(),
+        keywordCase: new KeywordCaseFormatter(),
+        trailingWhitespace: new TrailingWhitespaceFormatter(),
+        interiorWhitespace: new InteriorWhitespaceFormatter()
+    };
 
     /**
      * Format the given input.
@@ -109,28 +106,28 @@ export class Formatter {
         );
 
         if (options.formatMultiLineObjectsAndArrays) {
-            tokens = this.multiLineItemProcessor.process(tokens);
+            tokens = this.formatters.multiLineItem.process(tokens);
         }
 
         if (options.compositeKeywords) {
-            tokens = this.compositeKeywordProcessor.process(tokens, options);
+            tokens = this.formatters.compositeKeyword.process(tokens, options);
         }
 
-        tokens = this.keywordCaseProcessor.process(tokens, options);
+        tokens = this.formatters.keywordCase.process(tokens, options);
 
         if (options.removeTrailingWhiteSpace) {
-            tokens = this.trailingWhitespaceProcessor.process(tokens, options);
+            tokens = this.formatters.trailingWhitespace.process(tokens, options);
         }
 
         if (options.formatInteriorWhitespace) {
-            tokens = this.interiorWhitespaceProcessor.process(tokens, parser, options);
+            tokens = this.formatters.interiorWhitespace.process(tokens, parser, options);
         }
 
         //dedupe side-by-side Whitespace tokens
         util.dedupeWhitespace(tokens);
 
         if (options.formatIndent) {
-            tokens = this.indentProcessor.process(tokens, options, parser);
+            tokens = this.formatters.indent.process(tokens, options, parser);
         }
         return tokens;
     }
@@ -141,5 +138,5 @@ export class Formatter {
      */
     //TODO this was moved, and has been left here for backwards compatibility reasons. Remove in the next major release.
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    public upperCaseLetter = KeywordCaseProcessor.prototype['upperCaseLetter'];
+    public upperCaseLetter = KeywordCaseFormatter.prototype['upperCaseLetter'];
 }

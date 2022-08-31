@@ -3,7 +3,7 @@ import { CompositeKeywords, CompositeKeywordStartingWords, Keywords } from '../c
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
-export class KeywordCaseProcessor {
+export class KeywordCaseFormatter {
     /**
      * Handle indentation for an array of tokens
      */

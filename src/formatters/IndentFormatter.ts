@@ -5,7 +5,7 @@ import { OutdentSpacerTokenKinds, IndentSpacerTokenKinds, CallableKeywordTokenKi
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
-export class IndentProcessor {
+export class IndentFormatter {
     /**
      * Handle indentation for an array of tokens
      */

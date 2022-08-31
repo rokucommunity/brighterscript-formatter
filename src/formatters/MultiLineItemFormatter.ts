@@ -3,7 +3,7 @@ import { TokenKind } from 'brighterscript';
 import type { TokenWithStartIndex } from '../constants';
 import { util } from '../util';
 
-export class MultiLineItemProcessor {
+export class MultiLineItemFormatter {
     /**
      * Handle indentation for an array of tokens
      */

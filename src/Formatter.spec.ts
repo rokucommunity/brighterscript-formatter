@@ -1307,13 +1307,13 @@ end sub`;
             for (let i = 0; i < params.length; i++) {
                 tokens.push(createToken(params[i][1], params[i][0]));
             }
-            tokens = formatter['compositeKeywordProcessor'].process(tokens, { compositeKeywords: 'split' });
+            tokens = formatter['formatters']['compositeKeyword'].process(tokens, { compositeKeywords: 'split' });
             //join all provided tokens together
             return tokens.map(x => x.text).join('');
         }
 
         it('handles edge cases', () => {
-            let tokens = (formatter['compositeKeywordProcessor'] as any).process([{
+            let tokens = (formatter['formatters']['compositeKeyword'] as any).process([{
                 text: 'endfunction',
                 kind: TokenKind.EndFunction,
                 startIndex: 0
