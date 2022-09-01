@@ -89,7 +89,12 @@ export class Util {
         return text;
     }
 
-    public dedupeWhitespace(tokens: Token[]) {
+    /**
+     * Merge multiple side-by-side whitespace tokens into a single token containing all the whitespace.
+     * @param tokens the array of tokens to modify in-place
+     * @param leadingOnly stop processing if a non-whitespace token is encountered
+     */
+    public dedupeWhitespace(tokens: Token[], leadingOnly = false) {
         for (let i = 0; i < tokens.length; i++) {
             let currentToken = tokens[i];
             let nextToken = tokens[i + 1] ? tokens[i + 1] : { kind: undefined, text: '' };
@@ -98,6 +103,8 @@ export class Util {
                 tokens.splice(i + 1, 1);
                 //decrement the counter so we process this token again so it can absorb more Whitespace tokens
                 i--;
+            } else if (leadingOnly) {
+                return;
             }
         }
     }

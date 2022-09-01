@@ -4,6 +4,7 @@ import type { FormattingOptions } from './FormattingOptions';
 import type { Token } from 'brighterscript';
 import { createToken, TokenKind } from 'brighterscript';
 import { SourceMapConsumer } from 'source-map';
+import { undent } from 'undent';
 
 describe('Formatter', () => {
     let formatter: Formatter;
@@ -887,8 +888,17 @@ end sub`;
         });
 
         it('handles resetting outdent when gone into the negative', () => {
-            let program = `sub test()\n    if true then\n        doSomething()\n    end if\nend if\nend sub\nsub test2()\n    doSomething()\nend sub`;
-            expect(formatter.format(program)).to.equal(program);
+            formatEqual(undent`
+                sub test()
+                    if true then
+                        doSomething()
+                    end if
+                end if 'out of place "end if" shouldn't kill lower formatting
+                end sub
+                sub test2()
+                    doSomething()
+                end sub
+            `);
         });
 
         it('it works with identifiers that start with rem', () => {
