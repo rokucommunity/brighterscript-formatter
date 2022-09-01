@@ -28,6 +28,9 @@ export class IndentFormatter {
         for (let lineTokens of this.splitTokensByLine(tokens)) {
             const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds);
 
+            //uncomment the next line to debug indent/outdent issues
+            // console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
+
             //compute the current line's tab count (default to 0 if we somehow went negative)
             let currentLineTabCount = Math.max(globalTabCount + currentLineOffset, 0);
 
