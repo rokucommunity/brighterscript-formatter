@@ -7,7 +7,7 @@ export class MultiLineItemFormatter {
     /**
      * Handle indentation for an array of tokens
      */
-    public process(tokens: Token[]) {
+    public format(tokens: Token[]) {
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
             let openKind: TokenKind | undefined;

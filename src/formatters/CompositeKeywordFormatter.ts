@@ -8,7 +8,7 @@ export class CompositeKeywordFormatter {
     /**
      * Handle indentation for an array of tokens
      */
-    public process(tokens: Token[], options: FormattingOptions) {
+    public format(tokens: Token[], options: FormattingOptions) {
         let indexOffset = 0;
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];

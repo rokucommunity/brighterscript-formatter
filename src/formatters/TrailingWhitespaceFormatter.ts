@@ -7,7 +7,7 @@ export class TrailingWhitespaceFormatter {
     /**
      * Remove all trailing Whitespace
      */
-    public process(
+    public format(
         tokens: Token[],
         options: FormattingOptions
     ) {
