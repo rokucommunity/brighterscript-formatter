@@ -1,4 +1,4 @@
-import { Lexer, Parser, TokenKind } from 'brighterscript';
+import { Lexer, ParseMode, Parser, TokenKind } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { DEFAULT_INDENT_SPACE_COUNT } from './constants';
 import type { FormattingOptions } from './FormattingOptions';
@@ -102,7 +102,11 @@ export class Formatter {
         });
         let parser = Parser.parse(
             //strip out whitespace because the parser can't handle that
-            tokens.filter(x => x.kind !== TokenKind.Whitespace)
+            tokens.filter(x => x.kind !== TokenKind.Whitespace),
+            //parse all files in brightERscript mode (all .brs is valid .bs anyway, right?)
+            {
+                mode: ParseMode.BrighterScript
+            }
         );
 
         if (options.formatMultiLineObjectsAndArrays) {

@@ -1392,6 +1392,32 @@ end sub`;
     });
 
     describe('indentStyle', () => {
+        it('ignores methods with the name `catch` when contained within a function using a custom param type', () => {
+            formatEqual(undent`
+                sub main()
+                    doSomething(sub()
+                        print 1
+                    end sub).then(sub(a as Person)
+                        print 2
+                    end sub).catch()
+                end sub
+                class Person
+                end class
+            `);
+        });
+
+        it('ignores methods with the name `catch`', () => {
+            formatEqual(undent`
+                sub main()
+                    doSomething(sub()
+                        print 1
+                    end sub).then(sub(a as boolean)
+                        print 2
+                    end sub).catch()
+                end sub
+            `);
+        });
+
         describe('conditional block', () => {
             it('correctly fixes the indentation', () => {
                 let expected = `#if isDebug\n    doSomething()\n#end if`;

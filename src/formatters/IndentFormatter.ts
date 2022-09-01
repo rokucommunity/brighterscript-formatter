@@ -10,7 +10,6 @@ export class IndentFormatter {
      * Handle indentation for an array of tokens
      */
     public format(tokens: Token[], options: FormattingOptions, parser: Parser) {
-
         // The text used for each tab
         let tabText = options.indentStyle === 'tabs' ? '\t' : ' '.repeat(options.indentSpaceCount ?? DEFAULT_INDENT_SPACE_COUNT);
 
@@ -28,6 +27,9 @@ export class IndentFormatter {
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
         for (let lineTokens of this.splitTokensByLine(tokens)) {
             const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds);
+
+            //uncomment the next line to debug indent/outdent issues
+            // console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
 
             //compute the current line's tab count (default to 0 if we somehow went negative)
             let currentLineTabCount = Math.max(globalTabCount + currentLineOffset, 0);
