@@ -10,6 +10,7 @@ export class IndentFormatter {
      * Handle indentation for an array of tokens
      */
     public format(tokens: Token[], options: FormattingOptions, parser: Parser) {
+
         // The text used for each tab
         let tabText = options.indentStyle === 'tabs' ? '\t' : ' '.repeat(options.indentSpaceCount ?? DEFAULT_INDENT_SPACE_COUNT);
 
