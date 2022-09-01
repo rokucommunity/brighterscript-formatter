@@ -7,7 +7,7 @@ export class KeywordCaseFormatter {
     /**
      * Handle indentation for an array of tokens
      */
-    public process(tokens: Token[], options: FormattingOptions) {
+    public format(tokens: Token[], options: FormattingOptions) {
         for (let token of tokens) {
 
             //if this token is a keyword

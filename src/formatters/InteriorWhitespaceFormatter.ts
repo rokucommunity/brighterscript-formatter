@@ -9,7 +9,7 @@ export class InteriorWhitespaceFormatter {
     /**
      * Force all Whitespace between tokens to be exactly 1 space wide
      */
-    public process(
+    public format(
         tokens: Token[],
         parser: Parser,
         options: FormattingOptions

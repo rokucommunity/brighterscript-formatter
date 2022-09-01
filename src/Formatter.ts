@@ -106,28 +106,28 @@ export class Formatter {
         );
 
         if (options.formatMultiLineObjectsAndArrays) {
-            tokens = this.formatters.multiLineItem.process(tokens);
+            tokens = this.formatters.multiLineItem.format(tokens);
         }
 
         if (options.compositeKeywords) {
-            tokens = this.formatters.compositeKeyword.process(tokens, options);
+            tokens = this.formatters.compositeKeyword.format(tokens, options);
         }
 
-        tokens = this.formatters.keywordCase.process(tokens, options);
+        tokens = this.formatters.keywordCase.format(tokens, options);
 
         if (options.removeTrailingWhiteSpace) {
-            tokens = this.formatters.trailingWhitespace.process(tokens, options);
+            tokens = this.formatters.trailingWhitespace.format(tokens, options);
         }
 
         if (options.formatInteriorWhitespace) {
-            tokens = this.formatters.interiorWhitespace.process(tokens, parser, options);
+            tokens = this.formatters.interiorWhitespace.format(tokens, parser, options);
         }
 
         //dedupe side-by-side Whitespace tokens
         util.dedupeWhitespace(tokens);
 
         if (options.formatIndent) {
-            tokens = this.formatters.indent.process(tokens, options, parser);
+            tokens = this.formatters.indent.format(tokens, options, parser);
         }
         return tokens;
     }
