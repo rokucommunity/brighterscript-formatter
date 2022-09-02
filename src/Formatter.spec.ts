@@ -1078,6 +1078,18 @@ end sub`;
     });
 
     describe('keywordCase', () => {
+
+        it('formats mod properly', () => {
+            formatEqual(`value = 1 MoD 2`, `value = 1 mod 2`, { keywordCase: 'lower' });
+            formatEqual(`value = 1 MoD 2`, `value = 1 Mod 2`, { keywordCase: 'title' });
+            formatEqual(`value = 1 MoD 2`, `value = 1 MOD 2`, { keywordCase: 'upper' });
+            formatEqual(`value = 1 MoD 2`, `value = 1 MoD 2`, { keywordCase: 'original' });
+        });
+
+        it('does not change aa prop keywords', () => {
+            formatEqual(`a = { MoD: true, AnD: true }`, undefined, { keywordCase: 'lower' });
+        });
+
         it('forces keywords to upper case', () => {
             expect(formatter.format(
                 `sub add()\nif true then\na=1\nelseif true then\na=1\nendif\nendsub`,

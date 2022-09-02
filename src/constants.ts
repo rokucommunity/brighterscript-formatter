@@ -39,6 +39,7 @@ export const BasicKeywords = [
     TokenKind.Function,
     TokenKind.Sub,
     TokenKind.As,
+    TokenKind.Mod,
     TokenKind.Return,
     TokenKind.Print,
     TokenKind.Goto,
