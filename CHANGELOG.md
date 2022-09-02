@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.16](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.15...1.6.16) - 2022-09-02
+### Changed
+ - Split formatter into separate processors ([#57](https://github.com/rokucommunity/brighterscript-formatter/pull/57))
+ - Break `process` into smaller functions ([#59](https://github.com/rokucommunity/brighterscript-formatter/pull/59))
+ - Rename all `Formatter` `process` methods to `format` ([#60](https://github.com/rokucommunity/brighterscript-formatter/pull/60))
+### Fixed
+ - mod keywordCase formatting ([#62](https://github.com/rokucommunity/brighterscript-formatter/pull/62))
+ - Parse all code as brighterscript to improve formatting context ([#61](https://github.com/rokucommunity/brighterscript-formatter/pull/61))
+ - upgrade to [brighterscript@0.57.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0570---2022-09-02). Notable changes since 0.56.0:
+     - Allow `mod` as an aa prop, aa member identifier kinds forced to Identifier ([brighterscript#684](https://github.com/rokucommunity/brighterscript/pull/684))
+
+
+
 ## [1.6.15](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.14...1.6.15) - 2022-08-24
 ### Changed
  - upgrade to [brighterscript@0.56.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0560---2022-08-23). Notable changes since 0.55.1:
