@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.17](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.16...1.6.17) - 2022-10-03
+### Changed
+ - upgrade to [brighterscript@0.59.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0590---2022-10-03). Notable changes since 0.57.0:
+     - Syntax and transpile support for continue statement ([brighterscript#697](https://github.com/rokucommunity/brighterscript/pull/697))
+
+
+
 ## [1.6.16](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.15...1.6.16) - 2022-09-02
 ### Changed
  - Split formatter into separate processors ([#57](https://github.com/rokucommunity/brighterscript-formatter/pull/57))
