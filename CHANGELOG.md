@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.18](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.17...1.6.18) - 2022-10-20
+### Changed
+ - upgrade to [brighterscript@0.60.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0603---2022-10-20). Notable changes since 0.59.0:
+     - better parse recover for unknown func params ([brighterscript#722](https://github.com/rokucommunity/brighterscript/pull/722))
+     - Fix if statement block var bug ([brighterscript#698](https://github.com/rokucommunity/brighterscript/pull/698))
+     - Beter location for bs1042 ([brighterscript#719](https://github.com/rokucommunity/brighterscript/pull/719))
+     - Allow nested namespaces ([brighterscript#708](https://github.com/rokucommunity/brighterscript/pull/708))
+
+
+
 ## [1.6.17](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.16...1.6.17) - 2022-10-03
 ### Changed
  - upgrade to [brighterscript@0.59.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0590---2022-10-03). Notable changes since 0.57.0:
