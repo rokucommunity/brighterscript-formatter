@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.19](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.18...1.6.19) - 2022-10-28
+### Changed
+ - upgrade to [brighterscript@0.60.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0604---2022-10-28). Notable changes since 0.60.3:
+     - Allow `continue` as local var ([brighterscript#730](https://github.com/rokucommunity/brighterscript/pull/730))
+     - Add name to symbol table ([brighterscript#728](https://github.com/rokucommunity/brighterscript/pull/728))
+
+
+
 ## [1.6.18](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.17...1.6.18) - 2022-10-20
 ### Changed
  - upgrade to [brighterscript@0.60.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0603---2022-10-20). Notable changes since 0.59.0:
