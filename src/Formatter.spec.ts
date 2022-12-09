@@ -45,6 +45,18 @@ describe('Formatter', () => {
             );
         });
 
+        it('properly indents continue for in foreach loops', () => {
+            formatEqual(
+                `for each item in collection\n    continue for\nend for`
+            );
+        });
+
+        it('properly indents continue while in while loops', () => {
+            formatEqual(
+                `while true\n    continue while\nend while`
+            );
+        });
+
         it('handles calling function from indexed getter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
         });
