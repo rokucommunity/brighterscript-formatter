@@ -65,7 +65,7 @@ export class IndentFormatter {
             let previousNonWhitespaceToken = util.getPreviousNonWhitespaceToken(lineTokens, i);
             let nextNonWhitespaceToken = util.getNextNonWhitespaceToken(lineTokens, i);
 
-            if (previousNonWhitespaceToken?.kind === TokenKind.Continue && 
+            if (previousNonWhitespaceToken?.kind === TokenKind.Continue &&
                 (token.kind === TokenKind.For || token.kind === TokenKind.While)) {
                 continue;
             }
