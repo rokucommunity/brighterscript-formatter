@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.21](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.20...1.6.21) - 2022-12-15
+### Changed
+ - upgrade to [brighterscript@0.61.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0612---2022-12-15). Notable changes since 0.61.1:
+     - Bump qs from 6.5.2 to 6.5.3 ([brighterscript#758](https://github.com/rokucommunity/brighterscript/pull/758))
+### Fixed
+ - indentation related to `continue for` and `continue while` ([#65](https://github.com/rokucommunity/brighterscript-formatter/pull/65))
+
+
+
 ## [1.6.20](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.19...1.6.20) - 2022-12-08
 ### Changed
  - upgrade to [brighterscript@0.61.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0611---2022-12-07). Notable changes since 0.60.4:
