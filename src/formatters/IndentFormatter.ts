@@ -65,6 +65,11 @@ export class IndentFormatter {
             let previousNonWhitespaceToken = util.getPreviousNonWhitespaceToken(lineTokens, i);
             let nextNonWhitespaceToken = util.getNextNonWhitespaceToken(lineTokens, i);
 
+            if (previousNonWhitespaceToken?.kind === TokenKind.Continue &&
+                (token.kind === TokenKind.For || token.kind === TokenKind.While)) {
+                continue;
+            }
+
             //if the previous token was `else` and this token is `if`, skip this token. (we used to have a single token for `elseif` but it got split out in an update of brighterscript)
             if (previousNonWhitespaceToken?.kind === TokenKind.Else && token.kind === TokenKind.If) {
                 continue;
