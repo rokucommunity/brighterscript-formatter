@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.22](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.21...1.6.22) - 2022-12-15
+### Changed
+ - Bump qs from 6.5.2 to 6.5.3 ([#64](https://github.com/rokucommunity/brighterscript-formatter/pull/64))
+
+
+
 ## [1.6.21](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.20...1.6.21) - 2022-12-15
 ### Changed
  - upgrade to [brighterscript@0.61.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0612---2022-12-15). Notable changes since 0.61.1:
