@@ -6,13 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.22](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.21...1.6.22) - 2022-12-15
+## [1.6.23](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.22...v1.6.23) - 2023-01-12
+### Changed
+ - upgrade to [brighterscript@0.61.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0613---2023-01-12)
+
+
+
+## [1.6.22](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.21...v1.6.22) - 2022-12-15
 ### Changed
  - Bump qs from 6.5.2 to 6.5.3 ([#64](https://github.com/rokucommunity/brighterscript-formatter/pull/64))
 
 
 
-## [1.6.21](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.20...1.6.21) - 2022-12-15
+## [1.6.21](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.20...v1.6.21) - 2022-12-15
 ### Changed
  - upgrade to [brighterscript@0.61.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0612---2022-12-15). Notable changes since 0.61.1:
      - Bump qs from 6.5.2 to 6.5.3 ([brighterscript#758](https://github.com/rokucommunity/brighterscript/pull/758))
@@ -21,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.20](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.19...1.6.20) - 2022-12-08
+## [1.6.20](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.19...v1.6.20) - 2022-12-08
 ### Changed
  - upgrade to [brighterscript@0.61.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0611---2022-12-07). Notable changes since 0.60.4:
      - Ensure enums and interfaces persist in typedefs ([brighterscript#757](https://github.com/rokucommunity/brighterscript/pull/757))
@@ -37,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.19](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.18...1.6.19) - 2022-10-28
+## [1.6.19](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.18...v1.6.19) - 2022-10-28
 ### Changed
  - upgrade to [brighterscript@0.60.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0604---2022-10-28). Notable changes since 0.60.3:
      - Allow `continue` as local var ([brighterscript#730](https://github.com/rokucommunity/brighterscript/pull/730))
@@ -45,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.18](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.17...1.6.18) - 2022-10-20
+## [1.6.18](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.17...v1.6.18) - 2022-10-20
 ### Changed
  - upgrade to [brighterscript@0.60.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0603---2022-10-20). Notable changes since 0.59.0:
      - better parse recover for unknown func params ([brighterscript#722](https://github.com/rokucommunity/brighterscript/pull/722))
@@ -55,14 +61,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.17](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.16...1.6.17) - 2022-10-03
+## [1.6.17](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.16...v1.6.17) - 2022-10-03
 ### Changed
  - upgrade to [brighterscript@0.59.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0590---2022-10-03). Notable changes since 0.57.0:
      - Syntax and transpile support for continue statement ([brighterscript#697](https://github.com/rokucommunity/brighterscript/pull/697))
 
 
 
-## [1.6.16](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.15...1.6.16) - 2022-09-02
+## [1.6.16](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.15...v1.6.16) - 2022-09-02
 ### Changed
  - Split formatter into separate processors ([#57](https://github.com/rokucommunity/brighterscript-formatter/pull/57))
  - Break `process` into smaller functions ([#59](https://github.com/rokucommunity/brighterscript-formatter/pull/59))
@@ -75,20 +81,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.6.15](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.14...1.6.15) - 2022-08-24
+## [1.6.15](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.14...v1.6.15) - 2022-08-24
 ### Changed
  - upgrade to [brighterscript@0.56.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0560---2022-08-23). Notable changes since 0.55.1:
 
 
 
-## [1.6.14](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.13...1.6.14) - 2022-08-12
+## [1.6.14](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.13...v1.6.14) - 2022-08-12
 ### Changed
  - upgrade to [brighterscript@0.55.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0551---2022-08-07). Notable changes since 0.53.1:
      - Fix typescript error for ast parent setting ([brighterscript#659](https://github.com/rokucommunity/brighterscript/pull/659))
 
 
 
-## [1.6.13](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.12...1.6.13) - 2022-07-16
+## [1.6.13](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.12...v1.6.13) - 2022-07-16
 ### Changed
  - Bump moment from 2.29.2 to 2.29.4 ([#56](https://github.com/rokucommunity/brighterscript-formatter/pull/56))
  - Fix import statement formatting. ([#55](https://github.com/rokucommunity/brighterscript-formatter/pull/55))
