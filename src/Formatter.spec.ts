@@ -14,6 +14,16 @@ describe('Formatter', () => {
     });
 
     describe('formatIndent', () => {
+        it('formats with optional chaining operators', () => {
+            formatEqualTrim(`
+                sub setPoster()
+                    if m.arr?[1] <> invalid
+                        print true
+                    end if
+                end sub
+            `);
+        });
+
         it('formats simple if statement', () => {
             formatEqualTrim(`
                 if true then

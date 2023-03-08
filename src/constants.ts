@@ -86,6 +86,7 @@ export let IndentSpacerTokenKinds = [
     TokenKind.If,
     TokenKind.LeftCurlyBrace,
     TokenKind.LeftSquareBracket,
+    TokenKind.QuestionLeftSquare,
     TokenKind.While,
     TokenKind.HashIf,
     TokenKind.Class,
