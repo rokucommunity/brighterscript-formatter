@@ -89,7 +89,7 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |insertSpaceBetweenEmptyCurlyBraces|`boolean`|`false`| If true, empty curly braces will contain exactly 1 whitespace char (i.e. `{ }`). If false, there will be zero whitespace chars between empty curly braces (i.e. `{}`) |
 |insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces|`boolean`|`true`| If true, ensure exactly 1 space after leading and before trailing curly braces. If false, REMOVE all whitespace after leading and before trailing curly braces (excluding beginning-of-line indentation spacing)|
 |insertSpaceBetweenAssociativeArrayLiteralKeyAndColon|`boolean`|`false`| If true, ensure exactly 1 space between an associative array literal key and its colon. If false, all space between the key and its colon will be removed |
-|formatSingleLineCommentType|`"singlequote" , "rem" | "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem`", all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
+|formatSingleLineCommentType|`"singlequote", "rem", "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem"`, all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
 |formatMultiLineObjectsAndArrays|`boolean`| `true`|For multi-line objects and arrays, move everything after the `{` or `[` and everything before the `}` or `]` onto a new line.`|
 
 ### keywordCaseOverride
