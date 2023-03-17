@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.24](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.23...v1.6.24) - 2023-03-17
+### Changed
+ - upgrade to [brighterscript@0.62.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0620---2023-03-17). Notable changes since 0.61.3:
+     - Fix crash when func has no block ([brighterscript#774](https://github.com/rokucommunity/brighterscript/pull/774))
+     - Move not-referenced check into ProgramValidator ([brighterscript#773](https://github.com/rokucommunity/brighterscript/pull/773))
+### Fixed
+ - indent format issue related to optional chaining array access ([#71](https://github.com/rokucommunity/brighterscript-formatter/pull/71))
+
+
+
 ## [1.6.23](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.22...v1.6.23) - 2023-01-12
 ### Changed
  - upgrade to [brighterscript@0.61.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0613---2023-01-12)
