@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.26](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.25...v1.6.26) - 2023-04-18
+### Changed
+ - upgrade to [brighterscript@0.64.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0642---2023-04-18). Notable changes since 0.64.1:
+     - Fix namespace-relative enum value ([brighterscript#793](https://github.com/rokucommunity/brighterscript/pull/793))
+
+
+
 ## [1.6.25](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.24...v1.6.25) - 2023-04-14
 ### Changed
  - upgrade to [brighterscript@0.64.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0641---2023-04-14). Notable changes since 0.62.0:
