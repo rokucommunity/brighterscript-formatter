@@ -97,6 +97,10 @@ export interface FormattingOptions {
      * the `}` or `]` onto a new line.
      */
     formatMultiLineObjectsAndArrays?: boolean;
+    /**
+     * Sort import statements alphabetically.
+     */
+    sortImports?: boolean;
 }
 
 export function normalizeOptions(options: FormattingOptions) {
@@ -114,6 +118,7 @@ export function normalizeOptions(options: FormattingOptions) {
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
         insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false,
         formatMultiLineObjectsAndArrays: true,
+        sortImports: false,
 
         //override defaults with the provided values
         ...options

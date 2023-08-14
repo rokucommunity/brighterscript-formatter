@@ -91,6 +91,7 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |insertSpaceBetweenAssociativeArrayLiteralKeyAndColon|`boolean`|`false`| If true, ensure exactly 1 space between an associative array literal key and its colon. If false, all space between the key and its colon will be removed |
 |formatSingleLineCommentType|`"singlequote", "rem", "original"`| `"original"` | Forces all single-line comments to use the same style. If 'singlequote' or falsey, all comments are preceeded by a single quote. This is the default. If `"rem"`, all comments are preceeded by `rem`. If `"original"`, the comment type is unchanged|
 |formatMultiLineObjectsAndArrays|`boolean`| `true`|For multi-line objects and arrays, move everything after the `{` or `[` and everything before the `}` or `]` onto a new line.`|
+|sortImports|`boolean`| `false`|Sort imports alphabetically.`|
 
 ### keywordCaseOverride
 For more flexibility in how to format the case of keywords, you can specify the case preference for each individual keyword. Here's an example:
