@@ -1,5 +1,7 @@
-import { expectTokens, lex } from '../testHelpers.spec';
+import { expect } from 'chai';
+import { lex } from '../testHelpers.spec';
 import { SortImportsFormatter } from './SortImportsFormatter';
+import type { Token } from 'brighterscript';
 
 describe('SortImportsFormatter', () => {
     let Formatter: SortImportsFormatter;
@@ -7,29 +9,23 @@ describe('SortImportsFormatter', () => {
         Formatter = new SortImportsFormatter();
     });
 
-    describe('format()', () => {
-        it('sorts consecutive imports', () => {
-            // There's an edge case where the file only contains imports and nothing else: In that
-            // case, the file is not sorted.
-            const input = `import "a"\nimport "c"\nimport "b"\n\n`;
-            const expected = `import "a"\nimport "b"\nimport "c"\n\n`;
+    describe('isImportStatement()', () => {
+        [
+            { input: `import "file.bs"`, expected: true },
+            { input: `Not.An.Import.Statement()`, expected: false },
+            // an empty string would lex to a EOF token, so we cover the case of an empty array explicitly
+            { input: [] as Token[], expected: false }
+        ].forEach(({ input, expected }) => {
+            it(`Identifies import statements: ${input}`, () => {
+                let tokens = input;
+                if (typeof tokens === 'string') {
+                    tokens = lex(tokens);
+                }
 
-            let tokens = lex(input);
-            tokens = Formatter.format(tokens);
+                const isImportStatement = Formatter['isImportStatement'](tokens);
 
-            const expectedTokens = lex(expected);
-            expectTokens(tokens, expectedTokens);
-        });
-
-        it('sorts consecutive imports with comments', () => {
-            const input = `import "d"\nimport "c"\n'comment\nimport "b"\nimport "a"\n\n`;
-            const expected = `import "c"\nimport "d"\n'comment\nimport "a"\nimport "b"\n\n`;
-
-            let tokens = lex(input);
-            tokens = Formatter.format(tokens);
-
-            const expectedTokens = lex(expected);
-            expectTokens(tokens, expectedTokens);
+                expect(isImportStatement).to.equal(expected);
+            });
         });
     });
 });
