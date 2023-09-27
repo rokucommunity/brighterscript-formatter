@@ -1506,6 +1506,19 @@ end sub`;
         });
     });
 
+    describe('sortImports', () => {
+        it('sorts consecutive imports', () => {
+            formatEqual(`import "a"\nimport "c"\nimport "b"\n\n`, `import "a"\nimport "b"\nimport "c"\n\n`, {
+                sortImports: true
+            });
+        });
+
+        it('sorts consecutive imports with comments', () => {
+            formatEqual(`import "d"\nimport "c"\n'comment\nimport "b"\nimport "a"\n\n`, `import "c"\nimport "d"\n'comment\nimport "a"\nimport "b"\n\n`, {
+                sortImports: true
+            });
+        });
+    });
 
     describe('template string', () => {
         it('leaves template string unchanged', () => {

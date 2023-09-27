@@ -10,6 +10,7 @@ import { KeywordCaseFormatter } from './formatters/KeywordCaseFormatter';
 import { MultiLineItemFormatter } from './formatters/MultiLineItemFormatter';
 import { TrailingWhitespaceFormatter } from './formatters/TrailingWhitespaceFormatter';
 import { util } from './util';
+import { SortImportsFormatter } from './formatters/SortImportsFormatter';
 
 export class Formatter {
     /**
@@ -38,7 +39,8 @@ export class Formatter {
         compositeKeyword: new CompositeKeywordFormatter(),
         keywordCase: new KeywordCaseFormatter(),
         trailingWhitespace: new TrailingWhitespaceFormatter(),
-        interiorWhitespace: new InteriorWhitespaceFormatter()
+        interiorWhitespace: new InteriorWhitespaceFormatter(),
+        sortImports: new SortImportsFormatter()
     };
 
     /**
@@ -125,6 +127,10 @@ export class Formatter {
 
         if (options.formatInteriorWhitespace) {
             tokens = this.formatters.interiorWhitespace.format(tokens, parser, options);
+        }
+
+        if (options.sortImports) {
+            tokens = this.formatters.sortImports.format(tokens);
         }
 
         //dedupe side-by-side Whitespace tokens
