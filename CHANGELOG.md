@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.34](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.33...1.6.34) - 2023-10-06
+### Changed
+ - upgrade to [brighterscript@0.65.8](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0658---2023-10-06). Notable changes since 0.65.7:
+     - Bump postcss from 8.2.15 to 8.4.31 ([brighterscript#928](https://github.com/rokucommunity/brighterscript/pull/928))
+     - Add interface parameter support ([brighterscript#924](https://github.com/rokucommunity/brighterscript/pull/924))
+     - Better typing for `Deferred` ([brighterscript#923](https://github.com/rokucommunity/brighterscript/pull/923))
+
+
+
 ## [1.6.33](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.32...v1.6.33) - 2023-09-28
 ### Added
  - Sort imports ([#75](https://github.com/rokucommunity/brighterscript-formatter/pull/75))
