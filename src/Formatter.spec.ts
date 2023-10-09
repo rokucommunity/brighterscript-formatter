@@ -664,6 +664,13 @@ end sub`;
             formatEqual(`action("value" ,"otherValue")`, `action("value", "otherValue")`);
         });
 
+        it('removes whitespace if present in component scope variable declaration', () => {
+            expect(formatter.format(`m.a`)).to.equal(`m.a`);
+            expect(formatter.format(`m.foo`)).to.equal(`m.foo`);
+            expect(formatter.format(`m. a`)).to.equal(`m.a`);
+            expect(formatter.format(`m. foo`)).to.equal(`m.foo`);
+        });
+
         it('disabling the rule works', () => {
             expect(formatter.format(`a=1`)).to.equal('a = 1');
             //disabled

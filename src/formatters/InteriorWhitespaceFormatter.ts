@@ -83,9 +83,16 @@ export class InteriorWhitespaceFormatter {
                 continue;
             }
             isPastFirstTokenOfLine = true;
-            //force token to be exactly 1 space
             if (token.kind === TokenKind.Whitespace) {
-                token.text = ' ';
+                const isDeclaringComponentVariable = (tokens[0].kind === TokenKind.Identifier) && (tokens[0].text === 'm') && (tokens[1].kind === TokenKind.Dot);
+
+                if (i === 2 && isDeclaringComponentVariable) {
+                    // token is whitespace but after component variable declaration so remove space
+                    token.text = '';
+                } else {
+                    //force token to be exactly 1 space
+                    token.text = ' ';
+                }
             }
 
             //pad any of these token types with a space to the right
@@ -374,7 +381,7 @@ export class InteriorWhitespaceFormatter {
     }
 
     /**
-     * Determine if the current token appears to be the negative sign for a numeric leteral
+     * Determine if the current token appears to be the negative sign for a numeric literal
      */
     public looksLikeNegativeNumericLiteral(tokens: Token[], index: number) {
         let thisToken = tokens[index];
