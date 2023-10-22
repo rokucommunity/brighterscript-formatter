@@ -669,7 +669,54 @@ end sub`;
             expect(formatter.format(`m.foo`)).to.equal(`m.foo`);
             expect(formatter.format(`m. a`)).to.equal(`m.a`);
             expect(formatter.format(`m. foo`)).to.equal(`m.foo`);
+            expect(formatter.format(`m .a`)).to.equal(`m.a`);
+            expect(formatter.format(`m .foo`)).to.equal(`m.foo`);
+            expect(formatter.format(`m . a`)).to.equal(`m.a`);
+            expect(formatter.format(`m . foo`)).to.equal(`m.foo`);
+
         });
+
+        it('formats with optional chaining operators', () => {
+            formatEqual(
+                `m. alpha = m. alpha`,
+                `m.alpha = m.alpha`
+            );
+            formatEqual(
+                `m .beta = m .beta`,
+                `m.beta = m.beta`
+            );
+            formatEqual(
+                `m . charlie = m . charlie`,
+                `m.charlie = m.charlie`
+            );
+
+            formatEqual(
+                `print alpha . beta`,
+                `print alpha.beta`
+            );
+            formatEqual(
+                `doSomething(alpha . beta)`,
+                `doSomething(alpha.beta)`
+            );
+            formatEqual(
+                `doSomething(doSomethingElse( alpha . beta . charlie))`,
+                `doSomething(doSomethingElse(alpha.beta.charlie))`
+            );
+            formatEqual(
+                `value = alpha . beta + delta . charlie`,
+                `value = alpha.beta + delta.charlie`
+            );
+            formatEqual(
+                `value = 1 + (alpha . beta * (delta . charlie - 2) )`,
+                `value = 1 + (alpha.beta * (delta.charlie - 2))`
+            );
+            formatEqual(
+                `value = { alpha: beta . charlie }`,
+                `value = { alpha: beta.charlie }`
+            );
+
+        });
+
 
         it('disabling the rule works', () => {
             expect(formatter.format(`a=1`)).to.equal('a = 1');

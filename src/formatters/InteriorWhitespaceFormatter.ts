@@ -84,14 +84,28 @@ export class InteriorWhitespaceFormatter {
             }
             isPastFirstTokenOfLine = true;
             if (token.kind === TokenKind.Whitespace) {
-                const isDeclaringComponentVariable = (tokens[0].kind === TokenKind.Identifier) && (tokens[0].text === 'm') && (tokens[1].kind === TokenKind.Dot);
-
-                if (i === 2 && isDeclaringComponentVariable) {
-                    // token is whitespace but after component variable declaration so remove space
-                    token.text = '';
-                } else {
-                    //force token to be exactly 1 space
-                    token.text = ' ';
+                //force token to be exactly 1 space
+                token.text = ' ';
+            }
+            if (token.kind === TokenKind.Dot && i > 0) {
+                let whitespaceExistsOnTheLeft = true;
+                // eslint-disable-next-line no-unmodified-loop-condition
+                while (whitespaceExistsOnTheLeft === true) {
+                    if (tokens[i - 1].kind === TokenKind.Whitespace) {
+                        this.removeWhitespace(tokens, i - 1);
+                        i--;
+                    } else {
+                        whitespaceExistsOnTheLeft = false;
+                    }
+                }
+                let whitespaceExistsOnTheRight = true;
+                // eslint-disable-next-line no-unmodified-loop-condition
+                while (whitespaceExistsOnTheRight === true) {
+                    if (tokens[i + 1].kind === TokenKind.Whitespace) {
+                        this.removeWhitespace(tokens, i + 1);
+                    } else {
+                        whitespaceExistsOnTheRight = false;
+                    }
                 }
             }
 
