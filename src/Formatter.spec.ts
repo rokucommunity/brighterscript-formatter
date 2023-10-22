@@ -673,7 +673,6 @@ end sub`;
             expect(formatter.format(`m .foo`)).to.equal(`m.foo`);
             expect(formatter.format(`m . a`)).to.equal(`m.a`);
             expect(formatter.format(`m . foo`)).to.equal(`m.foo`);
-
         });
 
         it('formats with optional chaining operators', () => {
@@ -689,7 +688,6 @@ end sub`;
                 `m . charlie = m . charlie`,
                 `m.charlie = m.charlie`
             );
-
             formatEqual(
                 `print alpha . beta`,
                 `print alpha.beta`
@@ -714,9 +712,7 @@ end sub`;
                 `value = { alpha: beta . charlie }`,
                 `value = { alpha: beta.charlie }`
             );
-
         });
-
 
         it('disabling the rule works', () => {
             expect(formatter.format(`a=1`)).to.equal('a = 1');
