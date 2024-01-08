@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.37](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.36...v1.6.37) - 2024-01-08
+### Changed
+ - upgrade to [brighterscript@0.65.16](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06516---2024-01-08). Notable changes since 0.65.12:
+     - Prevent errors when using enums in a file that's not included in any scopes ([brighterscript#995](https://github.com/rokucommunity/brighterscript/pull/995))
+
+
+
 ## [1.6.36](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.35...v1.6.36) - 2023-12-07
 ### Changed
  - upgrade to [brighterscript@0.65.12](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06512---2023-12-07). Notable changes since 0.65.9:
