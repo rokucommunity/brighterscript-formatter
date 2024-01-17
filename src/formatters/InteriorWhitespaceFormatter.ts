@@ -83,9 +83,30 @@ export class InteriorWhitespaceFormatter {
                 continue;
             }
             isPastFirstTokenOfLine = true;
-            //force token to be exactly 1 space
             if (token.kind === TokenKind.Whitespace) {
+                //force token to be exactly 1 space
                 token.text = ' ';
+            }
+            if (token.kind === TokenKind.Dot && i > 0) {
+                let whitespaceExistsOnTheLeft = true;
+                // eslint-disable-next-line no-unmodified-loop-condition
+                while (whitespaceExistsOnTheLeft === true) {
+                    if (tokens[i - 1].kind === TokenKind.Whitespace) {
+                        this.removeWhitespace(tokens, i - 1);
+                        i--;
+                    } else {
+                        whitespaceExistsOnTheLeft = false;
+                    }
+                }
+                let whitespaceExistsOnTheRight = true;
+                // eslint-disable-next-line no-unmodified-loop-condition
+                while (whitespaceExistsOnTheRight === true) {
+                    if (tokens[i + 1].kind === TokenKind.Whitespace) {
+                        this.removeWhitespace(tokens, i + 1);
+                    } else {
+                        whitespaceExistsOnTheRight = false;
+                    }
+                }
             }
 
             //pad any of these token types with a space to the right
@@ -374,7 +395,7 @@ export class InteriorWhitespaceFormatter {
     }
 
     /**
-     * Determine if the current token appears to be the negative sign for a numeric leteral
+     * Determine if the current token appears to be the negative sign for a numeric literal
      */
     public looksLikeNegativeNumericLiteral(tokens: Token[], index: number) {
         let thisToken = tokens[index];
