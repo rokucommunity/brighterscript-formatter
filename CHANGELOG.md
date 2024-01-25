@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.39](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.38...v1.6.39) - 2024-01-25
+### Changed
+ - allow spacing on dotted get paths ([#83](https://github.com/rokucommunity/brighterscript-formatter/pull/83))
+ - upgrade to [brighterscript@0.65.18](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06518---2024-01-25). Notable changes since 0.65.17:
+     - Prevent overwriting the Program._manifest if already set on startup ([brighterscript#1027](https://github.com/rokucommunity/brighterscript/pull/1027))
+     - Improving null safety: Add FinalizedBsConfig and tweak plugin events ([brighterscript#1000](https://github.com/rokucommunity/brighterscript/pull/1000))
+
+
+
 ## [1.6.38](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.37...v1.6.38) - 2024-01-16
 ### Changed
  - upgrade to [brighterscript@0.65.17](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06517---2024-01-16). Notable changes since 0.65.16:
