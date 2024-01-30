@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.6.40](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.39...v1.6.40) - 2024-01-30
+### Changed
+ - upgrade to [brighterscript@0.65.19](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06519---2024-01-30). Notable changes since 0.65.18:
+     - Backport v1 syntax changes ([brighterscript#1034](https://github.com/rokucommunity/brighterscript/pull/1034))
+
+
+
 ## [1.6.39](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.38...v1.6.39) - 2024-01-25
 ### Changed
  - allow spacing on dotted get paths ([#83](https://github.com/rokucommunity/brighterscript-formatter/pull/83))
