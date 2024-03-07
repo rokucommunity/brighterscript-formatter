@@ -202,6 +202,15 @@ export const TypeTokens = [
     TokenKind.Void
 ];
 
+export const ConditionalCompileTokenKinds = [
+    TokenKind.HashConst,
+    TokenKind.HashElse,
+    TokenKind.HashElseIf,
+    TokenKind.HashEndIf,
+    TokenKind.HashError,
+    TokenKind.HashIf
+];
+
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];
 
 export const AllowedClassIdentifierKinds = [TokenKind.Identifier, ...AllowedLocalIdentifiers];

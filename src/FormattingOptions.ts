@@ -52,12 +52,14 @@ export interface FormattingOptions {
      */
     typeCaseOverride?: Record<string, FormattingOptions['keywordCase']>;
     /**
-     * If true (the default), all whitespace between items is reduced to exactly 1 space character,
+     * If true (the default), all whitespace between items are reduced to exactly 1 space character,
      * and certain keywords and operators are padded with whitespace (i.e. `1+1` becomes `1 + 1`).
      * This is a catchall property that will also disable the following rules:
      * - insertSpaceBeforeFunctionParenthesis
      * - insertSpaceBetweenEmptyCurlyBraces
      * - insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces
+     * - insertSpaceAfterConditionalCompileSymbol
+     * - insertSpaceBetweenAssociativeArrayLiteralKeyAndColon
      */
     formatInteriorWhitespace?: boolean;
     /**
@@ -72,6 +74,12 @@ export interface FormattingOptions {
      * @default false
      */
     insertSpaceBetweenEmptyCurlyBraces?: boolean;
+    /**
+     * if true, conditional compile symbols will contain exactly 1 whitespace char (i.e. `# if true`)
+     * if false, ensure there is no whitespace between the `#` and the keyword (i.e. `#if true`)
+     * @default false
+     */
+    insertSpaceAfterConditionalCompileSymbol?: boolean;
     /**
      * If true, ensure exactly 1 space after leading and before trailing curly braces
      * If false, REMOVE all whitespace after leading and before trailing curly braces (excluding beginning-of-line indentation spacing)
@@ -115,6 +123,7 @@ export function normalizeOptions(options: FormattingOptions) {
         formatInteriorWhitespace: true,
         insertSpaceBeforeFunctionParenthesis: false,
         insertSpaceBetweenEmptyCurlyBraces: false,
+        insertSpaceAfterConditionalCompileSymbol: false,
         insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: true,
         insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false,
         formatMultiLineObjectsAndArrays: true,

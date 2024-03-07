@@ -14,6 +14,32 @@ describe('Formatter', () => {
     });
 
     describe('formatIndent', () => {
+        it('formats conditional compile items with spaces around the keywords', () => {
+            expect(formatter.format(undent`
+                sub Main(inputArguments as object)
+                            #if true
+                        print" one"
+                        #else if true
+                        print "two"
+                        #else
+                        print "three"
+                    #end if
+                    print "done"
+                end sub
+            `)).to.equal(undent`
+                sub Main(inputArguments as object)
+                    #if true
+                        print" one"
+                    #else if true
+                        print "two"
+                    #else
+                        print "three"
+                    #end if
+                    print "done"
+                end sub
+            `);
+        });
+
         it('formats with optional chaining operators', () => {
             formatEqualTrim(`
                 sub setPoster()
@@ -653,6 +679,103 @@ end sub`;
             formatEqual(`person = {}`, `person = { }`, {
                 insertSpaceBetweenEmptyCurlyBraces: true
             });
+        });
+
+        it('removes whitespace between conditional compile symbol and keyword', () => {
+            expect(formatter.format(undent`
+                sub Main(inputArguments as object)
+                    #\t const SOME_CONST = true
+                    #\t if true
+                        print" one"
+                    #\t else if true
+                        print "two"
+                    #\t else
+                        print "three"
+                        #\t error
+                        #\t error message 123
+                    #\t end if
+                    print "done"
+                end sub
+            `, { insertSpaceAfterConditionalCompileSymbol: false })).to.equal(undent`
+                sub Main(inputArguments as object)
+                    #const SOME_CONST = true
+                    #if true
+                        print" one"
+                    #else if true
+                        print "two"
+                    #else
+                        print "three"
+                        #error
+                        #error message 123
+                    #end if
+                    print "done"
+                end sub
+            `);
+
+        });
+
+        it('reduces to single space between conditional compile symbol and keyword', () => {
+            expect(formatter.format(undent`
+                sub Main(inputArguments as object)
+                    #\t const SOME_CONST = true
+                    #\t if true
+                        print" one"
+                    #\t else if true
+                        print "two"
+                    #\t else
+                        print "three"
+                        #\t error
+                        #\t error message 123
+                    #\t end if
+                    print "done"
+                end sub
+            `, { insertSpaceAfterConditionalCompileSymbol: true })).to.equal(undent`
+                sub Main(inputArguments as object)
+                    # const SOME_CONST = true
+                    # if true
+                        print" one"
+                    # else if true
+                        print "two"
+                    # else
+                        print "three"
+                        # error
+                        # error message 123
+                    # end if
+                    print "done"
+                end sub
+            `);
+        });
+
+        it('adds single space between conditional compile symbol and keyword', () => {
+            expect(formatter.format(undent`
+                sub Main(inputArguments as object)
+                    #const SOME_CONST = true
+                    #if true
+                        print" one"
+                    #else if true
+                        print "two"
+                    #else
+                        print "three"
+                        #error
+                        #error message 123
+                    #end if
+                    print "done"
+                end sub
+            `, { insertSpaceAfterConditionalCompileSymbol: true })).to.equal(undent`
+                sub Main(inputArguments as object)
+                    # const SOME_CONST = true
+                    # if true
+                        print" one"
+                    # else if true
+                        print "two"
+                    # else
+                        print "three"
+                        # error
+                        # error message 123
+                    # end if
+                    print "done"
+                end sub
+            `);
         });
 
         it('removes space between empty parens', () => {

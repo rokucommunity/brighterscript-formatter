@@ -66,11 +66,12 @@ export class CompositeKeywordFormatter {
 
     private getCompositeKeywordParts(token: Token) {
         let lowerValue = token.text.toLowerCase();
+        let match: RegExpExecArray | null;
         //split the parts of the token, but retain their case
         if (lowerValue.startsWith('end')) {
             return [token.text.substring(0, 3), token.text.substring(3).trim()];
-        } else if (lowerValue.startsWith('#else')) {
-            return [token.text.substring(0, 5), token.text.substring(5).trim()];
+        } else if ((match = /^(#\s*(?:else|end))\s*(if)/i.exec(token.text))) {
+            return match.slice(1) as [string, string];
         } else {
             return [token.text.substring(0, 4), token.text.substring(4).trim()];
         }
