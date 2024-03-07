@@ -71,7 +71,7 @@ export class CompositeKeywordFormatter {
         if (lowerValue.startsWith('end')) {
             return [token.text.substring(0, 3), token.text.substring(3).trim()];
         } else if ((match = /^(#\s*(?:else|end))\s*(if)/i.exec(token.text))) {
-            return match?.slice(1) as [string, string];
+            return match.slice(1) as [string, string];
         } else {
             return [token.text.substring(0, 4), token.text.substring(4).trim()];
         }
