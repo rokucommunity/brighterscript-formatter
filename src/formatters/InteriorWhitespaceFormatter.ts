@@ -1,7 +1,7 @@
 import type { AALiteralExpression, AAMemberExpression, Parser, Token } from 'brighterscript';
 import { createVisitor, WalkMode, TokenKind } from 'brighterscript';
 import type { TokenWithStartIndex } from '../constants';
-import { TokensBeforeNegativeNumericLiteral, NumericLiteralTokenKinds } from '../constants';
+import { TokensBeforeNegativeNumericLiteral, NumericLiteralTokenKinds, ConditionalCompileTokenKinds } from '../constants';
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
@@ -81,6 +81,15 @@ export class InteriorWhitespaceFormatter {
             //skip past leading Whitespace
             if (token.kind === TokenKind.Whitespace && isPastFirstTokenOfLine === false) {
                 continue;
+            }
+
+            //normalize whitespace following conditional compile symbol #if, #else, #elseif, etc...
+            if (ConditionalCompileTokenKinds.includes(token.kind)) {
+                if (options.insertSpaceAfterConditionalCompileSymbol) {
+                    token.text = token.text.replace(/^#\s*/, '# ');
+                } else {
+                    token.text = token.text.replace(/^#\s*/, '#');
+                }
             }
             isPastFirstTokenOfLine = true;
             if (token.kind === TokenKind.Whitespace) {
