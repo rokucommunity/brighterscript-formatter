@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.0](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.41...v1.7.0) - 2024-03-07
+### Added
+ - `insertSpaceAfterConditionalCompileSymbol` property, fix conditional compile formatting ([#87](https://github.com/rokucommunity/brighterscript-formatter/pull/87))
+### Changed
+ - upgrade to [brighterscript@0.65.25](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06525---2024-03-07). Notable changes since 0.65.23:
+     - Support when tokens have null ranges ([brighterscript#1072](https://github.com/rokucommunity/brighterscript/pull/1072))
+     - Support whitespace in conditional compile keywords ([brighterscript#1090](https://github.com/rokucommunity/brighterscript/pull/1090))
+
+
+
 ## [1.6.41](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.40...v1.6.41) - 2024-02-29
 ### Changed
  - upgrade to [brighterscript@0.65.23](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06523---2024-02-29). Notable changes since 0.65.19:
