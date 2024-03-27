@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.1](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.0...v1.7.1) - 2024-03-27
+### Changed
+ - upgrade to [brighterscript@0.65.27](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06527---2024-03-27). Notable changes since 0.65.25:
+     - Upgade LSP packages ([brighterscript#1117](https://github.com/rokucommunity/brighterscript/pull/1117))
+     - Increase max param count to 63 ([brighterscript#1112](https://github.com/rokucommunity/brighterscript/pull/1112))
+     - Prevent unused variable warnings on ternary and null coalescence expressions ([brighterscript#1101](https://github.com/rokucommunity/brighterscript/pull/1101))
+
+
+
 ## [1.7.0](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.6.41...v1.7.0) - 2024-03-07
 ### Added
  - `insertSpaceAfterConditionalCompileSymbol` property, fix conditional compile formatting ([#87](https://github.com/rokucommunity/brighterscript-formatter/pull/87))
