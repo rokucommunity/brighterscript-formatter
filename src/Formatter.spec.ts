@@ -251,6 +251,24 @@ describe('Formatter', () => {
                 end sub
            `);
         });
+
+        it('formats outdents', () => {
+            expect(formatter.format(undent`
+                temp = {
+                    key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                    end function }
+                }
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+                temp = {
+                    key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                        return true
+                    end function }
+                }
+            `);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {

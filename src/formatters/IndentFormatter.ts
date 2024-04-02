@@ -59,6 +59,7 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+        let foundUnIndentOnThisLine = false;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -87,6 +88,17 @@ export class IndentFormatter {
                     //the previous token will be Whitespace, so verify that previousPrevious is 'as'
                     previousNonWhitespaceToken?.kind === TokenKind.As
                 ) {
+                    continue;
+                }
+
+                //skip indent for 'function'|'sub' used as type if another indent already exist in this line
+                if (
+                    CallableKeywordTokenKinds.includes(token.kind) &&
+                    //validate if its a function/sub call
+                    nextNonWhitespaceToken.kind === TokenKind.LeftParen &&
+                    foundIndentorThisLine
+                ) {
+                    parentIndentTokenKinds.push(token.kind);
                     continue;
                 }
 
@@ -151,6 +163,17 @@ export class IndentFormatter {
                 }
 
                 nextLineOffset--;
+
+                if (
+                    [TokenKind.RightCurlyBrace].includes(token.kind) &&
+                    //if the line has already been unindented
+                    (foundUnIndentOnThisLine)
+                ) {
+                    continue;
+                }
+
+                foundUnIndentOnThisLine = true;
+
                 if (foundIndentorThisLine === false) {
                     currentLineOffset--;
                 }
