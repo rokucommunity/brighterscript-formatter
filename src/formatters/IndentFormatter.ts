@@ -93,7 +93,7 @@ export class IndentFormatter {
 
                 //skip indent for 'function'|'sub' used as type if another indent already exist in this line
                 if (
-                    CallableKeywordTokenKinds.includes(token.kind) &&
+                    IndentSpacerTokenKinds.includes(token.kind) &&
                     //validate if its a function/sub call
                     nextNonWhitespaceToken.kind === TokenKind.LeftParen &&
                     foundIndentorThisLine
@@ -164,10 +164,17 @@ export class IndentFormatter {
 
                 nextLineOffset--;
 
+                let doubleIndentSkip = (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
+                    //next is closing square
+                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                    //both tokens are on the same line
+                    token.range.start.line === nextNonWhitespaceToken.range.start.line;
+
                 if (
-                    [TokenKind.RightCurlyBrace].includes(token.kind) &&
-                    //if the line has already been unindented
-                    (foundUnIndentOnThisLine)
+                    OutdentSpacerTokenKinds.includes(token.kind) &&
+                    //if the line has already been outdented
+                    (foundUnIndentOnThisLine) &&
+                    !doubleIndentSkip
                 ) {
                     continue;
                 }
@@ -180,14 +187,7 @@ export class IndentFormatter {
                 parentIndentTokenKinds.pop();
 
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
-                if (
-                    //is closing curly or square
-                    (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
-                    //next is closing square
-                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
-                    //both tokens are on the same line
-                    token.range.start.line === nextNonWhitespaceToken.range.start.line
-                ) {
+                if (doubleIndentSkip) {
                     let opener = this.getOpeningToken(
                         tokens,
                         tokens.indexOf(nextNonWhitespaceToken),
