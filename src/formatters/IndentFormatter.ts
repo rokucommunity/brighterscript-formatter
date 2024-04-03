@@ -190,7 +190,7 @@ export class IndentFormatter {
                 if (doubleIndentSkip) {
                     let opener = this.getOpeningToken(
                         tokens,
-                        tokens.indexOf(nextNonWhitespaceToken),
+                        tokens.indexOf(nextNonWhitespaceToken!),
                         TokenKind.LeftSquareBracket,
                         TokenKind.RightSquareBracket
                     );
