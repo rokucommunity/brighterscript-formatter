@@ -268,6 +268,53 @@ describe('Formatter', () => {
                     end function }
                 }
             `);
+
+            expect(formatter.format(undent`
+                function test()
+                    temp = {
+                        key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function
+                        }
+                    }
+                end function
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+                function test()
+                    temp = {
+                        key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function 
+                        }
+                    }
+                end function
+            `);
+
+            expect(formatter.format(undent`
+            function test()
+                temp = {
+                    key_9: {
+                        env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function
+                    }
+                }
+            end function
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+            function test()
+                temp = {
+                    key_9: {
+                        env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function
+                    }
+                }
+            end function
+            `);
+
         });
     });
 

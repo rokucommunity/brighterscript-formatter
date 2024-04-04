@@ -91,17 +91,6 @@ export class IndentFormatter {
                     continue;
                 }
 
-                //skip indent for 'function'|'sub' used as type if another indent already exist in this line
-                if (
-                    IndentSpacerTokenKinds.includes(token.kind) &&
-                    //validate if its a function/sub call
-                    nextNonWhitespaceToken.kind === TokenKind.LeftParen &&
-                    foundIndentorThisLine
-                ) {
-                    parentIndentTokenKinds.push(token.kind);
-                    continue;
-                }
-
                 //skip indent for single-line if statements
                 let ifStatement = ifStatements.get(token);
                 const endIfToken = this.getEndIfToken(ifStatement);
@@ -212,10 +201,52 @@ export class IndentFormatter {
             //     tabCount--;
             // }
         }
+
+        //check if next multiple indents are followed by multiple outdents and update indentation accordingly
+        if (nextLineOffset > 1) {
+            nextLineOffset = this.lookaheadSameLineMultiOutdents(tokens, lineTokens[lineTokens.length - 1], nextLineOffset, currentLineOffset);
+        }
+
         return {
             currentLineOffset: currentLineOffset,
             nextLineOffset: nextLineOffset
         };
+    }
+
+    /**
+     * Lookahead if next line with oudents are same as indents on current line
+     * @param tokens the array of tokens in a file
+     * @param curLineToken token of curent line
+     * @param nextLineOffset the number of tabs to indent the next line
+     * @param currentLineOffset the number of tabs to indent the current line
+     */
+    private lookaheadSameLineMultiOutdents(tokens: Token[], curLineToken: Token, nextLineOffset: number, currentLineOffset: number): number {
+        let outdentCount = 0;
+        let tokenLineNum = 0;
+        let currentLineTokenIndex = tokens.indexOf(curLineToken);
+
+        for (let i = currentLineTokenIndex + 1; i < tokens.length; i++) {
+            let token = tokens[i];
+            //next line with outdents
+            if (OutdentSpacerTokenKinds.includes(token.kind)) {
+                if (tokenLineNum === 0) {
+                    tokenLineNum = token.range.start.line;
+                }
+
+                if (token.range.start.line === tokenLineNum) {
+                    outdentCount++;
+                } else {
+                    //exit when the line ends
+                    break;
+                }
+            }
+        }
+
+        //if outdents on next line with outdents = indents on current line then indent next line by one tab only
+        if (outdentCount > 0 && outdentCount === nextLineOffset) {
+            nextLineOffset = currentLineOffset + 1;
+        }
+        return nextLineOffset;
     }
 
     /**
