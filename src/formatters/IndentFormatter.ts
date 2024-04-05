@@ -162,11 +162,14 @@ export class IndentFormatter {
                 parentIndentTokenKinds.pop();
 
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
-                if ((token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
-                //next is closing square
-                nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
-                //both tokens are on the same line
-                token.range.start.line === nextNonWhitespaceToken.range.start.line) {
+                if (
+                    //is closing curly or square
+                    (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
+                    //next is closing square
+                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                    //both tokens are on the same line
+                    token.range.start.line === nextNonWhitespaceToken.range.start.line
+                ) {
                     let opener = this.getOpeningToken(
                         tokens,
                         tokens.indexOf(nextNonWhitespaceToken),
