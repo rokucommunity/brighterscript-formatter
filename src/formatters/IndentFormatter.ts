@@ -59,7 +59,7 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
-        let foundUnIndentOnThisLine = false;
+        let outdentCount = 0;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -152,23 +152,9 @@ export class IndentFormatter {
                 }
 
                 nextLineOffset--;
-
-                let doubleIndentSkip = (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
-                    //next is closing square
-                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
-                    //both tokens are on the same line
-                    token.range.start.line === nextNonWhitespaceToken.range.start.line;
-
-                if (
-                    OutdentSpacerTokenKinds.includes(token.kind) &&
-                    //if the line has already been outdented
-                    (foundUnIndentOnThisLine) &&
-                    !doubleIndentSkip
-                ) {
-                    continue;
+                if (OutdentSpacerTokenKinds.includes(token.kind)) {
+                    outdentCount++;
                 }
-
-                foundUnIndentOnThisLine = true;
 
                 if (foundIndentorThisLine === false) {
                     currentLineOffset--;
@@ -176,10 +162,14 @@ export class IndentFormatter {
                 parentIndentTokenKinds.pop();
 
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
-                if (doubleIndentSkip) {
+                if ((token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
+                //next is closing square
+                nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
+                //both tokens are on the same line
+                token.range.start.line === nextNonWhitespaceToken.range.start.line) {
                     let opener = this.getOpeningToken(
                         tokens,
-                        tokens.indexOf(nextNonWhitespaceToken!),
+                        tokens.indexOf(nextNonWhitespaceToken),
                         TokenKind.LeftSquareBracket,
                         TokenKind.RightSquareBracket
                     );
@@ -205,6 +195,16 @@ export class IndentFormatter {
         //check if next multiple indents are followed by multiple outdents and update indentation accordingly
         if (nextLineOffset > 1) {
             nextLineOffset = this.lookaheadSameLineMultiOutdents(tokens, lineTokens[lineTokens.length - 1], nextLineOffset, currentLineOffset);
+        } else if (outdentCount > 0) {
+            //if multiple outdents on same line then outdent only once
+            if (currentLineOffset < 0) {
+                currentLineOffset = -1;
+            }
+
+            //if multiple outdents on same line then outdent nextline only once
+            if (nextLineOffset < 0) {
+                nextLineOffset = -1;
+            }
         }
 
         return {
@@ -227,16 +227,18 @@ export class IndentFormatter {
 
         for (let i = currentLineTokenIndex + 1; i < tokens.length; i++) {
             let token = tokens[i];
-            //next line with outdents
-            if (OutdentSpacerTokenKinds.includes(token.kind)) {
-                if (tokenLineNum === 0) {
-                    tokenLineNum = token.range.start.line;
-                }
+            if (token.kind !== TokenKind.Whitespace) {
+                //next line with outdents
+                if (OutdentSpacerTokenKinds.includes(token.kind)) {
+                    if (tokenLineNum === 0) {
+                        tokenLineNum = token.range.start.line;
+                    }
 
-                if (token.range.start.line === tokenLineNum) {
-                    outdentCount++;
-                } else {
-                    //exit when the line ends
+                    if (token.range.start.line === tokenLineNum) {
+                        outdentCount++;
+                    }
+                }
+                if (tokenLineNum > 0 && token.range.start.line !== tokenLineNum) {
                     break;
                 }
             }
