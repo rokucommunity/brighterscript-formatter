@@ -204,9 +204,9 @@ export class IndentFormatter {
                 currentLineOffset = -1;
             }
 
-            //if multiple outdents on same line then outdent nextline only once
             if (nextLineOffset < 0) {
-                nextLineOffset = -1;
+                //look back to get offset of last closing token pair
+                nextLineOffset = this.getNextLineOffset(tokens, lineTokens);
             }
         }
 
@@ -214,6 +214,71 @@ export class IndentFormatter {
             currentLineOffset: currentLineOffset,
             nextLineOffset: nextLineOffset
         };
+    }
+
+    /**
+     * Lookback to find the matching opening token and then calculates outdents
+     * @param tokens the array of tokens in a file
+     * @param lineTokens token of curent line
+     */
+    private getNextLineOffset(tokens: Token[], lineTokens: Token[]): number {
+        let nextLineOffset = -1;
+
+        let lineLastToken = util.getPreviousNonWhitespaceToken(lineTokens, lineTokens.length - 1);
+        let curLineLastToken = lineLastToken !== undefined ? lineLastToken : lineTokens[lineTokens.length - 1];
+
+        let closeKind = curLineLastToken.kind;
+        let openKind = this.getOpeningTokenKind(closeKind);
+
+        if ((curLineLastToken.kind === TokenKind.RightCurlyBrace) || (curLineLastToken.kind === TokenKind.RightSquareBracket)) {
+            let openCount = 0;
+            let isWhiteSpaceToken = (lineTokens[0].kind === TokenKind.Whitespace) || (lineTokens[0].kind === TokenKind.Newline);
+            let lineFirstToken = isWhiteSpaceToken ? util.getNextNonWhitespaceToken(lineTokens, 0) : lineTokens[0];
+            let curLineStart = lineFirstToken?.range.start.character ? lineFirstToken?.range.start.character : 0;
+
+            let openerFound = false;
+            let currentIndex = lineTokens.indexOf(curLineLastToken);
+
+            let lines = this.splitTokensByLine(tokens);
+
+            for (let lineIndex = curLineLastToken.range.start.line; lineIndex >= 0; lineIndex--) {
+                let lineToken = lines[lineIndex];
+                isWhiteSpaceToken = (lineToken[0].kind === TokenKind.Whitespace) || (lineToken[0].kind === TokenKind.Newline);
+                let firstToken = isWhiteSpaceToken ? util.getNextNonWhitespaceToken(lineToken, 0) : lineToken[0];
+                let lineStartPosition = firstToken ? firstToken.range.start.character : 0;
+
+                let lineTokenIndex = currentIndex > -1 ? currentIndex : lineToken.length - 1;
+                currentIndex = -1;
+
+                for (let i = lineTokenIndex; i >= 0; i--) {
+                    let token = lineToken[i];
+                    if (token.kind === TokenKind.Whitespace) {
+                        continue;
+                    }
+
+                    if (token.kind === openKind) {
+                        openCount++;
+                    } else if (token.kind === closeKind) {
+                        openCount--;
+                    }
+
+                    if (openCount === 0) {
+                        openerFound = true;
+                        break;
+                    }
+                }
+
+                if (lineStartPosition < curLineStart) {
+                    nextLineOffset--;
+                    curLineStart = lineStartPosition;
+                }
+
+                if (openerFound) {
+                    break;
+                }
+            }
+        }
+        return nextLineOffset;
     }
 
     /**
@@ -231,14 +296,18 @@ export class IndentFormatter {
         for (let i = currentLineTokenIndex + 1; i < tokens.length; i++) {
             let token = tokens[i];
             if (token.kind !== TokenKind.Whitespace) {
+                let openingTokenKind = this.getOpeningTokenKind(token.kind);
                 //next line with outdents
-                if (OutdentSpacerTokenKinds.includes(token.kind)) {
-                    if (tokenLineNum === 0) {
-                        tokenLineNum = token.range.start.line;
-                    }
+                if (OutdentSpacerTokenKinds.includes(token.kind) && openingTokenKind) {
+                    let opener = this.getOpeningToken(tokens, i, openingTokenKind, token.kind);
+                    if (opener && opener.range.start.line === curLineToken.range.start.line) {
+                        if (tokenLineNum === 0) {
+                            tokenLineNum = token.range.start.line;
+                        }
 
-                    if (token.range.start.line === tokenLineNum) {
-                        outdentCount++;
+                        if (token.range.start.line === tokenLineNum) {
+                            outdentCount++;
+                        }
                     }
                 }
                 if (tokenLineNum > 0 && token.range.start.line !== tokenLineNum) {
@@ -248,8 +317,10 @@ export class IndentFormatter {
         }
 
         //if outdents on next line with outdents = indents on current line then indent next line by one tab only
-        if (outdentCount > 0 && outdentCount === nextLineOffset) {
-            nextLineOffset = currentLineOffset + 1;
+        if (outdentCount > 0) {
+            if (outdentCount === nextLineOffset) {
+                nextLineOffset = currentLineOffset + 1;
+            }
         }
         return nextLineOffset;
     }
@@ -371,6 +442,26 @@ export class IndentFormatter {
                 return token;
             }
         }
+    }
+
+    /**
+     * Returns opening token kind of the tokenkind passed
+     */
+    public getOpeningTokenKind(tokenKind: TokenKind) {
+        if (tokenKind === TokenKind.RightCurlyBrace) {
+            return TokenKind.LeftCurlyBrace;
+        } else if (tokenKind === TokenKind.RightParen) {
+            return TokenKind.LeftParen;
+        } else if (tokenKind === TokenKind.RightSquareBracket) {
+            return TokenKind.LeftSquareBracket;
+        } else if (tokenKind === TokenKind.EndIf) {
+            return TokenKind.If;
+        } else if (tokenKind === TokenKind.EndFunction) {
+            return TokenKind.Function;
+        } else if (tokenKind === TokenKind.EndSub) {
+            return TokenKind.Sub;
+        }
+        return undefined;
     }
 
     /**

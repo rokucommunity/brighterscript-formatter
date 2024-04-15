@@ -390,6 +390,51 @@ describe('Formatter', () => {
                 end class
             end namespace
             `);
+
+            formatEqual(undent`
+            sub createSections(navigationAction as object)
+                m.sections = [FormatJson({
+                    type: "test"
+                    components: [{
+                        type: "test"
+                        group_id: "1"
+                    }]
+                    slug: "test"
+                })]
+            end sub
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+
+            formatEqual(undent`
+                sub createSections(navigationAction as object)
+                    m.sections = [parser.parseList({
+                        components: [{
+                            buttons: [{
+                                actions: {
+                                    on_click: [get.value(navigationAction, "_retryAction")]
+                                }
+                            }]
+                        }]
+                    })]
+                end sub
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+
+            formatEqual(undent`
+            namespace alpha
+                namespace beta
+                    sub createSections()
+                        m.sections = [
+                            FormatJson({
+                            })]
+                    end sub
+                end namespace
+            end namespace
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
         });
     });
 
