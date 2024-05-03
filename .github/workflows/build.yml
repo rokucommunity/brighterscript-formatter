@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: "14.19.0"
+          architecture: 'x64' # fix for macos-latest
       - run: npm ci
       - run: npm run preversion
       - run: npm run publish-coverage
@@ -30,6 +31,7 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: "14.19.0"
+          architecture: 'x64' # fix for macos-latest
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ./.npmrc
       - run: npm ci
       - run: npm run build
