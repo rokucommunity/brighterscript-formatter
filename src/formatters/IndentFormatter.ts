@@ -99,7 +99,7 @@ export class IndentFormatter {
                         //does not have an end if
                         !endIfToken ||
                         //end if is on same line as if
-                        ifStatement.tokens.if.range.end.line === endIfToken.range.end.line
+                        ifStatement.tokens.if?.range.end.line === endIfToken.range.end.line
                     )
                 ) {
                     //if there's an `else`, skip past it since it'll cause de-indent otherwise
@@ -252,7 +252,9 @@ export class IndentFormatter {
 
         parser.ast.walk(createVisitor({
             IfStatement: (statement) => {
-                ifStatements.set(statement.tokens.if, statement);
+                if (statement.tokens.if) {
+                    ifStatements.set(statement.tokens.if, statement);
+                }
             }
         }), {
             walkMode: WalkMode.visitAllRecursive

@@ -337,11 +337,11 @@ export class InteriorWhitespaceFormatter {
 
         //find all of the AA literals
         for (let aaLiteral of aaLiterals) {
-            for (let element of (aaLiteral.elements as AAMemberExpression[])) {
+            for (let element of aaLiteral.elements) {
                 //our target elements should have both `key` and `colon` and they should both be on the same line
-                if (element.keyToken && element.colonToken && element.keyToken.range.end.line === element.colonToken.range.end.line) {
+                if (element.tokens.key && element.tokens.colon && element.tokens.key.range.end.line === element.tokens.colon.range.end.line) {
                     let whitespaceToken: Token;
-                    let idx = tokens.indexOf(element.keyToken);
+                    let idx = tokens.indexOf(element.tokens.key);
                     let nextToken = tokens[idx + 1];
                     if (nextToken.kind === TokenKind.Whitespace) {
                         whitespaceToken = nextToken;

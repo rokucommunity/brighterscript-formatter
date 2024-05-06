@@ -1,3 +1,4 @@
+import type { Token } from 'brighterscript';
 import { Lexer, ParseMode, Parser, TokenKind } from 'brighterscript';
 import { SourceNode } from 'source-map';
 import { DEFAULT_INDENT_SPACE_COUNT } from './constants';
@@ -111,6 +112,8 @@ export class Formatter {
             }
         );
 
+        tokens = this.includeCommentTokens(tokens);
+
         if (options.formatMultiLineObjectsAndArrays) {
             tokens = this.formatters.multiLineItem.format(tokens);
         }
@@ -140,6 +143,27 @@ export class Formatter {
             tokens = this.formatters.indent.format(tokens, options, parser);
         }
         return tokens;
+    }
+
+    private includeCommentTokens(tokens: Token[]) {
+        //bring out comments as their own tokens
+        let whiteSpaceTokens = [] as Array<Token>;
+        const tokensWithComments = [] as Array<Token>;
+        for (const token of tokens) {
+            if (token.kind === TokenKind.Newline || token.kind === TokenKind.Whitespace) {
+                whiteSpaceTokens.push(token);
+                continue;
+            }
+            if (token.leadingTrivia.find(x => x.kind === TokenKind.Comment)) {
+                tokensWithComments.push(...token.leadingTrivia);
+                whiteSpaceTokens = [];
+            }
+            tokensWithComments.push(...whiteSpaceTokens);
+            tokensWithComments.push(token);
+            whiteSpaceTokens = [];
+        }
+        tokensWithComments.push(...whiteSpaceTokens);
+        return tokensWithComments;
     }
 
     /**
