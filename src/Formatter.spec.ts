@@ -252,6 +252,19 @@ describe('Formatter', () => {
            `);
         });
 
+        it.only('empty newlines in AA do not break indentation', ()=>{
+            formatEqual(undent`
+                sub test()
+                    array = [{
+
+                    }]
+                    if true then
+                        print true
+                    end if
+                end sub
+            `);
+        });
+
         it('formats outdents', () => {
             expect(formatter.format(undent`
                 temp = {
@@ -285,7 +298,7 @@ describe('Formatter', () => {
                     temp = {
                         key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
                                 return true
-                            end function 
+                            end function
                         }
                     }
                 end function
