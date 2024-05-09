@@ -243,6 +243,10 @@ export class IndentFormatter {
 
             for (let lineIndex = curLineLastToken.range.start.line; lineIndex >= 0; lineIndex--) {
                 let lineToken = lines[lineIndex];
+
+                if (lineToken.length === 1 && lineToken[0].kind === TokenKind.Newline) {
+                    continue;
+                }
                 isWhiteSpaceToken = (lineToken[0].kind === TokenKind.Whitespace) || (lineToken[0].kind === TokenKind.Newline);
                 let firstToken = isWhiteSpaceToken ? util.getNextNonWhitespaceToken(lineToken, 0) : lineToken[0];
                 let lineStartPosition = firstToken ? firstToken.range.start.character : 0;
