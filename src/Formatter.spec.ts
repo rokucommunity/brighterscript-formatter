@@ -252,7 +252,7 @@ describe('Formatter', () => {
            `);
         });
 
-        it('empty newlines in AA do not break indentation', ()=>{
+        it('empty newlines in AA do not break indentation', () => {
             formatEqual(undent`
                 sub test()
                     array = [{
