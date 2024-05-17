@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.2](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.1...v1.7.2) - 2024-05-16
+### Changed
+ - fix-node14 ([#91](https://github.com/rokucommunity/brighterscript-formatter/pull/91))
+ - upgrade to [brighterscript@0.67.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0671---2024-05-16). Notable changes since 0.65.27:
+     - Fix crash when diagnostic is missing range ([brighterscript#1174](https://github.com/rokucommunity/brighterscript/pull/1174))
+
+
+
 ## [1.7.1](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.0...v1.7.1) - 2024-03-27
 ### Changed
  - upgrade to [brighterscript@0.65.27](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06527---2024-03-27). Notable changes since 0.65.25:
