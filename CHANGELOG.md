@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.3](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.2...v1.7.3) - 2024-06-03
+### Changed
+ - upgrade to [brighterscript@0.67.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0672---2024-06-03). Notable changes since 0.67.1:
+     - Fix crash with optional chaining in signature help ([brighterscript#1207](https://github.com/rokucommunity/brighterscript/pull/1207))
+
+
+
 ## [1.7.2](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.1...v1.7.2) - 2024-05-16
 ### Changed
  - fix-node14 ([#91](https://github.com/rokucommunity/brighterscript-formatter/pull/91))
