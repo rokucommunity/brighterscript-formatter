@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.4](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.3...1.7.4) - 2024-07-24
+### Changed
+ - upgrade to [brighterscript@0.67.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0674---2024-07-24). Notable changes since 0.67.2:
+     - Fix crash with missing scope ([brighterscript#1234](https://github.com/rokucommunity/brighterscript/pull/1234))
+     - Flag using devDependency in production code ([brighterscript#1222](https://github.com/rokucommunity/brighterscript/pull/1222))
+
+
+
 ## [1.7.3](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.2...v1.7.3) - 2024-06-03
 ### Changed
  - upgrade to [brighterscript@0.67.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0672---2024-06-03). Notable changes since 0.67.1:
