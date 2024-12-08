@@ -5,11 +5,17 @@ import { OutdentSpacerTokenKinds, IndentSpacerTokenKinds, CallableKeywordTokenKi
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
+console.log('IndentFormatter.ts');
+
 export class IndentFormatter {
+
     /**
      * Handle indentation for an array of tokens
      */
     public format(tokens: Token[], options: FormattingOptions, parser: Parser) {
+
+        console.log('IndentFormatter.format');
+
         // The text used for each tab
         let tabText = options.indentStyle === 'tabs' ? '\t' : ' '.repeat(options.indentSpaceCount ?? DEFAULT_INDENT_SPACE_COUNT);
 
@@ -29,20 +35,24 @@ export class IndentFormatter {
             const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds);
 
             //uncomment the next line to debug indent/outdent issues
-            // console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
+            console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
 
             //compute the current line's tab count (default to 0 if we somehow went negative)
             let currentLineTabCount = Math.max(globalTabCount + currentLineOffset, 0);
+            console.log('currentLineTabCount', currentLineTabCount);
 
             //update the offset for the next line (default to 0 if we somehow went negative)
             globalTabCount = Math.max(globalTabCount + nextLineOffset, 0);
+            console.log('globalTabCount', globalTabCount);
 
             this.ensureTokenIndentation(lineTokens, currentLineTabCount, tabText);
             this.trimWhitespaceOnlyLines(lineTokens);
 
             //push these tokens to the result list
+            console.log('lineTokens', lineTokens.map(x => x.text).join(''));
             result.push(...lineTokens);
         }
+        console.log('result', result.map(x => x.text).join(''));
         return result;
     }
 
@@ -52,13 +62,28 @@ export class IndentFormatter {
         ifStatements: Map<Token, IfStatement>,
         parentIndentTokenKinds: TokenKind[]
     ): { currentLineOffset: number; nextLineOffset: number } {
+
+        console.log(`\n\nIndentFormatter.processLine`);
+
+        console.log('parentIndentTokenKinds at start of line processing ', parentIndentTokenKinds.map(x => TokenKind[x]));
+
         const getParentIndentTokenKind = () => {
-            return parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+            const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+            console.log('parentIndentTokenKinds at end of line processing', parentIndentTokenKinds.map(x => TokenKind[x]));
+            console.log('parentIndentTokenKind', parentIndentTokenKind);
+            return parentIndentTokenKind;
         };
 
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+
+        console.log(`\nlineTokens`, lineTokens.map(x => x.text).join(''));
+        console.log(`lineTokens.length: ${lineTokens.length}`);
+        lineTokens.forEach((token, index) => {
+            console.log(`token `, index, TokenKind[token.kind]);
+        });
+        console.log('parentIndentTokenKinds', parentIndentTokenKinds.map(x => TokenKind[x]));
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -111,8 +136,31 @@ export class IndentFormatter {
                 }
 
                 // check for specifically mentioned tokens to NOT indent
+                console.log(`checking for items not to indent`);
                 const parentIndentTokenKind = getParentIndentTokenKind();
+                console.log('parentIndentTokenKind at point of decision is ', parentIndentTokenKind);
+                console.log('token.kind', TokenKind[token.kind]);
+
+                const parentIndentTokenKindsContainsSubOrFunction = parentIndentTokenKinds.includes(TokenKind.Sub) || parentIndentTokenKinds.includes(TokenKind.Function);
+
+                const tokenKindIsClass = token.kind === TokenKind.Class;
+                const tokenKindIsEnum = token.kind === TokenKind.Enum;
+                const tokenKindIsInterface = token.kind === TokenKind.Interface;
+                const tokenKindIsNamespace = token.kind === TokenKind.Namespace;
+                const tokenKindIsTry = token.kind === TokenKind.Try;
+
+                // don't indent class or enum if parent is sub or function
+                const preventIndent = parentIndentTokenKindsContainsSubOrFunction && (tokenKindIsClass || tokenKindIsEnum || tokenKindIsInterface || tokenKindIsNamespace || tokenKindIsTry);
+
+                if (preventIndent) {
+                    console.log('parentIndentTokenKindsContainsSubOrFunction && tokenKindIsClass');
+                    // don't indent class if parent is sub or function
+                    continue;
+                }
+
                 if (parentIndentTokenKind && IgnoreIndentSpacerByParentTokenKind.get(parentIndentTokenKind)?.includes(token.kind)) {
+                    console.log('IgnoreIndentSpacerByParentTokenKind.get(parentIndentTokenKind)');
+                    console.log(IgnoreIndentSpacerByParentTokenKind.get(parentIndentTokenKind)?.includes(token.kind));
                     // This particular token should not be indented because it is listed in the ignore group for its parent
                     continue;
                 }
@@ -189,6 +237,8 @@ export class IndentFormatter {
             //     tabCount--;
             // }
         }
+        console.log('currentLineOffset', currentLineOffset);
+        console.log('nextLineOffset', nextLineOffset);
         return {
             currentLineOffset: currentLineOffset,
             nextLineOffset: nextLineOffset
@@ -202,6 +252,9 @@ export class IndentFormatter {
      * @param tabText the string to use for each tab. For tabs, this is "\t", for spaces it would be something like "    " or "  "
      */
     private ensureTokenIndentation(tokens: Token[], tabCount: number, tabText = '    '): Token[] {
+
+        console.log('IndentFormatter.ensureTokenIndentation');
+
         //do nothing if we have an empty tokens list
         if (!tokens || tokens.length === 0) {
             return tokens;
@@ -232,6 +285,9 @@ export class IndentFormatter {
      * This should only be called once the line has been whitespace-deduped
      */
     private trimWhitespaceOnlyLines(tokens: Token[]) {
+
+        console.log('IndentFormatter.trimWhitespaceOnlyLines');
+
         //if the first token is whitespace, and the next is EOL or EOF
         if (
             tokens[0].kind === TokenKind.Whitespace &&
@@ -247,6 +303,8 @@ export class IndentFormatter {
      * Find all if statements in this file
      */
     private getAllIfStatements(parser: Parser) {
+
+        console.log('IndentFormatter.getAllIfStatements');
 
         const ifStatements = new Map<Token, IfStatement>();
 
@@ -264,6 +322,9 @@ export class IndentFormatter {
      * Split the tokens by newline (including the newline or EOF as the last token in that array)
      */
     private splitTokensByLine(tokens: Token[]) {
+
+        console.log('IndentFormatter.splitTokensByLine');
+
         const result: Array<Token[]> = [];
         let line: Token[] = [];
         for (let token of tokens) {
@@ -284,6 +345,9 @@ export class IndentFormatter {
      * Then return the endIf token if it exists
      */
     private getEndIfToken(ifStatement: IfStatement | undefined) {
+
+        console.log('IndentFormatter.getEndIfToken');
+
         if (isIfStatement(ifStatement)) {
             while (true) {
                 if (isIfStatement(ifStatement.elseBranch)) {
@@ -300,6 +364,9 @@ export class IndentFormatter {
      * Given a kind like `}` or `]`, walk backwards until we find its match
      */
     public getOpeningToken(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+
+        console.log('IndentFormatter.getOpeningToken');
+
         let openCount = 0;
         for (let i = currentIndex; i >= 0; i--) {
             let token = tokens[i];
@@ -318,6 +385,10 @@ export class IndentFormatter {
      * Determines if this is an outdent token
      */
     public isOutdentToken(token: Token, nextNonWhitespaceToken?: Token) {
+
+        console.log('IndentFormatter.isOutdentToken');
+
+
         //this is a temporary fix for broken indentation for brighterscript ternary operations.
         const isSymbol = [TokenKind.RightCurlyBrace, TokenKind.RightSquareBracket].includes(token.kind);
         if (
