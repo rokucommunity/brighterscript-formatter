@@ -1,12 +1,12 @@
 import { expect } from 'chai';
-// import { expectTokens, lex } from '../testHelpers.spec';
-//import { IndentFormatter } from './IndentFormatter';
+import { expectTokens, lex } from '../testHelpers.spec';
+import { IndentFormatter } from './IndentFormatter';
 
 describe('IndentFormatter', () => {
-    //let formatter: IndentFormatter;
+    let formatter: IndentFormatter;
 
     beforeEach(() => {
-        //formatter = new IndentFormatter();
+        formatter = new IndentFormatter();
     });
 
     describe('nullTest', () => {
@@ -15,7 +15,6 @@ describe('IndentFormatter', () => {
         });
     });
 
-    /*
     describe('ensureTokenIndentation', () => {
         it('does nothing for empty or invalid tokens', () => {
             expect(
@@ -69,8 +68,6 @@ describe('IndentFormatter', () => {
         });
     });
 
-
-    /*
     describe('ensureTokenIndentation', () => {
         it('does nothing for empty or invalid tokens', () => {
             expect(
@@ -139,5 +136,4 @@ describe('IndentFormatter', () => {
             );
         });
     });
-    */
 });
