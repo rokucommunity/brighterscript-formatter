@@ -126,9 +126,7 @@ export let OutdentSpacerTokenKinds = [
     TokenKind.EndInterface,
     TokenKind.EndNamespace,
     TokenKind.EndTry,
-    TokenKind.EndEnum,
-    TokenKind.Class,
-    TokenKind.Enum
+    TokenKind.EndEnum
 ];
 
 /**
