@@ -10,7 +10,6 @@ export class IndentFormatter {
      * Handle indentation for an array of tokens
      */
     public format(tokens: Token[], options: FormattingOptions, parser: Parser) {
-
         // The text used for each tab
         let tabText = options.indentStyle === 'tabs' ? '\t' : ' '.repeat(options.indentSpaceCount ?? DEFAULT_INDENT_SPACE_COUNT);
 
@@ -30,7 +29,7 @@ export class IndentFormatter {
             const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds);
 
             //uncomment the next line to debug indent/outdent issues
-            //console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
+            // console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
 
             //compute the current line's tab count (default to 0 if we somehow went negative)
             let currentLineTabCount = Math.max(globalTabCount + currentLineOffset, 0);
@@ -53,7 +52,6 @@ export class IndentFormatter {
         ifStatements: Map<Token, IfStatement>,
         parentIndentTokenKinds: TokenKind[]
     ): { currentLineOffset: number; nextLineOffset: number } {
-
         const getParentIndentTokenKind = () => {
             const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
             return parentIndentTokenKind;
@@ -218,7 +216,6 @@ export class IndentFormatter {
      * @param tabText the string to use for each tab. For tabs, this is "\t", for spaces it would be something like "    " or "  "
      */
     private ensureTokenIndentation(tokens: Token[], tabCount: number, tabText = '    '): Token[] {
-
         //do nothing if we have an empty tokens list
         if (!tokens || tokens.length === 0) {
             return tokens;
@@ -249,7 +246,6 @@ export class IndentFormatter {
      * This should only be called once the line has been whitespace-deduped
      */
     private trimWhitespaceOnlyLines(tokens: Token[]) {
-
         //if the first token is whitespace, and the next is EOL or EOF
         if (
             tokens[0].kind === TokenKind.Whitespace &&

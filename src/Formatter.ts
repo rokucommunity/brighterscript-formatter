@@ -62,7 +62,6 @@ export class Formatter {
      * @returns an object with property `code` holding the formatted code, and `map` holding the source map.
      */
     public formatWithSourceMap(inputText: string, sourcePath: string, formattingOptions?: FormattingOptions) {
-        console.log('formatWithSourceMap', inputText, sourcePath, formattingOptions);
         let tokens = this.getFormattedTokens(inputText, formattingOptions);
         let chunks = [] as Array<string | SourceNode>;
         for (let token of tokens) {

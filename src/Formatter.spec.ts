@@ -7,8 +7,6 @@ import { SourceMapConsumer } from 'source-map';
 import { undent } from 'undent';
 
 describe('Formatter', () => {
-
-    console.log(`Formatter tests`);
     let formatter: Formatter;
 
     beforeEach(() => {
