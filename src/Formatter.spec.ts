@@ -935,6 +935,38 @@ end sub`;
             );
         });
 
+        it('correctly indents function class modifiers', () => {
+            expect(formatter.format(
+                'function class()\nend function'
+            )).to.equal(
+                'function class()\nend function'
+            );
+        });
+
+        it('correctly indents function class modifiers with print statement', () => {
+            expect(formatter.format(
+                'function class()\nprint "hello"\nend function'
+            )).to.equal(
+                'function class()\n    print "hello"\nend function'
+            );
+        });
+
+        it('correctly indents function enum modifiers', () => {
+            expect(formatter.format(
+                'function enum()\nend function'
+            )).to.equal(
+                'function enum()\nend function'
+            );
+        });
+
+        it('correctly indents function enum modifiers with print statement', () => {
+            expect(formatter.format(
+                'function enum()\nprint "hello"\nend function'
+            )).to.equal(
+                'function enum()\n    print "hello"\nend function'
+            );
+        });
+
         it('trims empty lines', () => {
             expect(formatter.format(`sub a()\n    \nend sub`)).to.equal(`sub a()\n\nend sub`);
         });
