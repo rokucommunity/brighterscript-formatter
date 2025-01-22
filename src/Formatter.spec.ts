@@ -967,6 +967,28 @@ end sub`;
             );
         });
 
+        it('correctly indents function with try having contents', () => {
+            expect(formatter.format(`
+                function try
+                try
+                print "hello"
+                catch e
+                print "world"
+                end try
+                print "done"
+                end function
+            `)).to.equal(undent`
+                function try
+                    try
+                        print "hello"
+                    catch e
+                        print "world"
+                    end try
+                    print "done"
+                end function
+            `);
+        });
+
         it('trims empty lines', () => {
             expect(formatter.format(`sub a()\n    \nend sub`)).to.equal(`sub a()\n\nend sub`);
         });
