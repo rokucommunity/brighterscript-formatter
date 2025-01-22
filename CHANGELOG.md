@@ -6,6 +6,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.8](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.7...v1.7.8) - 2025-01-13
+### Changed
+ - upgrade to [brighterscript@0.68.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0683---2025-01-13)
+
+
+
+## [1.7.7](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.6...v1.7.7) - 2024-12-20
+### Changed
+ - upgrade to [brighterscript@0.68.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0682---2024-12-06). Notable changes since 0.67.8:
+     - Add more convenience exports from vscode-languageserver ([brighterscript#1359](https://github.com/rokucommunity/brighterscript/pull/1359))
+     - Add Namespace Source Literals ([brighterscript#1353](https://github.com/rokucommunity/brighterscript/pull/1353))
+     - Enhance lexer to support long numeric literals with type designators ([brighterscript#1351](https://github.com/rokucommunity/brighterscript/pull/1351))
+     - Fix issues with the ast `walkArray` function ([brighterscript#1347](https://github.com/rokucommunity/brighterscript/pull/1347))
+
+
+
+## [1.7.6](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.5...v1.7.6) - 2024-10-18
+### Changed
+ - upgrade to [brighterscript@0.67.8](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0678---2024-10-18). Notable changes since 0.67.7:
+     - Fix namespace-relative transpile bug for standalone file ([brighterscript#1324](https://github.com/rokucommunity/brighterscript/pull/1324))
+     - Prevent crash when ProgramBuilder.run called with no options ([brighterscript#1316](https://github.com/rokucommunity/brighterscript/pull/1316))
+
+
+
+## [1.7.5](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.4...v1.7.5) - 2024-09-26
+### Changed
+ - upgrade to [brighterscript@0.67.7](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0677---2024-09-25). Notable changes since 0.67.4:
+
+
+
+## [1.7.4](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.3...1.7.4) - 2024-07-24
+### Changed
+ - upgrade to [brighterscript@0.67.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0674---2024-07-24). Notable changes since 0.67.2:
+     - Fix crash with missing scope ([brighterscript#1234](https://github.com/rokucommunity/brighterscript/pull/1234))
+     - Flag using devDependency in production code ([brighterscript#1222](https://github.com/rokucommunity/brighterscript/pull/1222))
+
+
+
 ## [1.7.3](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.2...v1.7.3) - 2024-06-03
 ### Changed
  - upgrade to [brighterscript@0.67.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0672---2024-06-03). Notable changes since 0.67.1:
