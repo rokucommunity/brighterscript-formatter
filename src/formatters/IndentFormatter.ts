@@ -124,6 +124,9 @@ export class IndentFormatter {
                 // dont indent if parent is sub or function and this is a class, enum, interface, namespace, or try
                 const preventIndent = parentIndentTokenKindsContainsSubOrFunction && (tokenKindIsClass || tokenKindIsEnum || tokenKindIsInterface || tokenKindIsNamespace || tokenKindIsTry);
                 if (preventIndent) {
+                    if (tokenKindIsTry && (lineTokens.length === 2 || lineTokens.length === 3)) {
+                        nextLineOffset++;
+                    }
                     continue;
                 }
 
@@ -158,7 +161,7 @@ export class IndentFormatter {
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
                 //do not un-indent if this is a `next` or `endclass` token preceeded by a period
                 if (
-                    [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                    [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace, TokenKind.Catch, TokenKind.EndTry].includes(token.kind) &&
                     previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
                 ) {
                     continue;

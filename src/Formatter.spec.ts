@@ -74,7 +74,7 @@ describe('Formatter', () => {
                 end try
             `);
         });
-
+        
         it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
@@ -966,9 +966,21 @@ end sub`;
                 'function enum()\n    print "hello"\nend function'
             );
         });
+        it('property indents try catch statements', () => {
+            formatEqualTrim(`
+                function try()
+                    try
+                        print "hello"
+                    catch e
+                        print "caught"
+                    end try
+                    print "hello"
+                end function
+            `);
+        });
 
         it('correctly indents function with try having contents', () => {
-            expect(formatter.format(`
+            expect(formatter.format(undent`
                 function try
                 try
                 print "hello"
@@ -976,7 +988,7 @@ end sub`;
                 print "world"
                 end try
                 print "done"
-                end function
+                end function 
             `)).to.equal(undent`
                 function try
                     try
@@ -985,7 +997,7 @@ end sub`;
                         print "world"
                     end try
                     print "done"
-                end function
+                end function 
             `);
         });
 
@@ -1605,6 +1617,7 @@ end sub`;
             expect(format(['exitwhile', TokenKind.ExitWhile])).to.equal('exit while');
             expect(format(['exitfor', TokenKind.ExitFor])).to.equal('exit for');
             expect(format(['endfor', TokenKind.EndFor])).to.equal('end for');
+            expect(format(['endtry', TokenKind.EndTry])).to.equal('end try');
 
             expect(formatter.format(
                 `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
