@@ -74,7 +74,7 @@ describe('Formatter', () => {
                 end try
             `);
         });
-        
+
         it('properly indents foreach loops', () => {
             formatEqual(
                 `for each item in collection\n    name = true\nend for`
