@@ -935,6 +935,72 @@ end sub`;
             );
         });
 
+        it('correctly indents function class modifiers', () => {
+            expect(formatter.format(
+                'function class()\nend function'
+            )).to.equal(
+                'function class()\nend function'
+            );
+        });
+
+        it('correctly indents function class modifiers with print statement', () => {
+            expect(formatter.format(
+                'function class()\nprint "hello"\nend function'
+            )).to.equal(
+                'function class()\n    print "hello"\nend function'
+            );
+        });
+
+        it('correctly indents function enum modifiers', () => {
+            expect(formatter.format(
+                'function enum()\nend function'
+            )).to.equal(
+                'function enum()\nend function'
+            );
+        });
+
+        it('correctly indents function enum modifiers with print statement', () => {
+            expect(formatter.format(
+                'function enum()\nprint "hello"\nend function'
+            )).to.equal(
+                'function enum()\n    print "hello"\nend function'
+            );
+        });
+        it('property indents try catch statements', () => {
+            formatEqualTrim(`
+                function try()
+                    try
+                        print "hello"
+                    catch e
+                        print "caught"
+                    end try
+                    print "hello"
+                end function
+            `);
+        });
+
+        it('correctly indents function with try having contents', () => {
+            expect(formatter.format(undent`
+                function try
+                try
+                print "hello"
+                catch e
+                print "world"
+                end try
+                print "done"
+                end function 
+            `)).to.equal(undent`
+                function try
+                    try
+                        print "hello"
+                    catch e
+                        print "world"
+                    end try
+                    print "done"
+                end function 
+            `);
+        });
+
         it('trims empty lines', () => {
             expect(formatter.format(`sub a()\n    \nend sub`)).to.equal(`sub a()\n\nend sub`);
         });
@@ -1551,6 +1617,7 @@ end sub`;
             expect(format(['exitwhile', TokenKind.ExitWhile])).to.equal('exit while');
             expect(format(['exitfor', TokenKind.ExitFor])).to.equal('exit for');
             expect(format(['endfor', TokenKind.EndFor])).to.equal('end for');
+            expect(format(['endtry', TokenKind.EndTry])).to.equal('end try');
 
             expect(formatter.format(
                 `sub add()\n    if true then\n        a=1\n    elseif true then\n        a=1\n    endif\nendsub`,
