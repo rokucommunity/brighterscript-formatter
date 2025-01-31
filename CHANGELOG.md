@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.9](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.8...v1.7.9) - 2025-01-31
+### Changed
+ - Bump braces from 3.0.2 to 3.0.3 ([#94](https://github.com/rokucommunity/brighterscript-formatter/pull/94))
+ - upgrade to [brighterscript@0.68.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0684---2025-01-22). Notable changes since 0.68.3:
+### Fixed
+ - Fix indentation bug when brighterscript keywords are used as identifiers ([#96](https://github.com/rokucommunity/brighterscript-formatter/pull/96))
+
+
+
 ## [1.7.8](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.7...v1.7.8) - 2025-01-13
 ### Changed
  - upgrade to [brighterscript@0.68.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0683---2025-01-13)
