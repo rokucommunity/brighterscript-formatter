@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.10](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.9...v1.7.10) - 2025-02-10
+### Changed
+ - upgrade to [brighterscript@0.69.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0690---2025-02-10). Notable changes since 0.68.4:
+     - Language Server Rewrite ([brighterscript#993](https://github.com/rokucommunity/brighterscript/pull/993))
+     - Add `validate` flag to ProgramBuilder.run() ([brighterscript#1409](https://github.com/rokucommunity/brighterscript/pull/1409))
+
+
+
 ## [1.7.9](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.8...v1.7.9) - 2025-01-31
 ### Changed
  - Bump braces from 3.0.2 to 3.0.3 ([#94](https://github.com/rokucommunity/brighterscript-formatter/pull/94))
