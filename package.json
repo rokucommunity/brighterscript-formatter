@@ -1,6 +1,6 @@
 {
     "name": "brighterscript-formatter",
-    "version": "1.7.10",
+    "version": "1.7.12",
     "description": "A formatter for BrighterScript, a superset of Roku's BrightScript language, written in JavaScript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -15,14 +15,15 @@
         "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
         "format-github": "ts-node scripts/format-github.ts",
         "format-github-compare": "ts-node scripts/format-github.ts --compare",
-        "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts"
+        "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts",
+        "package": "npm run build && npm pack"
     },
     "bin": {
         "bsfmt": "dist/cli.js",
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.69.0",
+        "brighterscript": "^0.69.3",
         "glob-all": "^3.3.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "^0.7.3",
