@@ -103,7 +103,9 @@ export let IndentSpacerTokenKinds = [
 export let IgnoreIndentSpacerByParentTokenKind = new Map<TokenKind, TokenKind[]>([
     [TokenKind.Interface, [
         TokenKind.Sub,
-        TokenKind.Function
+        TokenKind.Function,
+        TokenKind.Enum,
+        TokenKind.Class
     ]]
 ]);
 

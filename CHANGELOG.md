@@ -6,6 +6,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.12](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.11...v1.7.12) - 2025-03-20
+### Changed
+ - upgrade to [brighterscript@0.69.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0693---2025-03-20). Notable changes since 0.69.2:
+     - Fixed getClosestExpression bug to return undefined when position not found ([brighterscript#1433](https://github.com/rokucommunity/brighterscript/pull/1433))
+     - Adds Alias statement syntax from v1 to v0 ([brighterscript#1430](https://github.com/rokucommunity/brighterscript/pull/1430))
+
+
+
+## [1.7.11](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.10...v1.7.11) - 2025-03-13
+### Changed
+ - upgrade to [brighterscript@0.69.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0692---2025-03-13). Notable changes since 0.69.0:
+     - Significantly improve the performance of standardizePath ([brighterscript#1425](https://github.com/rokucommunity/brighterscript/pull/1425))
+     - Backport v1 typecast syntax to v0 ([brighterscript#1421](https://github.com/rokucommunity/brighterscript/pull/1421))
+     - Prevent running the lsp project in a worker thread ([brighterscript#1423](https://github.com/rokucommunity/brighterscript/pull/1423))
+
+
+
+## [1.7.10](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.9...v1.7.10) - 2025-02-10
+### Changed
+ - upgrade to [brighterscript@0.69.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0690---2025-02-10). Notable changes since 0.68.4:
+     - Language Server Rewrite ([brighterscript#993](https://github.com/rokucommunity/brighterscript/pull/993))
+     - Add `validate` flag to ProgramBuilder.run() ([brighterscript#1409](https://github.com/rokucommunity/brighterscript/pull/1409))
+
+
+
+## [1.7.9](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.8...v1.7.9) - 2025-01-31
+### Changed
+ - Bump braces from 3.0.2 to 3.0.3 ([#94](https://github.com/rokucommunity/brighterscript-formatter/pull/94))
+ - upgrade to [brighterscript@0.68.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0684---2025-01-22). Notable changes since 0.68.3:
+### Fixed
+ - Fix indentation bug when brighterscript keywords are used as identifiers ([#96](https://github.com/rokucommunity/brighterscript-formatter/pull/96))
+
+
+
 ## [1.7.8](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.7...v1.7.8) - 2025-01-13
 ### Changed
  - upgrade to [brighterscript@0.68.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0683---2025-01-13)

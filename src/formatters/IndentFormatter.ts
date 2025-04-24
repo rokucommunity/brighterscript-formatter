@@ -53,7 +53,8 @@ export class IndentFormatter {
         parentIndentTokenKinds: TokenKind[]
     ): { currentLineOffset: number; nextLineOffset: number } {
         const getParentIndentTokenKind = () => {
-            return parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+            const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
+            return parentIndentTokenKind;
         };
 
         let currentLineOffset = 0;
@@ -112,6 +113,23 @@ export class IndentFormatter {
 
                 // check for specifically mentioned tokens to NOT indent
                 const parentIndentTokenKind = getParentIndentTokenKind();
+                const parentIndentTokenKindsContainsSubOrFunction = parentIndentTokenKinds.includes(TokenKind.Sub) || parentIndentTokenKinds.includes(TokenKind.Function);
+
+                const tokenKindIsClass = token.kind === TokenKind.Class;
+                const tokenKindIsEnum = token.kind === TokenKind.Enum;
+                const tokenKindIsInterface = token.kind === TokenKind.Interface;
+                const tokenKindIsNamespace = token.kind === TokenKind.Namespace;
+                const tokenKindIsTry = token.kind === TokenKind.Try;
+
+                // dont indent if parent is sub or function and this is a class, enum, interface, namespace, or try
+                const preventIndent = parentIndentTokenKindsContainsSubOrFunction && (tokenKindIsClass || tokenKindIsEnum || tokenKindIsInterface || tokenKindIsNamespace || tokenKindIsTry);
+                if (preventIndent) {
+                    if (tokenKindIsTry && (lineTokens.length === 2 || lineTokens.length === 3)) {
+                        nextLineOffset++;
+                    }
+                    continue;
+                }
+
                 if (parentIndentTokenKind && IgnoreIndentSpacerByParentTokenKind.get(parentIndentTokenKind)?.includes(token.kind)) {
                     // This particular token should not be indented because it is listed in the ignore group for its parent
                     continue;
@@ -120,7 +138,6 @@ export class IndentFormatter {
                 nextLineOffset++;
                 foundIndentorThisLine = true;
                 parentIndentTokenKinds.push(token.kind);
-
 
                 //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
                 if (
@@ -144,7 +161,7 @@ export class IndentFormatter {
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
                 //do not un-indent if this is a `next` or `endclass` token preceeded by a period
                 if (
-                    [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace].includes(token.kind) &&
+                    [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace, TokenKind.Catch, TokenKind.EndTry].includes(token.kind) &&
                     previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
                 ) {
                     continue;
