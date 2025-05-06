@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.13](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.12...v1.7.13) - 2025-05-06
+### Changed
+ - Shared CI Add Job for Required Checks ([#101](https://github.com/rokucommunity/brighterscript-formatter/pull/101))
+ - Bump micromatch from 4.0.4 to 4.0.8 ([#95](https://github.com/rokucommunity/brighterscript-formatter/pull/95))
+ - Bump @babel/runtime from 7.24.5 to 7.26.10 ([#99](https://github.com/rokucommunity/brighterscript-formatter/pull/99))
+ - Migrate to Shared CI ([#100](https://github.com/rokucommunity/brighterscript-formatter/pull/100))
+ - upgrade to [brighterscript@0.69.8](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0698---2025-05-05). Notable changes since 0.69.3:
+     - Shared CI Support Prerelease ([brighterscript#1483](https://github.com/rokucommunity/brighterscript/pull/1483))
+     - Shared CI Support Prerelease ([brighterscript#1475](https://github.com/rokucommunity/brighterscript/pull/1475))
+     - Prevent runtime crash for non-referencable funcs in ternary and null coalescing ([brighterscript#1474](https://github.com/rokucommunity/brighterscript/pull/1474))
+     - Fix `removeParameterTypes` compile errors for return types ([brighterscript#1414](https://github.com/rokucommunity/brighterscript/pull/1414))
+     - Remove `npm ci` from the `package` npm script since it's redundant ([brighterscript#1461](https://github.com/rokucommunity/brighterscript/pull/1461))
+     - Flag incorrect return statements in functions and subs ([brighterscript#1463](https://github.com/rokucommunity/brighterscript/pull/1463))
+     - Updated the type definition of the `InStr` global callable ([brighterscript#1456](https://github.com/rokucommunity/brighterscript/pull/1456))
+     - More safely wrap expressions for template string transpile ([brighterscript#1445](https://github.com/rokucommunity/brighterscript/pull/1445))
+     - Migration to the new shared CI ([brighterscript#1440](https://github.com/rokucommunity/brighterscript/pull/1440))
+     - Support plugin factory detecting brighterscript version ([brighterscript#1438](https://github.com/rokucommunity/brighterscript/pull/1438))
+
+
+
 ## [1.7.12](https://github.com/rokucommunity/brighterscript-formatter/compare/v1.7.11...v1.7.12) - 2025-03-20
 ### Changed
  - upgrade to [brighterscript@0.69.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0693---2025-03-20). Notable changes since 0.69.2:
