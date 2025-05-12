@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.14](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.13...v1.7.14) - 2025-05-12
+### Changed
+ - chore: Remove merged check on publish releases in shared CI ([#103](https://github.com/rokucommunity/brighterscript-formatter/pull/103))
+ - upgrade to [brighterscript@0.69.9](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0699---2025-05-09). Notable changes since 0.69.8:
+     - removed no-throw-literal lint rule ([brighterscript#1489](https://github.com/rokucommunity/brighterscript/pull/1489))
+     - Add `bsc0` cli binary name ([brighterscript#1490](https://github.com/rokucommunity/brighterscript/pull/1490))
+
+
+
 ## [1.7.13](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.12...v1.7.13) - 2025-05-06
 ### Changed
  - upgrade to [brighterscript@0.69.8](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0698---2025-05-05). Notable changes since 0.69.3:
