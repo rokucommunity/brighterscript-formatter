@@ -1,6 +1,6 @@
 {
     "name": "brighterscript-formatter",
-    "version": "1.7.14",
+    "version": "1.7.15",
     "description": "A formatter for BrighterScript, a superset of Roku's BrightScript language, written in JavaScript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.69.9",
+        "brighterscript": "^0.69.10",
         "glob-all": "^3.3.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "^0.7.3",
