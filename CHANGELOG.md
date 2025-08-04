@@ -8,13 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.17](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.16...v1.7.17) - 2025-08-04
 ### Changed
- - Bump brace-expansion from 1.1.11 to 1.1.12 ([#108](https://github.com/rokucommunity/brighterscript-formatter/pull/108))
  - upgrade to [brighterscript@0.69.13](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#06913---2025-08-04). Notable changes since 0.69.11:
-     - Add projectDiscoveryExclude setting and files.watcherExclude support ([#1535](https://github.com/rokucommunity/brighterscript-formatter/pull/1535))
-     - Fix signature help crash on malformed function declarations ([#1536](https://github.com/rokucommunity/brighterscript-formatter/pull/1536))
-     - Add max depth configuration for Roku project discovery ([#1533](https://github.com/rokucommunity/brighterscript-formatter/pull/1533))
-     - chore: Add copilot files ([#1534](https://github.com/rokucommunity/brighterscript-formatter/pull/1534))
-     - Fix discovery when `projects` is empty ([#1529](https://github.com/rokucommunity/brighterscript-formatter/pull/1529))
 
 
 
@@ -672,3 +666,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - initial project release
 ### Changed
  - converted from [brightscript-formatter](https://github.com/RokuCommunity/brightscript-formatter)
+
