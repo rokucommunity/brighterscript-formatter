@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.19](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.18...v1.7.19) - 2025-10-10
+### Changed
+ - upgrade to [brighterscript@0.70.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0702---2025-10-10). Notable changes since 0.70.1:
+     - Add manual entries for roUtils and roRenderThreadQueue ([#1574](https://github.com/rokucommunity/brighterscript-formatter/pull/1574))
+     - Roku sdk updates ([#1573](https://github.com/rokucommunity/brighterscript-formatter/pull/1573))
+
+
+
 ## [1.7.18](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.17...v1.7.18) - 2025-09-12
 ### Changed
  - upgrade to [brighterscript@0.70.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0701---2025-09-11). Notable changes since 0.69.13:
