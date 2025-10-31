@@ -97,12 +97,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/RokuCommunity/brighterscript-formatter.git"
+        "url": "https://github.com/rokucommunity/brighterscript-formatter"
     },
     "author": "RokuCommunity",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/RokuCommunity/brighterscript-formatter/issues"
+        "url": "https://github.com/rokucommunity/brighterscript-formatter/issues"
     },
-    "homepage": "https://github.com/RokuCommunity/brighterscript-formatter#readme"
+    "homepage": "https://github.com/rokucommunity/brighterscript-formatter#readme"
 }
