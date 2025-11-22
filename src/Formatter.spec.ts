@@ -251,6 +251,204 @@ describe('Formatter', () => {
                 end sub
            `);
         });
+
+        it('empty newlines in AA do not break indentation', () => {
+            formatEqual(undent`
+                sub test()
+                    array = [{
+
+                    }]
+                    if true then
+                        print true
+                    end if
+                end sub
+            `);
+        });
+
+        it('formats outdents', () => {
+            expect(formatter.format(undent`
+                temp = {
+                    key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                    end function }
+                }
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+                temp = {
+                    key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                        return true
+                    end function }
+                }
+            `);
+
+            expect(formatter.format(undent`
+                function test()
+                    temp = {
+                        key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function
+                        }
+                    }
+                end function
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+                function test()
+                    temp = {
+                        key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function
+                        }
+                    }
+                end function
+            `);
+
+            expect(formatter.format(undent`
+            function test()
+                temp = {
+                    key_9: {
+                        env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function
+                    }
+                }
+            end function
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+            function test()
+                temp = {
+                    key_9: {
+                        env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function
+                    }
+                }
+            end function
+            `);
+
+            expect(formatter.format(undent`
+            namespace tests
+                class TestStuff
+                    function _()
+                        m.assertEqual(sanitize({
+                            key_0: { env: [], themes: ["any"] }
+                            key_1: { env: ["any"], themes: ["test"] }
+                            key_2: { env: ["prod"], themes: ["test"] }
+                            key_3: { env: ["prod"], themes: ["test"] }
+                            key_4: { env: ["prod", "qa"], themes: ["test", "test"] }
+                            key_5: { env: ["dev", "qa"], themes: ["test"] }
+                            key_6: { env: ["dev", "qa"], themes: ["test", "test"] }
+                            key_7: { env: ["dev", "qa"], themes: ["test"] }
+                            key_8: { env: [], themes: [] }
+                            key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                    return true
+                            end function }
+                            key_10: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                    return false
+                            end function }
+                            key_11: { env: ["dev"], themes: ["any"], runtimeCheck: function() as boolean
+                                    return true
+                            end function }
+                            key_12: { env: ["any"], themes: ["test"], runtimeCheck: function() as boolean
+                                    return true
+                            end function }
+                            key_13: { { env: ["any"], themes: ["test"], runtimeCheck: function() as boolean
+                                        return true
+                            end function } }
+                        }, "prod", "test"), {
+                            enabled: ["key_1", "key_2", "key_4", "key_9"]
+                            available: ["key_0", "key_1", "key_10", "key_11", "key_12", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9"]
+                        })
+                    end function
+                end class
+            end namespace
+            `, {
+                formatMultiLineObjectsAndArrays: false
+            })).to.equal(undent`
+            namespace tests
+                class TestStuff
+                    function _()
+                        m.assertEqual(sanitize({
+                            key_0: { env: [], themes: ["any"] }
+                            key_1: { env: ["any"], themes: ["test"] }
+                            key_2: { env: ["prod"], themes: ["test"] }
+                            key_3: { env: ["prod"], themes: ["test"] }
+                            key_4: { env: ["prod", "qa"], themes: ["test", "test"] }
+                            key_5: { env: ["dev", "qa"], themes: ["test"] }
+                            key_6: { env: ["dev", "qa"], themes: ["test", "test"] }
+                            key_7: { env: ["dev", "qa"], themes: ["test"] }
+                            key_8: { env: [], themes: [] }
+                            key_9: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function }
+                            key_10: { env: ["any"], themes: ["any"], runtimeCheck: function() as boolean
+                                return false
+                            end function }
+                            key_11: { env: ["dev"], themes: ["any"], runtimeCheck: function() as boolean
+                                return true
+                            end function }
+                            key_12: { env: ["any"], themes: ["test"], runtimeCheck: function() as boolean
+                                return true
+                            end function }
+                            key_13: { { env: ["any"], themes: ["test"], runtimeCheck: function() as boolean
+                                return true
+                            end function } }
+                        }, "prod", "test"), {
+                            enabled: ["key_1", "key_2", "key_4", "key_9"]
+                            available: ["key_0", "key_1", "key_10", "key_11", "key_12", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9"]
+                        })
+                    end function
+                end class
+            end namespace
+            `);
+
+            formatEqual(undent`
+            sub createSections(navigationAction as object)
+                m.sections = [FormatJson({
+                    type: "test"
+                    components: [{
+                        type: "test"
+                        group_id: "1"
+                    }]
+                    slug: "test"
+                })]
+            end sub
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+
+            formatEqual(undent`
+                sub createSections(navigationAction as object)
+                    m.sections = [parser.parseList({
+                        components: [{
+                            buttons: [{
+                                actions: {
+                                    on_click: [get.value(navigationAction, "_retryAction")]
+                                }
+                            }]
+                        }]
+                    })]
+                end sub
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+
+            formatEqual(undent`
+            namespace alpha
+                namespace beta
+                    sub createSections()
+                        m.sections = [
+                            FormatJson({
+                            })]
+                    end sub
+                end namespace
+            end namespace
+            `, undefined, {
+                formatMultiLineObjectsAndArrays: false
+            });
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {

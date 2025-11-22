@@ -60,6 +60,7 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+        let outdentCount = 0;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -168,6 +169,10 @@ export class IndentFormatter {
                 }
 
                 nextLineOffset--;
+                if (OutdentSpacerTokenKinds.includes(token.kind)) {
+                    outdentCount++;
+                }
+
                 if (foundIndentorThisLine === false) {
                     currentLineOffset--;
                 }
@@ -206,10 +211,139 @@ export class IndentFormatter {
             //     tabCount--;
             // }
         }
+
+        //check if next multiple indents are followed by multiple outdents and update indentation accordingly
+        if (nextLineOffset > 1) {
+            nextLineOffset = this.lookaheadSameLineMultiOutdents(tokens, lineTokens[lineTokens.length - 1], nextLineOffset, currentLineOffset);
+        } else if (outdentCount > 0) {
+            //if multiple outdents on same line then outdent only once
+            if (currentLineOffset < 0) {
+                currentLineOffset = -1;
+            }
+
+            if (nextLineOffset < 0) {
+                //look back to get offset of last closing token pair
+                nextLineOffset = this.getNextLineOffset(tokens, lineTokens);
+            }
+        }
+
         return {
             currentLineOffset: currentLineOffset,
             nextLineOffset: nextLineOffset
         };
+    }
+
+    /**
+     * Lookback to find the matching opening token and then calculates outdents
+     * @param tokens the array of tokens in a file
+     * @param lineTokens token of curent line
+     */
+    private getNextLineOffset(tokens: Token[], lineTokens: Token[]): number {
+        let nextLineOffset = -1;
+
+        let lineLastToken = util.getPreviousNonWhitespaceToken(lineTokens, lineTokens.length - 1);
+        let curLineLastToken = lineLastToken !== undefined ? lineLastToken : lineTokens[lineTokens.length - 1];
+
+        let closeKind = curLineLastToken.kind;
+        let openKind = this.getOpeningTokenKind(closeKind);
+
+        if ((curLineLastToken.kind === TokenKind.RightCurlyBrace) || (curLineLastToken.kind === TokenKind.RightSquareBracket)) {
+            let openCount = 0;
+            let isWhiteSpaceToken = (lineTokens[0].kind === TokenKind.Whitespace) || (lineTokens[0].kind === TokenKind.Newline);
+            let lineFirstToken = isWhiteSpaceToken ? util.getNextNonWhitespaceToken(lineTokens, 0) : lineTokens[0];
+            let curLineStart = lineFirstToken?.range.start.character ? lineFirstToken?.range.start.character : 0;
+
+            let openerFound = false;
+            let currentIndex = lineTokens.indexOf(curLineLastToken);
+
+            let lines = this.splitTokensByLine(tokens);
+
+            for (let lineIndex = curLineLastToken.range.start.line; lineIndex >= 0; lineIndex--) {
+                let lineToken = lines[lineIndex];
+
+                if (lineToken.length === 1 && lineToken[0].kind === TokenKind.Newline) {
+                    continue;
+                }
+                isWhiteSpaceToken = (lineToken[0].kind === TokenKind.Whitespace) || (lineToken[0].kind === TokenKind.Newline);
+                let firstToken = isWhiteSpaceToken ? util.getNextNonWhitespaceToken(lineToken, 0) : lineToken[0];
+                let lineStartPosition = firstToken ? firstToken.range.start.character : 0;
+
+                let lineTokenIndex = currentIndex > -1 ? currentIndex : lineToken.length - 1;
+                currentIndex = -1;
+
+                for (let i = lineTokenIndex; i >= 0; i--) {
+                    let token = lineToken[i];
+                    if (token.kind === TokenKind.Whitespace) {
+                        continue;
+                    }
+
+                    if (token.kind === openKind) {
+                        openCount++;
+                    } else if (token.kind === closeKind) {
+                        openCount--;
+                    }
+
+                    if (openCount === 0) {
+                        openerFound = true;
+                        break;
+                    }
+                }
+
+                if (lineStartPosition < curLineStart) {
+                    nextLineOffset--;
+                    curLineStart = lineStartPosition;
+                }
+
+                if (openerFound) {
+                    break;
+                }
+            }
+        }
+        return nextLineOffset;
+    }
+
+    /**
+     * Lookahead if next line with oudents are same as indents on current line
+     * @param tokens the array of tokens in a file
+     * @param curLineToken token of curent line
+     * @param nextLineOffset the number of tabs to indent the next line
+     * @param currentLineOffset the number of tabs to indent the current line
+     */
+    private lookaheadSameLineMultiOutdents(tokens: Token[], curLineToken: Token, nextLineOffset: number, currentLineOffset: number): number {
+        let outdentCount = 0;
+        let tokenLineNum = 0;
+        let currentLineTokenIndex = tokens.indexOf(curLineToken);
+
+        for (let i = currentLineTokenIndex + 1; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.kind !== TokenKind.Whitespace) {
+                let openingTokenKind = this.getOpeningTokenKind(token.kind);
+                //next line with outdents
+                if (OutdentSpacerTokenKinds.includes(token.kind) && openingTokenKind) {
+                    let opener = this.getOpeningToken(tokens, i, openingTokenKind, token.kind);
+                    if (opener && opener.range.start.line === curLineToken.range.start.line) {
+                        if (tokenLineNum === 0) {
+                            tokenLineNum = token.range.start.line;
+                        }
+
+                        if (token.range.start.line === tokenLineNum) {
+                            outdentCount++;
+                        }
+                    }
+                }
+                if (tokenLineNum > 0 && token.range.start.line !== tokenLineNum) {
+                    break;
+                }
+            }
+        }
+
+        //if outdents on next line with outdents = indents on current line then indent next line by one tab only
+        if (outdentCount > 0) {
+            if (outdentCount === nextLineOffset) {
+                nextLineOffset = currentLineOffset + 1;
+            }
+        }
+        return nextLineOffset;
     }
 
     /**
@@ -329,6 +463,26 @@ export class IndentFormatter {
                 return token;
             }
         }
+    }
+
+    /**
+     * Returns opening token kind of the tokenkind passed
+     */
+    public getOpeningTokenKind(tokenKind: TokenKind) {
+        if (tokenKind === TokenKind.RightCurlyBrace) {
+            return TokenKind.LeftCurlyBrace;
+        } else if (tokenKind === TokenKind.RightParen) {
+            return TokenKind.LeftParen;
+        } else if (tokenKind === TokenKind.RightSquareBracket) {
+            return TokenKind.LeftSquareBracket;
+        } else if (tokenKind === TokenKind.EndIf) {
+            return TokenKind.If;
+        } else if (tokenKind === TokenKind.EndFunction) {
+            return TokenKind.Function;
+        } else if (tokenKind === TokenKind.EndSub) {
+            return TokenKind.Sub;
+        }
+        return undefined;
     }
 
     /**
