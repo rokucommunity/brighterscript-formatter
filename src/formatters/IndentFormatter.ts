@@ -95,12 +95,15 @@ export class IndentFormatter {
                     continue;
                 }
 
-                //skip indent for 'function'|'sub' used as type in type statement (line begins with type)
+                //skip indent for 'function'|'sub' used as type in type statement (line begins with "type <name =")
                 if (
                     CallableKeywordTokenKinds.includes(token.kind) &&
-                    //the previous token will be Whitespace, so verify that previousPrevious is 'as'
+                    // the previous token will be Whitespace, so verify that previous non-whitespace tokens
+                    // are "type <name> = "
                     previousNonWhitespaceToken?.kind === TokenKind.Equal &&
-                    firstNonWhitespaceToken?.text.toLowerCase() === 'type'
+                    util.getPreviousNonWhitespaceToken(lineTokens, i - 3)?.kind === TokenKind.Identifier &&
+                    util.getPreviousNonWhitespaceToken(lineTokens, i - 5)?.text.toLowerCase() === 'type' &&
+                    firstNonWhitespaceToken === util.getPreviousNonWhitespaceToken(lineTokens, i - 5)
                 ) {
                     continue;
                 }
