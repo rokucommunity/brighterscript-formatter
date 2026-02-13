@@ -251,6 +251,16 @@ describe('Formatter', () => {
                 end sub
            `);
         });
+
+        it('handles type statements with typed function types', () => {
+            formatEqualTrim(`
+                type myFunc = function(a as string) as integer
+
+                sub useFunc(fn as myFunc)
+                    print myFunc("test") + 3
+                end sub
+           `);
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {
