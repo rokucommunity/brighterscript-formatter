@@ -24,7 +24,7 @@ jobs:
     uses: rokucommunity/workflows/.github/workflows/make-release-artifacts.yml@master
     with:
       branch: ${{ github.event.inputs.tag || github.event.pull_request.head.ref }}
-      node-version: "14.19.0"
+      node-version: "16.20.2"
       artifact-paths: "./*.tgz" # "*.vsix"
       force: ${{ github.event.inputs.force == 'true' }}
     secrets: inherit
@@ -35,4 +35,3 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: if [ "${{ needs.run.result }}" = "failure" ]; then exit 1; fi
-
