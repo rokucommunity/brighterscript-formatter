@@ -293,7 +293,7 @@ describe('Formatter', () => {
             expect(formatted).to.be.a('string');
         });
 
-        it('does not crash on invalid type statement eg, with no type <name>', () => {
+        it('does not crash on invalid type statement eg, with no "type <name>" before "="', () => {
             let formatted = formatter.format(`
                 = function(a as string) as integer
 
