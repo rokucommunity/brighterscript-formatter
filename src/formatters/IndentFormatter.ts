@@ -60,9 +60,13 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+        let firstNonWhitespaceToken: Token | null = null;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
+            if (token.kind !== TokenKind.Whitespace && !firstNonWhitespaceToken) {
+                firstNonWhitespaceToken = token;
+            }
             let previousNonWhitespaceToken = util.getPreviousNonWhitespaceToken(lineTokens, i);
             let nextNonWhitespaceToken = util.getNextNonWhitespaceToken(lineTokens, i);
 
@@ -87,6 +91,19 @@ export class IndentFormatter {
                     CallableKeywordTokenKinds.includes(token.kind) &&
                     //the previous token will be Whitespace, so verify that previousPrevious is 'as'
                     previousNonWhitespaceToken?.kind === TokenKind.As
+                ) {
+                    continue;
+                }
+
+                //skip indent for 'function'|'sub' used as type in type statement (line begins with "type <name =")
+                if (
+                    CallableKeywordTokenKinds.includes(token.kind) &&
+                    // the previous token will be Whitespace, so verify that previous non-whitespace tokens
+                    // are "type <name> = "
+                    previousNonWhitespaceToken?.kind === TokenKind.Equal &&
+                    util.getPreviousNonWhitespaceToken(lineTokens, i - 3)?.kind === TokenKind.Identifier &&
+                    util.getPreviousNonWhitespaceToken(lineTokens, i - 5)?.text.toLowerCase() === 'type' &&
+                    firstNonWhitespaceToken === util.getPreviousNonWhitespaceToken(lineTokens, i - 5)
                 ) {
                     continue;
                 }
