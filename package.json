@@ -55,6 +55,9 @@
         "typescript": "^4.7.2",
         "undent": "^0.1.0"
     },
+    "overrides": {
+        "@types/minimatch": "npm:empty-npm-package@1.0.0"
+    },
     "files": [
         "dist/**/*",
         "bsfmt.schema.json"
