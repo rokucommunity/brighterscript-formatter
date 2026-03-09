@@ -251,6 +251,58 @@ describe('Formatter', () => {
                 end sub
            `);
         });
+
+        it('handles type statements with typed function types', () => {
+            formatEqualTrim(`
+                type myFunc = function(a as string) as integer
+
+                sub useFunc(fn as myFunc)
+                    print myFunc("test") + 3
+                end sub
+           `);
+        });
+
+        it('indents on anon functions assigned to "type"', () => {
+            formatEqualTrim(`
+                sub useFunc()
+                    type = function(a as string) as integer
+                        print a
+                        return 123
+                    end function
+                    print type()
+                end sub
+           `);
+        });
+
+        it('does not indent on typed functions as types', () => {
+            formatEqualTrim(`
+                sub useFunc(myFunc as function(a as string) as integer)
+                    myFunc("hello")
+                end sub
+           `);
+        });
+
+        it('does not crash on invalid type name', () => {
+            let formatted = formatter.format(`
+                type for = function(a as string) as integer
+
+                sub useFunc(fn as for)
+                    print for("test") + 3
+                end sub
+           `);
+            expect(formatted).to.be.a('string');
+        });
+
+        it('does not crash on invalid type statement eg, with no "type <name>" before "="', () => {
+            let formatted = formatter.format(`
+                = function(a as string) as integer
+
+                sub foo()
+                    print "foo"
+                end sub
+           `);
+            expect(formatted).to.be.a('string');
+        });
     });
 
     describe('formatMultiLineObjectsAndArrays', () => {

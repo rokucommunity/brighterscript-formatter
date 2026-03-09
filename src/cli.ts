@@ -7,6 +7,7 @@ yargs //eslint-disable-line
     .usage('Usage: $0 <command> [options]')
     .help('h')
     .alias('h', 'help')
+    // @ts-expect-error - yargs types are overly strict, but this code works correctly
     .command('$0 [files..]', '', () => { }, (argv: RunnerOptions) => {
         const runner = new Runner();
         runner.run(argv).catch((e) => {
@@ -21,4 +22,3 @@ yargs //eslint-disable-line
     .option('noBsfmt', { description: 'Don\t read a bsfmt.json file', type: 'boolean', default: false })
     .option('bsfmtPath', { description: 'Use a specified path to bsfmt.json instead of the default', type: 'string' })
     .argv;
-
