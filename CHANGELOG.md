@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.21](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.20...v1.7.21) - 2026-03-09
+### Fixed
+ - Fix type statement with typed function indenting ([#116](https://github.com/rokucommunity/brighterscript-formatter/pull/116))
+
+
+
 ## [1.7.20](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.19...v1.7.20) - 2025-10-31
 ### Changed
  - chore: support OIDC for publishing ([#114](https://github.com/rokucommunity/brighterscript-formatter/pull/114))
