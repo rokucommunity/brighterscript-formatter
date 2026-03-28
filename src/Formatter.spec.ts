@@ -1900,7 +1900,7 @@ end sub`;
             `, { trailingComma: 'always' });
         });
 
-        it('removes trailing comma from last item in a multi-line array', () => {
+        it('removes all commas from items in a multi-line array', () => {
             formatEqualTrim(`
                 x = [
                     1,
@@ -1909,14 +1909,14 @@ end sub`;
                 ]
             `, `
                 x = [
-                    1,
-                    2,
+                    1
+                    2
                     3
                 ]
             `, { trailingComma: 'never' });
         });
 
-        it('removes trailing comma from last item in a multi-line AA', () => {
+        it('removes all commas from items in a multi-line AA', () => {
             formatEqualTrim(`
                 x = {
                     a: 1,
@@ -1924,7 +1924,7 @@ end sub`;
                 }
             `, `
                 x = {
-                    a: 1,
+                    a: 1
                     b: 2
                 }
             `, { trailingComma: 'never' });
@@ -1954,6 +1954,170 @@ end sub`;
 
         it('does not affect blank AAs', () => {
             formatEqual('x = {}\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('adds commas to all items in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all items in a multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, `
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('adds commas to all items in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1
+                    2
+                    3
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, { trailingComma: 'always' });
+        });
+
+        it('handles nested multiline AAs independently', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all levels of nested multiline AAs', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('does not add commas inside single-line nested values', () => {
+            formatEqualTrim(`
+                x = {
+                    a: [1, 2, 3]
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: [1, 2, 3],
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('allButLast adds commas to all items except the last in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast adds commas to all items except the last in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast removes trailing comma from last item when others already have commas', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('does not touch blank lines inside multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: 1,
+
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
         });
     });
 

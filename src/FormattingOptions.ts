@@ -116,13 +116,14 @@ export interface FormattingOptions {
      */
     maxConsecutiveEmptyLines?: number;
     /**
-     * Controls trailing commas on the last item of multi-line arrays and associative arrays.
-     * - `'always'`: ensure a trailing comma is present
-     * - `'never'`: remove any trailing comma
-     * - `'original'` or omitted: leave trailing commas unchanged
+     * Controls commas on items of multi-line arrays and associative arrays.
+     * - `'always'`: ensure every item has a trailing comma (including the last)
+     * - `'allButLast'`: ensure every item except the last has a trailing comma
+     * - `'never'`: remove all item commas
+     * - `'original'` or omitted: leave commas unchanged
      * Has no effect on single-line arrays or AAs.
      */
-    trailingComma?: 'always' | 'never' | 'original';
+    trailingComma?: 'always' | 'allButLast' | 'never' | 'original';
     /**
      * Ensures exactly this many blank lines between consecutive top-level function/sub declarations.
      * When undefined (the default), spacing between functions is not modified.
