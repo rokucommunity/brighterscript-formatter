@@ -109,6 +109,51 @@ export interface FormattingOptions {
      * Sort import statements alphabetically.
      */
     sortImports?: boolean;
+    /**
+     * Collapse runs of consecutive blank lines down to at most this many blank lines.
+     * For example, `maxConsecutiveEmptyLines: 1` collapses three blank lines in a row into one.
+     * When undefined (the default), blank lines are not modified.
+     */
+    maxConsecutiveEmptyLines?: number;
+    /**
+     * Controls trailing commas on the last item of multi-line arrays and associative arrays.
+     * - `'always'`: ensure a trailing comma is present
+     * - `'never'`: remove any trailing comma
+     * - `'original'` or omitted: leave trailing commas unchanged
+     * Has no effect on single-line arrays or AAs.
+     */
+    trailingComma?: 'always' | 'never' | 'original';
+    /**
+     * Ensures exactly this many blank lines between consecutive top-level function/sub declarations.
+     * When undefined (the default), spacing between functions is not modified.
+     */
+    blankLinesBetweenFunctions?: number;
+    /**
+     * Controls how single-statement `if` blocks are formatted.
+     * - `'collapse'`: convert a multi-line if with a single statement and no else to an inline if (e.g. `if x then y = 1`)
+     * - `'expand'`: convert an inline if to a multi-line block with `end if`
+     * - `'original'` or omitted: leave if statements unchanged
+     */
+    singleLineIf?: 'collapse' | 'expand' | 'original';
+    /**
+     * If set to a positive number, multi-line arrays and associative arrays whose inline
+     * representation fits within this many characters will be collapsed to a single line.
+     * Set to 0 or omit to disable.
+     */
+    inlineArrayAndObjectThreshold?: number;
+    /**
+     * If true, remove blank lines immediately after the opening of a block
+     * (function/sub body, if/for/while blocks, etc.).
+     * @default false
+     */
+    removeBlankLinesAtStartOfBlock?: boolean;
+    /**
+     * If true, align the `=` sign in consecutive simple assignment statements by
+     * padding the left-hand side with spaces.
+     * Alignment resets after a blank line or a non-assignment statement.
+     * @default false
+     */
+    alignAssignments?: boolean;
 }
 
 export function normalizeOptions(options: FormattingOptions) {
@@ -128,6 +173,11 @@ export function normalizeOptions(options: FormattingOptions) {
         insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false,
         formatMultiLineObjectsAndArrays: true,
         sortImports: false,
+        trailingComma: 'original',
+        singleLineIf: 'original',
+        inlineArrayAndObjectThreshold: 0,
+        removeBlankLinesAtStartOfBlock: false,
+        alignAssignments: false,
 
         //override defaults with the provided values
         ...options
