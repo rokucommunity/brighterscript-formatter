@@ -2216,6 +2216,38 @@ end sub`;
                 end function
             `, undefined, { blankLinesBetweenFunctions: 1 });
         });
+
+        it('adds a blank line after end function with a trailing comment', () => {
+            formatEqualTrim(`
+                function a()
+                end function ' comment
+                function b()
+                end function
+            `, `
+                function a()
+                end function ' comment
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('does not add blank lines before non-function code after end function', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+
+                x = 1
+            `, undefined, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('handles whitespace-only lines between functions', () => {
+            formatEqual(
+                'function a()\nend function\n    \nfunction b()\nend function\n',
+                'function a()\nend function\n\nfunction b()\nend function\n',
+                { blankLinesBetweenFunctions: 1, removeTrailingWhiteSpace: false, formatIndent: false, formatInteriorWhitespace: false }
+            );
+        });
     });
 
     describe('singleLineIf', () => {
@@ -2282,6 +2314,30 @@ end sub`;
                     y = 1
                 end if
             `, undefined, { singleLineIf: 'expand' });
+        });
+
+        it('collapses an if block that is preceded by other code', () => {
+            formatEqualTrim(`
+                x = 1
+                if x then
+                    y = 1
+                end if
+            `, `
+                x = 1
+                if x then y = 1
+            `, { singleLineIf: 'collapse' });
+        });
+
+        it('expands an inline if that has a trailing newline', () => {
+            formatEqual('if x then y = 1\n', 'if x then\n    y = 1\nend if\n', { singleLineIf: 'expand' });
+        });
+
+        it('collapses an if with whitespace between then and the newline', () => {
+            formatEqual('if x then   \n    y = 1\nend if\n', 'if x then  y = 1\n', { singleLineIf: 'collapse' });
+        });
+
+        it('collapses an if with indented end if', () => {
+            formatEqual('if x then\n    y = 1\n    end if\n', 'if x then y = 1\n', { singleLineIf: 'collapse' });
         });
     });
 
@@ -2354,6 +2410,22 @@ end sub`;
                     3
                 ]
             `);
+        });
+
+        it('does not collapse already-single-line brackets', () => {
+            formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObjectThreshold: 50 });
+        });
+
+        it('does not collapse outer array when it contains a nested multiline AA', () => {
+            formatEqualTrim(`
+                x = [
+                    {
+                        a: 1,
+                        b: 2
+                    },
+                    3
+                ]
+            `, undefined, { inlineArrayAndObjectThreshold: 5 });
         });
     });
 
