@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.22](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.21...v1.7.22) - 2026-03-24
+### Changed
+ - upgrade to [brighterscript@0.70.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0704---2026-03-24). Notable changes since 0.70.3:
+     - Typedef namespace param fix ([#1641](https://github.com/rokucommunity/brighterscript/pull/1641))
+     - Backport V1 Typed function type syntax to v0 ([#1623](https://github.com/rokucommunity/brighterscript/pull/1623))
+     - Backport `for each` type syntax from V1 -> V0 ([#1617](https://github.com/rokucommunity/brighterscript/pull/1617))
+     - Back ports intersection type and grouped type expressions ([#1608](https://github.com/rokucommunity/brighterscript/pull/1608))
+     - Backports TypeStatement syntax from v1 to v0 ([#1600](https://github.com/rokucommunity/brighterscript/pull/1600))
+     - Backported v1 inline interface syntax ([#1592](https://github.com/rokucommunity/brighterscript/pull/1592))
+     - Fix confusing diagnostic when dottedGet follows function call in ExpressionStatement ([#1598](https://github.com/rokucommunity/brighterscript/pull/1598))
+
+
+
+## [1.7.21](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.20...v1.7.21) - 2026-03-09
+### Fixed
+ - Fix type statement with typed function indenting ([#116](https://github.com/rokucommunity/brighterscript-formatter/pull/116))
+
+
+
 ## [1.7.20](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.19...v1.7.20) - 2025-10-31
 ### Changed
  - chore: support OIDC for publishing ([#114](https://github.com/rokucommunity/brighterscript-formatter/pull/114))
