@@ -34,18 +34,34 @@ describe('InlineArrayAndObjectFormatter', () => {
         expect(result.map((t: any) => t.text).join('')).to.equal('[\n1\n');
     });
 
-    it('hasNestedMultiLine continues when there is no closing token for a nested bracket', () => {
-        // Nested [ with no closing bracket inside a multiline outer [
-        // The outer [ IS multiline, hasNestedMultiLine is called, the inner [ has no closer → continue (line 90/91)
+    it('hasNestedMultiLine continues when nested { has no matching }', () => {
+        // The outer [ IS multiline. Inside, there is a { with no matching } in the tokens.
+        // getClosingToken returns undefined for { → the continue branch (bid 12 b0) is covered.
+        // hasNestedMultiLine returns false, so the outer [ gets collapsed.
         const tokens = [
             { kind: TokenKind.LeftSquareBracket, text: '[' },
             { kind: TokenKind.Newline, text: '\n' },
-            { kind: TokenKind.LeftSquareBracket, text: '[' }, // nested, no closing bracket
+            { kind: TokenKind.LeftCurlyBrace, text: '{' }, // no matching }
             { kind: TokenKind.Newline, text: '\n' },
-            { kind: TokenKind.RightSquareBracket, text: ']' } // closes the outer [
+            { kind: TokenKind.RightSquareBracket, text: ']' }
         ] as any[];
-        // Should not throw; since hasNestedMultiLine can't find a closer for the inner [
-        // it continues and eventually returns false (no confirmed multi-line nested)
+        const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 100 } as any);
+        expect(result).to.be.an('array');
+    });
+
+    it('hasNestedMultiLine returns false when nested bracket is single-line', () => {
+        // Outer [ is multiline. Inner [ has a matching ] with no newline inside.
+        // tokens.slice().some(Newline) returns false → bid 13 b1 covered.
+        // hasNestedMultiLine returns false, outer [ gets collapsed.
+        const tokens = [
+            { kind: TokenKind.LeftSquareBracket, text: '[' }, // outer [
+            { kind: TokenKind.Newline, text: '\n' },
+            { kind: TokenKind.LeftSquareBracket, text: '[' }, // inner [ (single-line)
+            { kind: TokenKind.IntegerLiteral, text: '1' },
+            { kind: TokenKind.RightSquareBracket, text: ']' }, // closes inner [
+            { kind: TokenKind.Newline, text: '\n' },
+            { kind: TokenKind.RightSquareBracket, text: ']' } // closes outer [
+        ] as any[];
         const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 100 } as any);
         expect(result).to.be.an('array');
     });

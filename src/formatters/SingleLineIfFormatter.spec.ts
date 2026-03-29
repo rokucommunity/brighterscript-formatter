@@ -20,6 +20,26 @@ describe('SingleLineIfFormatter', () => {
             const result = formatter.format(tokens, { singleLineIf: undefined } as any, fakeParser);
             expect(result).to.equal(tokens);
         });
+
+        it('returns tokens unchanged when mode is truthy but unrecognized', () => {
+            // Covers the false branch of else-if (mode === 'collapse') when mode is neither expand nor collapse
+            const tokens = [{ kind: TokenKind.Identifier, text: 'x' }] as any[];
+            const result = formatter.format(tokens, { singleLineIf: 'bogus' as any } as any, fakeParser);
+            expect(result).to.equal(tokens);
+        });
+
+        it('evaluates thenBranch?.statements when thenBranch is undefined', () => {
+            // Covers the cond-expr branches for s.thenBranch?.statements?.length
+            // by injecting a fake IfStatement (via constructor.name) into the walk
+            const fakeStmt = Object.assign(
+                Object.create({ constructor: { name: 'IfStatement' } }),
+                { tokens: { endIf: {}, if: {} }, elseBranch: undefined, thenBranch: undefined }
+            );
+            const customParser = { ast: { walk: (v: any, _o: any) => v(fakeStmt) } };
+            const tokens = [{ kind: TokenKind.Identifier, text: 'x' }] as any[];
+            const result = formatter.format(tokens, { singleLineIf: 'collapse' } as any, customParser as any);
+            expect(result).to.equal(tokens);
+        });
     });
 
     describe('isStandaloneIf()', () => {
@@ -59,6 +79,29 @@ describe('SingleLineIfFormatter', () => {
             (formatter as any).expand(tokens, stmt, { compositeKeywords: 'split' } as any);
             // A Newline should be spliced in at index 1
             expect(tokens[1].kind).to.equal(TokenKind.Newline);
+        });
+
+        it('covers afterThen undefined and lineEnder undefined when thenToken is last token', () => {
+            // afterThen?.kind: tokens[thenIdx+1] is undefined (afterThen is undefined)
+            // lineEnder: tokens[lineEndIdx] is also undefined after exhausting the array
+            const thenToken = { kind: TokenKind.Then, text: 'then' };
+            const tokens = [thenToken] as any[];
+            const stmt = { tokens: { then: thenToken } } as any;
+            (formatter as any).expand(tokens, stmt, {} as any);
+            // A Newline should be spliced at index 1 (afterThen was undefined → else branch)
+            expect(tokens[1].kind).to.equal(TokenKind.Newline);
+        });
+
+        it('uses "endif" text when compositeKeywords is combine', () => {
+            // Covers the ternary true branch: compositeKeywords === 'combine' → 'endif'
+            const thenToken = { kind: TokenKind.Then, text: 'then' };
+            const bodyToken = { kind: TokenKind.Identifier, text: 'y' };
+            const eofToken = { kind: TokenKind.Eof, text: '' };
+            const tokens = [thenToken, bodyToken, eofToken] as any[];
+            const stmt = { tokens: { then: thenToken } } as any;
+            (formatter as any).expand(tokens, stmt, { compositeKeywords: 'combine' } as any);
+            const endIfTok = tokens.find((t: any) => t.kind === TokenKind.EndIf);
+            expect(endIfTok.text).to.equal('endif');
         });
     });
 

@@ -145,7 +145,7 @@ export class SingleLineIfFormatter {
         while (newlineAfterThenIdx < endIfIdx && tokens[newlineAfterThenIdx].kind === TokenKind.Whitespace) {
             newlineAfterThenIdx++;
         }
-        if (tokens[newlineAfterThenIdx]?.kind !== TokenKind.Newline) {
+        if (tokens[newlineAfterThenIdx].kind !== TokenKind.Newline) {
             return; // not a multi-line if
         }
 
@@ -154,7 +154,7 @@ export class SingleLineIfFormatter {
         while (newlineBeforeEndIfIdx > newlineAfterThenIdx && tokens[newlineBeforeEndIfIdx].kind === TokenKind.Whitespace) {
             newlineBeforeEndIfIdx--;
         }
-        if (tokens[newlineBeforeEndIfIdx]?.kind !== TokenKind.Newline) {
+        if (tokens[newlineBeforeEndIfIdx].kind !== TokenKind.Newline) {
             return; // unexpected structure
         }
 
