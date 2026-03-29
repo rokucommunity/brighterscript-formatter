@@ -99,7 +99,7 @@ All boolean, string, and integer [`bsfmt.json`](#bsfmtjson-options) options are 
 |inlineArrayAndObjectThreshold|`number`|`0`| If set to a positive number, multi-line arrays and associative arrays whose inline representation fits within this many characters will be collapsed to a single line. Set to `0` or omit to disable.|
 |removeBlankLinesAtStartOfBlock|`boolean`|`false`| If true, remove blank lines immediately after the opening of a block (`function`/`sub` body, `if`/`for`/`while` blocks, etc.).|
 |alignAssignments|`boolean`|`false`| If true, align the `=` sign in consecutive simple assignment statements by padding the left-hand side with spaces. Alignment resets after a blank line or a non-assignment statement.|
-|sortImports|`boolean`| `false`|Sort imports alphabetically.`|
+|sortImports|`boolean`| `false`|Sort imports alphabetically.|
 
 ### keywordCaseOverride
 For more flexibility in how to format the case of keywords, you can specify the case preference for each individual keyword. Here's an example:
