@@ -14,7 +14,7 @@ describe('BlankLinesBetweenFunctionsFormatter', () => {
         const tokens = [
             { kind: TokenKind.EndFunction, text: 'end function' },
             { kind: TokenKind.Whitespace, text: ' ' },
-            { kind: TokenKind.Comment, text: "' comment" },
+            { kind: TokenKind.Comment, text: '\' comment' },
             { kind: TokenKind.Newline, text: '\n' },
             { kind: TokenKind.Function, text: 'function' },
             { kind: TokenKind.Whitespace, text: ' ' },
