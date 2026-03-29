@@ -1259,6 +1259,41 @@ end sub`;
                 end sub
             `);
         });
+
+        // https://github.com/rokucommunity/brighterscript-formatter/issues/85
+        it('does not double-indent when { and sub are on the same line (issue #85)', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    m.foo = { callback: sub()
+                        doThing()
+                    end sub }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    m.foo = { callback: sub()
+                        doThing()
+                    end sub }
+                end sub
+            `);
+        });
+
+        it('does not apply double-indent fix when bracket closer has non-end-function token before it (issue #85)', () => {
+            // When `}` has something other than `end function`/`end sub` immediately before it
+            // on the same line (e.g. a second AA entry), the fix intentionally does not apply.
+            expect(formatter.format(undent`
+                sub main()
+                    m.foo = { cb: function()
+                        return true
+                    end function, other: 1 }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    m.foo = { cb: function()
+                            return true
+                    end function, other: 1 }
+                end sub
+            `);
+        });
     });
 
     describe('indentSpaceCount', () => {

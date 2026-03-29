@@ -68,8 +68,10 @@ export class IndentFormatter {
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
         let firstNonWhitespaceToken: Token | null = null;
-        // Tracks the last multi-line bracket opener (`{` or `[`) pushed as an indent on this line
-        let lastBracketIndentTokenOnLine: Token | null = null;
+        // Tracks the last multi-line bracket opener (`{` or `[`) and its closer pushed as an indent
+        // on this line. Storing the closer avoids a redundant getClosingToken call during compound
+        // indent detection.
+        let lastBracketIndentInfo: { opener: Token; closer: Token } | null = null;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -193,8 +195,8 @@ export class IndentFormatter {
                 if (token.kind === TokenKind.LeftCurlyBrace || token.kind === TokenKind.LeftSquareBracket) {
                     const bCloseKind = token.kind === TokenKind.LeftCurlyBrace ? TokenKind.RightCurlyBrace : TokenKind.RightSquareBracket;
                     const bCloser = util.getClosingToken(tokens, tokens.indexOf(token), token.kind, bCloseKind);
-                    if (bCloser && bCloser.range?.start.line !== token.range?.start.line) {
-                        lastBracketIndentTokenOnLine = token;
+                    if (bCloser && bCloser.range.start.line !== token.range.start.line) {
+                        lastBracketIndentInfo = { opener: token, closer: bCloser };
                     }
                 }
 
@@ -206,20 +208,15 @@ export class IndentFormatter {
                 if (
                     foundIndentorThisLine &&
                     CallableKeywordTokenKinds.includes(token.kind) &&
-                    lastBracketIndentTokenOnLine !== null
+                    lastBracketIndentInfo !== null
                 ) {
-                    const bracketToken = lastBracketIndentTokenOnLine;
-                    const openKind = bracketToken.kind as TokenKind.LeftCurlyBrace | TokenKind.LeftSquareBracket;
-                    const closeKind = openKind === TokenKind.LeftCurlyBrace ? TokenKind.RightCurlyBrace : TokenKind.RightSquareBracket;
-                    const bracketCloser = util.getClosingToken(tokens, tokens.indexOf(bracketToken), openKind, closeKind);
-                    if (bracketCloser) {
-                        const tokenBeforeCloser = util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(bracketCloser), true);
-                        if (tokenBeforeCloser && (tokenBeforeCloser.kind === TokenKind.EndFunction || tokenBeforeCloser.kind === TokenKind.EndSub)) {
-                            // The function closes inside the bracket — undo the extra indent level and
-                            // mark the bracket closer to be skipped on the closing line
-                            nextLineOffset--;
-                            skipOutdentTokens.add(bracketCloser);
-                        }
+                    const { closer: bracketCloser } = lastBracketIndentInfo;
+                    const tokenBeforeCloser = util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(bracketCloser), true);
+                    if (tokenBeforeCloser && (tokenBeforeCloser.kind === TokenKind.EndFunction || tokenBeforeCloser.kind === TokenKind.EndSub)) {
+                        // The function closes inside the bracket — undo the extra indent level and
+                        // mark the bracket closer to be skipped on the closing line
+                        nextLineOffset--;
+                        skipOutdentTokens.add(bracketCloser);
                     }
                 }
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
