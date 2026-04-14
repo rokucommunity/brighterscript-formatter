@@ -1812,6 +1812,784 @@ end sub`;
         });
     });
 
+    describe('maxConsecutiveEmptyLines', () => {
+        it('collapses multiple blank lines down to the specified max', () => {
+            formatEqual(
+                'x = 1\n\n\n\ny = 2\n',
+                'x = 1\n\ny = 2\n',
+                { maxConsecutiveEmptyLines: 1 }
+            );
+        });
+
+        it('allows exactly the specified number of blank lines through', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n',
+                'x = 1\n\n\ny = 2\n',
+                { maxConsecutiveEmptyLines: 2 }
+            );
+        });
+
+        it('removes all blank lines when set to 0', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n',
+                'x = 1\ny = 2\n',
+                { maxConsecutiveEmptyLines: 0 }
+            );
+        });
+
+        it('does not affect blank lines when option is not set', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n'
+            );
+        });
+
+        it('works inside function bodies', () => {
+            formatEqualTrim(`
+                sub main()
+                    x = 1
+
+
+                    y = 2
+                end sub
+            `, `
+                sub main()
+                    x = 1
+
+                    y = 2
+                end sub
+            `, { maxConsecutiveEmptyLines: 1 });
+        });
+
+        it('handles more blank lines than the max at end of file', () => {
+            formatEqual(
+                'x = 1\n\n\n',
+                'x = 1\n\n',
+                { maxConsecutiveEmptyLines: 1 }
+            );
+        });
+    });
+
+    describe('trailingComma', () => {
+        it('adds trailing comma to last item in a multi-line array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, { trailingComma: 'always' });
+        });
+
+        it('adds trailing comma to last item in a multi-line AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes all commas from items in a multi-line array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, `
+                x = [
+                    1
+                    2
+                    3
+                ]
+            `, { trailingComma: 'never' });
+        });
+
+        it('removes all commas from items in a multi-line AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: 1
+                    b: 2
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('does not change trailing commas when set to original', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, undefined, { trailingComma: 'original' });
+        });
+
+        it('does not add trailing comma to single-line arrays', () => {
+            formatEqual('x = [1, 2, 3]\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not add trailing comma to single-line AAs', () => {
+            formatEqual('x = { a: 1, b: 2 }\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not affect blank arrays', () => {
+            formatEqual('x = []\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not affect blank AAs', () => {
+            formatEqual('x = {}\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('adds commas to all items in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all items in a multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, `
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('adds commas to all items in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1
+                    2
+                    3
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, { trailingComma: 'always' });
+        });
+
+        it('handles nested multiline AAs independently', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all levels of nested multiline AAs', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('does not add commas inside single-line nested values', () => {
+            formatEqualTrim(`
+                x = {
+                    a: [1, 2, 3]
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: [1, 2, 3],
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('allButLast adds commas to all items except the last in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast adds commas to all items except the last in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast removes trailing comma from last item when others already have commas', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('does not touch blank lines inside multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: 1,
+
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+    });
+
+    describe('blankLinesBetweenFunctions', () => {
+        it('adds blank lines between consecutive functions when there are none', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+                function b()
+                end function
+            `, `
+                function a()
+                end function
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('removes extra blank lines between functions', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+
+
+
+                function b()
+                end function
+            `, `
+                function a()
+                end function
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('works with subs as well as functions', () => {
+            formatEqualTrim(`
+                sub a()
+                end sub
+                sub b()
+                end sub
+            `, `
+                sub a()
+                end sub
+
+                sub b()
+                end sub
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('works between a sub and a function', () => {
+            formatEqualTrim(`
+                sub a()
+                end sub
+                function b()
+                end function
+            `, `
+                sub a()
+                end sub
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('supports 2 blank lines between functions', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+                function b()
+                end function
+            `, `
+                function a()
+                end function
+
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 2 });
+        });
+
+        it('does not modify spacing when option is not set', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+                function b()
+                end function
+            `);
+        });
+
+        it('does not add blank lines after the last function', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+            `, undefined, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('adds a blank line after end function with a trailing comment', () => {
+            formatEqualTrim(`
+                function a()
+                end function ' comment
+                function b()
+                end function
+            `, `
+                function a()
+                end function ' comment
+
+                function b()
+                end function
+            `, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('does not add blank lines before non-function code after end function', () => {
+            formatEqualTrim(`
+                function a()
+                end function
+
+                x = 1
+            `, undefined, { blankLinesBetweenFunctions: 1 });
+        });
+
+        it('handles whitespace-only lines between functions', () => {
+            formatEqual(
+                'function a()\nend function\n    \nfunction b()\nend function\n',
+                'function a()\nend function\n\nfunction b()\nend function\n',
+                { blankLinesBetweenFunctions: 1, removeTrailingWhiteSpace: false, formatIndent: false, formatInteriorWhitespace: false }
+            );
+        });
+    });
+
+    describe('singleLineIf', () => {
+        it('collapses a simple if block to a single line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'collapse' });
+        });
+
+        it('expands an inline if to multi-line', () => {
+            formatEqualTrim(`
+                if x then y = 1
+            `, `
+                if x then
+                    y = 1
+                end if
+            `, { singleLineIf: 'expand' });
+        });
+
+        it('does not collapse an if block that has an else branch', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'collapse' });
+        });
+
+        it('does not collapse an if block that has an else if branch', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'collapse' });
+        });
+
+        it('does not collapse an if block with multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                    z = 2
+                end if
+            `, undefined, { singleLineIf: 'collapse' });
+        });
+
+        it('does not modify if statements when set to original', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, undefined, { singleLineIf: 'original' });
+        });
+
+        it('does not expand an already-multi-line if when set to expand', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, undefined, { singleLineIf: 'expand' });
+        });
+
+        it('collapses an if block that is preceded by other code', () => {
+            formatEqualTrim(`
+                x = 1
+                if x then
+                    y = 1
+                end if
+            `, `
+                x = 1
+                if x then y = 1
+            `, { singleLineIf: 'collapse' });
+        });
+
+        it('expands an inline if that has a trailing newline', () => {
+            formatEqual('if x then y = 1\n', 'if x then\n    y = 1\nend if\n', { singleLineIf: 'expand' });
+        });
+
+        it('collapses an if with whitespace between then and the newline', () => {
+            formatEqual('if x then   \n    y = 1\nend if\n', 'if x then  y = 1\n', { singleLineIf: 'collapse' });
+        });
+
+        it('collapses an if with indented end if', () => {
+            formatEqual('if x then\n    y = 1\n    end if\n', 'if x then y = 1\n', { singleLineIf: 'collapse' });
+        });
+    });
+
+    describe('inlineArrayAndObjectThreshold', () => {
+        it('collapses a multi-line array that fits within the character threshold', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, `
+                x = [1, 2, 3]
+            `, { inlineArrayAndObjectThreshold: 20 });
+        });
+
+        it('collapses a multi-line AA that fits within the character threshold', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, `
+                x = { a: 1, b: 2 }
+            `, { inlineArrayAndObjectThreshold: 20 });
+        });
+
+        it('does not collapse an array whose inline form exceeds the threshold', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, undefined, { inlineArrayAndObjectThreshold: 5 });
+        });
+
+        it('does not collapse when threshold is 0', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, undefined, { inlineArrayAndObjectThreshold: 0 });
+        });
+
+        it('does not collapse the outer array when it contains nested multi-line arrays', () => {
+            formatEqualTrim(`
+                x = [
+                    [
+                        1,
+                        2
+                    ],
+                    3
+                ]
+            `, `
+                x = [
+                    [1, 2],
+                    3
+                ]
+            `, { inlineArrayAndObjectThreshold: 100 });
+        });
+
+        it('does not collapse when option is not set', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `);
+        });
+
+        it('does not collapse already-single-line brackets', () => {
+            formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObjectThreshold: 50 });
+        });
+
+        it('does not collapse outer array when it contains a nested multiline AA', () => {
+            formatEqualTrim(`
+                x = [
+                    {
+                        a: 1,
+                        b: 2
+                    },
+                    3
+                ]
+            `, undefined, { inlineArrayAndObjectThreshold: 5 });
+        });
+    });
+
+    describe('removeBlankLinesAtStartOfBlock', () => {
+        it('removes blank lines at the start of a function body', () => {
+            formatEqualTrim(`
+                function a()
+
+                    x = 1
+                end function
+            `, `
+                function a()
+                    x = 1
+                end function
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('removes blank lines at the start of a sub body', () => {
+            formatEqualTrim(`
+                sub a()
+
+                    x = 1
+                end sub
+            `, `
+                sub a()
+                    x = 1
+                end sub
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('removes blank lines at the start of an if block', () => {
+            formatEqualTrim(`
+                if true then
+
+                    x = 1
+                end if
+            `, `
+                if true then
+                    x = 1
+                end if
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('removes blank lines at the start of a for loop', () => {
+            formatEqualTrim(`
+                for i = 0 to 10
+
+                    x = 1
+                end for
+            `, `
+                for i = 0 to 10
+                    x = 1
+                end for
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('removes blank lines at the start of a while loop', () => {
+            formatEqualTrim(`
+                while true
+
+                    x = 1
+                end while
+            `, `
+                while true
+                    x = 1
+                end while
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('removes multiple blank lines at the start of a block', () => {
+            formatEqualTrim(`
+                function a()
+
+
+
+                    x = 1
+                end function
+            `, `
+                function a()
+                    x = 1
+                end function
+            `, { removeBlankLinesAtStartOfBlock: true });
+        });
+
+        it('does not remove blank lines when set to false', () => {
+            formatEqualTrim(`
+                function a()
+
+                    x = 1
+                end function
+            `, undefined, { removeBlankLinesAtStartOfBlock: false });
+        });
+
+        it('does not remove blank lines in the middle of a block', () => {
+            formatEqualTrim(`
+                function a()
+                    x = 1
+
+                    y = 2
+                end function
+            `, undefined, { removeBlankLinesAtStartOfBlock: true });
+        });
+    });
+
+    describe('alignAssignments', () => {
+        it('aligns consecutive assignments by padding before the equals sign', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                y = 3
+            `, `
+                x        = 1
+                longName = 2
+                y        = 3
+            `, { alignAssignments: true });
+        });
+
+        it('resets alignment after a blank line', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+
+                a = 3
+                bb = 4
+            `, `
+                x        = 1
+                longName = 2
+
+                a  = 3
+                bb = 4
+            `, { alignAssignments: true });
+        });
+
+        it('resets alignment after a non-assignment line', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                print "hello"
+                a = 3
+                bb = 4
+            `, `
+                x        = 1
+                longName = 2
+                print "hello"
+                a  = 3
+                bb = 4
+            `, { alignAssignments: true });
+        });
+
+        it('does not align when set to false', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                y = 3
+            `, undefined, { alignAssignments: false });
+        });
+
+        it('handles a single assignment (no alignment needed)', () => {
+            formatEqualTrim(`
+                x = 1
+            `, undefined, { alignAssignments: true });
+        });
+    });
+
     describe('template string', () => {
         it('leaves template string unchanged', () => {
             let expected = `function getItemXML(item)
