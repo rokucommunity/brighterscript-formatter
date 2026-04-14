@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.23](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.22...v1.7.23) - 2026-04-14
+### Changed
+ - Bump brace-expansion from 1.1.12 to 1.1.13 ([#127](https://github.com/rokucommunity/brighterscript-formatter/pull/127))
+ - Bump lodash from 4.17.23 to 4.18.1 ([#126](https://github.com/rokucommunity/brighterscript-formatter/pull/126))
+ - Bump picomatch from 2.3.1 to 2.3.2 ([#123](https://github.com/rokucommunity/brighterscript-formatter/pull/123))
+ - upgrade to [brighterscript@0.71.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0711---2026-04-14). Notable changes since 0.70.4:
+     - Bump lodash from 4.17.23 to 4.18.1 ([#1673](https://github.com/rokucommunity/brighterscript/pull/1673))
+     - Bump follow-redirects from 1.15.6 to 1.16.0 ([#1672](https://github.com/rokucommunity/brighterscript/pull/1672))
+     - Bump lodash from 4.17.23 to 4.18.1 in /benchmarks ([#1670](https://github.com/rokucommunity/brighterscript/pull/1670))
+     - Bump brace-expansion in /benchmarks ([#1666](https://github.com/rokucommunity/brighterscript/pull/1666))
+     - Feature/more quick fixes ([#1662](https://github.com/rokucommunity/brighterscript/pull/1662))
+     - bugfix/small perf improvements ([#1663](https://github.com/rokucommunity/brighterscript/pull/1663))
+     - Bump picomatch from 2.3.1 to 2.3.2 ([#1661](https://github.com/rokucommunity/brighterscript/pull/1661))
+     - Bump picomatch from 2.3.1 to 2.3.2 in /benchmarks ([#1660](https://github.com/rokucommunity/brighterscript/pull/1660))
+     - Add computed property names (compile-time support only) ([#1658](https://github.com/rokucommunity/brighterscript/pull/1658))
+
+
+
 ## [1.7.22](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.21...v1.7.22) - 2026-03-24
 ### Changed
  - upgrade to [brighterscript@0.70.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0704---2026-03-24). Notable changes since 0.70.3:
