@@ -10,10 +10,6 @@ export class ForLoopTerminatorFormatter {
      */
     public format(tokens: Token[], options: FormattingOptions, parser: Parser) {
         const mode = options.forLoopTerminator;
-        if (!mode || mode === 'original') {
-            return tokens;
-        }
-
         for (const terminator of this.collectLoopTerminators(parser)) {
             if (mode === 'next' && terminator.kind === TokenKind.EndFor) {
                 terminator.kind = TokenKind.Next;
@@ -31,14 +27,10 @@ export class ForLoopTerminatorFormatter {
         const terminators: Token[] = [];
         parser.ast.walk(createVisitor({
             ForStatement: (statement) => {
-                if (statement.endForToken) {
-                    terminators.push(statement.endForToken);
-                }
+                terminators.push(statement.endForToken);
             },
             ForEachStatement: (statement) => {
-                if (statement.tokens.endFor) {
-                    terminators.push(statement.tokens.endFor);
-                }
+                terminators.push(statement.tokens.endFor);
             }
         }), {
             walkMode: WalkMode.visitAllRecursive
