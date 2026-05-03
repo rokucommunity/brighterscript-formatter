@@ -184,6 +184,15 @@ export class IndentFormatter {
                     continue;
                 }
 
+                //`next` only validly closes `for`/`for each` blocks - skip outdent if the
+                //enclosing block is anything else (e.g. `while ... next`, which the parser rejects)
+                if (token.kind === TokenKind.Next) {
+                    const parentKind = getParentIndentTokenKind();
+                    if (parentKind !== TokenKind.For && parentKind !== TokenKind.ForEach) {
+                        continue;
+                    }
+                }
+
                 nextLineOffset--;
                 if (foundIndentorThisLine === false) {
                     currentLineOffset--;
