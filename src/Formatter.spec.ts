@@ -93,6 +93,113 @@ describe('Formatter', () => {
             );
         });
 
+        it('properly indents for loop terminated by next', () => {
+            formatEqual(
+                `for i = 0 to 10\n    print i\nnext`
+            );
+        });
+
+        it('properly indents for loop terminated by end for', () => {
+            formatEqual(
+                `for i = 0 to 10\n    print i\nend for`
+            );
+        });
+
+        it('properly indents for each loop terminated by next', () => {
+            formatEqual(
+                `for each item in collection\n    print item\nnext`
+            );
+        });
+
+        it('properly indents nested for-next inside outer for-end-for', () => {
+            formatEqualTrim(`
+                for i = 0 to 10
+                    for j = 0 to 10
+                        print j
+                    next
+                end for
+            `);
+        });
+
+        it('properly indents nested for-each-next inside while-end-while', () => {
+            formatEqualTrim(`
+                while keepGoing
+                    for each item in collection
+                        print item
+                    next
+                end while
+            `);
+        });
+
+        it('properly indents doubly-nested loops with mixed terminators', () => {
+            formatEqualTrim(`
+                for i = 0 to 10
+                    for each item in collection
+                        for j = 0 to 5
+                            print j
+                        next
+                    end for
+                next
+            `);
+        });
+
+        it('does not dedent on bogus "next" terminating a while loop', () => {
+            formatEqualTrim(`
+                while keepGoing
+                    print "hello"
+                    next
+            `);
+        });
+
+        it('does not dedent on bogus "next" inside a function body', () => {
+            formatEqualTrim(`
+                function doStuff()
+                    print "hello"
+                    next
+                end function
+            `);
+        });
+
+        it('does not dedent on bogus "next" inside a sub body', () => {
+            formatEqualTrim(`
+                sub doStuff()
+                    print "hello"
+                    next
+                end sub
+            `);
+        });
+
+        it('does not dedent on bogus "next" inside an if block', () => {
+            formatEqualTrim(`
+                if true then
+                    print "hello"
+                    next
+                end if
+            `);
+        });
+
+        it('does not dedent on bogus "next" inside a try block', () => {
+            formatEqualTrim(`
+                try
+                    print "hello"
+                    next
+                catch e
+                    print "err"
+                end try
+            `);
+        });
+
+        it('does not dedent on bogus "next" inside a namespace', () => {
+            formatEqualTrim(`
+                namespace alpha
+                    sub doStuff()
+                        print "hello"
+                        next
+                    end sub
+                end namespace
+            `);
+        });
+
         it('handles calling function from indexed getter', () => {
             formatEqual(`if true then\n    obj[key]()\nelse\n    print true\nend if`);
         });
@@ -1588,6 +1695,141 @@ end sub`;
             )).to.equal(
                 `if true then\n    break\nelseif true then\n    break\nendif`
             );
+        });
+    });
+
+    describe('forLoopTerminator', () => {
+        it('does nothing by default', () => {
+            formatEqual(
+                `for i = 0 to 10\n    print i\nnext`
+            );
+            formatEqual(
+                `for i = 0 to 10\n    print i\nend for`
+            );
+            formatEqual(
+                `for each item in collection\n    print item\nnext`
+            );
+            formatEqual(
+                `for each item in collection\n    print item\nend for`
+            );
+        });
+
+        it('does nothing when set to "original"', () => {
+            const options: FormattingOptions = { forLoopTerminator: 'original' };
+            expect(formatter.format(`for i = 0 to 10\n    print i\nnext`, options))
+                .to.equal(`for i = 0 to 10\n    print i\nnext`);
+            expect(formatter.format(`for i = 0 to 10\n    print i\nend for`, options))
+                .to.equal(`for i = 0 to 10\n    print i\nend for`);
+        });
+
+        describe(`'next' mode`, () => {
+            const options: FormattingOptions = { forLoopTerminator: 'next' };
+
+            it('converts end for to next on a counted for loop', () => {
+                expect(formatter.format(`for i = 0 to 10\n    print i\nend for`, options))
+                    .to.equal(`for i = 0 to 10\n    print i\nnext`);
+            });
+
+            it('converts endfor to next on a counted for loop', () => {
+                expect(formatter.format(`for i = 0 to 10\n    print i\nendfor`, options))
+                    .to.equal(`for i = 0 to 10\n    print i\nnext`);
+            });
+
+            it('converts end for to next on a for each loop', () => {
+                expect(formatter.format(`for each item in collection\n    print item\nend for`, options))
+                    .to.equal(`for each item in collection\n    print item\nnext`);
+            });
+
+            it('leaves an existing next alone', () => {
+                expect(formatter.format(`for i = 0 to 10\n    print i\nnext`, options))
+                    .to.equal(`for i = 0 to 10\n    print i\nnext`);
+            });
+
+            it('does not touch a "next" used as a method call', () => {
+                expect(formatter.format(`if true then\n    m.top.returnString = m.someArray.next()\nend if`, options))
+                    .to.equal(`if true then\n    m.top.returnString = m.someArray.next()\nend if`);
+            });
+
+            it('does not touch endfor when used as an object key', () => {
+                expect(formatter.format(`obj = {\n    endfor: true\n}\nobj.endfor = false\nval = obj.endfor`, options))
+                    .to.equal(`obj = {\n    endfor: true\n}\nobj.endfor = false\nval = obj.endfor`);
+            });
+
+            it('converts every nested terminator', () => {
+                expect(formatter.format(
+                    `for i = 0 to 10\n    for each item in collection\n        print item\n    end for\nend for`,
+                    options
+                )).to.equal(
+                    `for i = 0 to 10\n    for each item in collection\n        print item\n    next\nnext`
+                );
+            });
+
+            it('respects upper-case keywordCase', () => {
+                expect(formatter.format(
+                    `for i = 0 to 10\n    print i\nend for`,
+                    { ...options, keywordCase: 'upper' }
+                )).to.equal(
+                    `FOR i = 0 TO 10\n    PRINT i\nNEXT`
+                );
+            });
+        });
+
+        describe(`'endfor' mode`, () => {
+            const options: FormattingOptions = { forLoopTerminator: 'endfor' };
+
+            it('converts next to end for (split, default compositeKeywords)', () => {
+                expect(formatter.format(`for i = 0 to 10\n    print i\nnext`, options))
+                    .to.equal(`for i = 0 to 10\n    print i\nend for`);
+            });
+
+            it('converts next on a for each loop', () => {
+                expect(formatter.format(`for each item in collection\n    print item\nnext`, options))
+                    .to.equal(`for each item in collection\n    print item\nend for`);
+            });
+
+            it('produces "endfor" when compositeKeywords is "combine"', () => {
+                expect(formatter.format(
+                    `for i = 0 to 10\n    print i\nnext`,
+                    { ...options, compositeKeywords: 'combine' }
+                )).to.equal(
+                    `for i = 0 to 10\n    print i\nendfor`
+                );
+            });
+
+            it('leaves an existing end for alone', () => {
+                expect(formatter.format(`for i = 0 to 10\n    print i\nend for`, options))
+                    .to.equal(`for i = 0 to 10\n    print i\nend for`);
+            });
+
+            it('does not touch a "next" used as a method call', () => {
+                expect(formatter.format(`if true then\n    m.top.returnString = m.someArray.next()\nend if`, options))
+                    .to.equal(`if true then\n    m.top.returnString = m.someArray.next()\nend if`);
+            });
+
+            it('does not touch a stray bogus next inside a while loop', () => {
+                //the bogus `next` is not associated with any ForStatement, so it is left as-is
+                const input = `while keepGoing\n    print "hello"\n    next\nend while`;
+                expect(formatter.format(input, options))
+                    .to.equal(input);
+            });
+
+            it('converts every nested terminator', () => {
+                expect(formatter.format(
+                    `for i = 0 to 10\n    for each item in collection\n        print item\n    next\nnext`,
+                    options
+                )).to.equal(
+                    `for i = 0 to 10\n    for each item in collection\n        print item\n    end for\nend for`
+                );
+            });
+
+            it('respects upper-case keywordCase', () => {
+                expect(formatter.format(
+                    `for i = 0 to 10\n    print i\nnext`,
+                    { ...options, keywordCase: 'upper' }
+                )).to.equal(
+                    `FOR i = 0 TO 10\n    PRINT i\nEND FOR`
+                );
+            });
         });
     });
 

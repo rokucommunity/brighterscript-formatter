@@ -38,6 +38,16 @@ export interface FormattingOptions {
      */
     compositeKeywords?: 'split' | 'combine' | 'original' | null;
     /**
+     * Forces all valid `for`/`for each` loop terminators to use a consistent style.
+     * Bogus `next` or `end for` tokens (i.e. those not actually closing a loop) are left alone.
+     * If 'next', terminators are converted to `next`.
+     * If 'endfor', terminators are converted to `end for`/`endfor` (the split/combine choice
+     * is then governed by the `compositeKeywords` option).
+     * If 'original' or falsey, they are not modified.
+     * @default 'original'
+     */
+    forLoopTerminator?: 'next' | 'endfor' | 'original' | null;
+    /**
      * If true (the default), trailing white space is removed
      * If false, trailing white space is left intact
      */
@@ -118,6 +128,7 @@ export function normalizeOptions(options: FormattingOptions) {
         formatIndent: true,
         keywordCase: 'lower',
         compositeKeywords: 'split',
+        forLoopTerminator: 'original',
         removeTrailingWhiteSpace: true,
         keywordCaseOverride: {},
         formatInteriorWhitespace: true,

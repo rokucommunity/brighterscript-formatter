@@ -53,6 +53,16 @@
             "default": "split",
             "description": "Forces all composite keywords (i.e. 'elseif', 'endwhile', etc...) to be consistent. If 'split', they are split into their alternatives ('else if', 'end while'). If 'combine', they are combined ('elseif', 'endwhile'). If null, they are not modified."
         },
+        "forLoopTerminator": {
+            "type": "string",
+            "enum": [
+                "next",
+                "endfor",
+                "original"
+            ],
+            "default": "original",
+            "description": "Forces all valid `for`/`for each` loop terminators to use a consistent style. Bogus `next` or `end for` tokens (those not actually closing a loop) are left alone. If 'next', terminators are converted to `next`. If 'endfor', they are converted to `end for`/`endfor` (the split/combine choice is governed by `compositeKeywords`). If 'original', they are not modified."
+        },
         "removeTrailingWhiteSpace": {
             "type": "boolean",
             "default": true,
