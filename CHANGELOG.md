@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.24](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.23...v1.7.24) - 2026-04-30
+### Changed
+ - upgrade to [brighterscript@0.72.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0720---2026-04-30). Notable changes since 0.71.1:
+     - Support line continuation ([#1667](https://github.com/rokucommunity/brighterscript/pull/1667))
+
+
+
+## [1.7.23](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.22...v1.7.23) - 2026-04-14
+### Changed
+ - upgrade to [brighterscript@0.71.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0711---2026-04-14). Notable changes since 0.70.4:
+     - small perf improvements ([#1663](https://github.com/rokucommunity/brighterscript/pull/1663))
+     - Add computed property names (compile-time support only) ([#1658](https://github.com/rokucommunity/brighterscript/pull/1658))
+
+
+
 ## [1.7.22](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.21...v1.7.22) - 2026-03-24
 ### Changed
  - upgrade to [brighterscript@0.70.4](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0704---2026-03-24). Notable changes since 0.70.3:
