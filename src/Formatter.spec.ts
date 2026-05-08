@@ -2506,6 +2506,194 @@ end sub`;
                 end if
             `, { singleLineIf: 'block' });
         });
+
+        it('inlineNoElseIf collapses a simple if/then to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf collapses an if/else to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else y = 2
+            `, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse if/else if chains', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse if/else if/else chains', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body has multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                    z = 3
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body is comment-only', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body is multi-line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inline collapses a simple if/then to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else y = 2
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else if chain to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else if z then y = 2
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else if/else chain to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, `
+                if x then y = 1 else if z then y = 2 else y = 3
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses a long if/else if/else if/else chain', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else if c then
+                    x = 3
+                else
+                    x = 4
+                end if
+            `, `
+                if a then x = 1 else if b then x = 2 else if c then x = 3 else x = 4
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch body is multi-line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch body is comment-only', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch has multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                    w = 3
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when the final else has a multi-line body', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
     });
 
     describe('inlineArrayAndObjectThreshold', () => {

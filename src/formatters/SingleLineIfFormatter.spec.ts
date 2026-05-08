@@ -129,28 +129,5 @@ describe('SingleLineIfFormatter', () => {
             expect(tokens.length).to.equal(1);
         });
 
-        it('returns early when the token after then is not a Newline (after skipping whitespace)', () => {
-            // then is followed by a non-Newline, non-Whitespace token
-            const thenToken = { kind: TokenKind.Then, text: 'then' };
-            const bodyToken = { kind: TokenKind.Identifier, text: 'y' };
-            const endIfToken = { kind: TokenKind.EndIf, text: 'end if' };
-            const tokens = [thenToken, bodyToken, endIfToken] as any[];
-            const stmt = { tokens: { then: thenToken, endIf: endIfToken } } as any;
-            (formatter as any).collapse(tokens, stmt);
-            expect(tokens.length).to.equal(3); // unchanged
-        });
-
-        it('returns early when there is no Newline before endIf (unexpected structure)', () => {
-            // then is followed by Newline, then endIf is immediately after body (no Newline before endIf)
-            const thenToken = { kind: TokenKind.Then, text: 'then' };
-            const newlineToken = { kind: TokenKind.Newline, text: '\n' };
-            const bodyToken = { kind: TokenKind.Identifier, text: 'y' }; // body without line terminator
-            const endIfToken = { kind: TokenKind.EndIf, text: 'end if' };
-            // No Newline between bodyToken and endIfToken
-            const tokens = [thenToken, newlineToken, bodyToken, endIfToken] as any[];
-            const stmt = { tokens: { then: thenToken, endIf: endIfToken } } as any;
-            (formatter as any).collapse(tokens, stmt);
-            expect(tokens.length).to.equal(4); // unchanged
-        });
     });
 });

@@ -1,4 +1,4 @@
-import type { Token, Parser, IfStatement } from 'brighterscript';
+import type { Token, Parser, IfStatement, Block } from 'brighterscript';
 import { createVisitor, createToken, isCommentStatement, isIfStatement, isTryCatchStatement, TokenKind, WalkMode } from 'brighterscript';
 import type { TokenWithStartIndex } from '../constants';
 import type { FormattingOptions } from '../FormattingOptions';
@@ -33,7 +33,7 @@ export class SingleLineIfFormatter {
                 this.expand(tokens, inlineIfs[i], options);
             }
         } else if (mode === 'inline' || mode === 'inlineNoElseIf' || mode === 'inlineNoElse') {
-            const collapsible = ifStatements.filter(s => this.isCollapsible(s) && this.isStandaloneIf(tokens, s));
+            const collapsible = ifStatements.filter(s => this.isCollapsible(s, mode) && this.isStandaloneIf(tokens, s));
             for (let i = collapsible.length - 1; i >= 0; i--) {
                 this.collapse(tokens, collapsible[i]);
             }
@@ -48,24 +48,54 @@ export class SingleLineIfFormatter {
     }
 
     /**
-     * A multi-line if is collapsible to inline form only when:
-     *   - it has an `end if` (multi-line) and no else branch,
-     *   - the body has exactly one statement,
-     *   - that statement fits on a single line (so the inline result is one line),
-     *   - and that statement is not itself an `if` (chaining inline ifs is undesirable).
+     * A multi-line if is collapsible to inline form when every branch in the chain has a
+     * single, single-line, non-block body. The mode controls which branch shapes are allowed:
+     *
+     *   - `inlineNoElse`     — only simple `if/then/end if` (no else of any kind)
+     *   - `inlineNoElseIf`   — adds plain `if/then/else/end if` (single else allowed)
+     *   - `inline`           — adds `else if` chains, with or without a final plain else
+     *
+     * Already-inline ifs are skipped — they have nothing to collapse.
      */
-    private isCollapsible(stmt: IfStatement): boolean {
-        if (!stmt.tokens.endIf || stmt.elseBranch || stmt.thenBranch?.statements?.length !== 1) {
+    private isCollapsible(stmt: IfStatement, mode: 'inline' | 'inlineNoElseIf' | 'inlineNoElse'): boolean {
+        if (stmt.isInline === true) {
             return false;
         }
-        const body = stmt.thenBranch.statements[0];
+        let current: IfStatement | undefined = stmt;
+        while (current) {
+            if (!this.isSimpleSingleLineBody(current.thenBranch)) {
+                return false;
+            }
+            const elseBranch: IfStatement | Block | undefined = current.elseBranch;
+            if (!elseBranch) {
+                return true;
+            }
+            if (isIfStatement(elseBranch)) {
+                if (mode !== 'inline') {
+                    return false;
+                }
+                current = elseBranch;
+            } else {
+                if (mode === 'inlineNoElse') {
+                    return false;
+                }
+                return this.isSimpleSingleLineBody(elseBranch);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * A branch body is collapsible when it contains exactly one statement, that statement
+     * fits on a single physical line, and isn't a nested control-flow block whose collapse
+     * would corrupt structure (if, try/catch) or a comment-only line.
+     */
+    private isSimpleSingleLineBody(branch: Block | undefined): boolean {
+        if (!branch?.statements || branch.statements.length !== 1) {
+            return false;
+        }
+        const body = branch.statements[0];
         if (isIfStatement(body) || isTryCatchStatement(body) || isCommentStatement(body)) {
-            // brighterscript reports TryCatchStatement.range as just the `try` keyword,
-            // so we cannot rely on a multi-line range check to reject it.
-            //
-            // A comment-only body has no executable code, so collapsing it would turn an
-            // intentionally-empty branch into something that looks like a trailing comment
-            // on the `if` line. Leave those alone.
             return false;
         }
         const range = body.range;
@@ -195,72 +225,131 @@ export class SingleLineIfFormatter {
     }
 
     /**
-     * Collapse:
-     * ```
-     * if x then
-     *     y = 1
-     * end if
-     * ```
-     * →  `if x then y = 1`
+     * Collapse a multi-line if (and any chained else/else-if branches) onto a single line.
      *
-     * Removes the \n after `then`, the body's indentation, the \n before `end if`,
-     * and the `end if` token itself. Keeps the \n that was *after* `end if` as the
-     * line-ender for the resulting inline if.
+     * Walks the chain via `elseBranch` to gather two sets of structural tokens:
+     *   - openers: every `then` token plus the `else` of a plain-else branch — the body
+     *     starts on the line right after these
+     *   - closers: every `else` token plus the chain's `end if` — the body ends on the line
+     *     right before these
+     *
+     * Then in token-reference order:
+     *   - For each opener: remove the `\n` after it and the body's indent, leaving a space
+     *     between the opener and the body
+     *   - For each closer (else): replace the `\n` before it with a space
+     *   - For the final `end if`: remove the `\n` before it AND the `end if` token entirely
+     *
+     * Token references stay valid across splices, so we can re-resolve indices each time.
      */
     private collapse(tokens: Token[], stmt: IfStatement): void {
-        const thenToken = stmt.tokens.then;
-        const endIfToken = stmt.tokens.endIf;
-        if (!thenToken || !endIfToken) {
-            return;
+        const openers: Token[] = [];
+        const closers: Token[] = [];
+        let endIfToken: Token | undefined;
+
+        let current: IfStatement | undefined = stmt;
+        while (current) {
+            if (!current.tokens.then) {
+                return;
+            }
+            openers.push(current.tokens.then);
+            if (current.tokens.else) {
+                closers.push(current.tokens.else);
+            }
+            if (current.tokens.endIf) {
+                endIfToken = current.tokens.endIf;
+            }
+            const elseBranch: IfStatement | Block | undefined = current.elseBranch;
+            if (!elseBranch) {
+                break;
+            }
+            if (isIfStatement(elseBranch)) {
+                current = elseBranch;
+            } else {
+                // plain `else` body — the `else` token is also an opener for this body
+                if (!current.tokens.else) {
+                    return;
+                }
+                openers.push(current.tokens.else);
+                break;
+            }
         }
 
-        const thenIdx = tokens.indexOf(thenToken);
+        if (!endIfToken) {
+            return;
+        }
+        // Validate all structural tokens are present before mutating anything, so a
+        // corrupt input results in a no-op rather than a partial mutation.
+        for (const token of [...openers, ...closers, endIfToken]) {
+            if (!tokens.includes(token)) {
+                return;
+            }
+        }
+
+        // Process closers (else, end-if): collapse the `\n + indent` before each into a
+        // single space. For end-if specifically, drop the `\n` entirely since the token
+        // itself is removed below.
+        for (const closer of closers) {
+            this.collapseBeforeCloser(tokens, closer, false);
+        }
+        this.collapseBeforeCloser(tokens, endIfToken, true);
+
+        // Process openers (then, plain-else's else): collapse the `\n + indent` after each
+        // into a single space between the opener and its body.
+        for (const opener of openers) {
+            this.collapseAfterOpener(tokens, opener);
+        }
+
+        // Finally remove the `end if` token. Any `\n` that previously preceded it was
+        // already removed by collapseBeforeCloser above.
         const endIfIdx = tokens.indexOf(endIfToken);
-        if (thenIdx === -1 || endIfIdx === -1) {
+        if (endIfIdx !== -1) {
+            tokens.splice(endIfIdx, 1);
+        }
+    }
+
+    private collapseBeforeCloser(tokens: Token[], closer: Token, removeNewline: boolean): void {
+        const closerIdx = tokens.indexOf(closer);
+        if (closerIdx === -1) {
             return;
         }
-
-        // Find the \n immediately after `then` (may have whitespace between then and \n, though unusual)
-        let newlineAfterThenIdx = thenIdx + 1;
-        while (newlineAfterThenIdx < endIfIdx && tokens[newlineAfterThenIdx].kind === TokenKind.Whitespace) {
-            newlineAfterThenIdx++;
+        let walkIdx = closerIdx - 1;
+        while (walkIdx >= 0 && tokens[walkIdx].kind === TokenKind.Whitespace) {
+            walkIdx--;
         }
-        if (tokens[newlineAfterThenIdx].kind !== TokenKind.Newline) {
-            return; // not a multi-line if
+        if (walkIdx < 0 || tokens[walkIdx].kind !== TokenKind.Newline) {
+            return;
         }
-
-        // Find the \n immediately before `end if` (the body's line-ender)
-        let newlineBeforeEndIfIdx = endIfIdx - 1;
-        while (newlineBeforeEndIfIdx > newlineAfterThenIdx && tokens[newlineBeforeEndIfIdx].kind === TokenKind.Whitespace) {
-            newlineBeforeEndIfIdx--;
+        const newlineIdx = walkIdx;
+        const wsCount = closerIdx - newlineIdx - 1;
+        for (let k = 0; k < wsCount; k++) {
+            tokens.splice(newlineIdx + 1, 1);
         }
-        if (tokens[newlineBeforeEndIfIdx].kind !== TokenKind.Newline) {
-            return; // unexpected structure
+        if (removeNewline) {
+            tokens.splice(newlineIdx, 1);
+        } else {
+            tokens[newlineIdx] = { kind: TokenKind.Whitespace, text: ' ' } as TokenWithStartIndex;
         }
+    }
 
-        // Perform all deletions in reverse index order (highest first) to keep indices stable:
-
-        // 1. Remove `end if` token
-        tokens.splice(endIfIdx, 1);
-
-        // 2. Remove the \n before `end if` (body line-ender)
-        //    endIfIdx didn't shift because we only removed endIfIdx itself which is >= endIfIdx
-        tokens.splice(newlineBeforeEndIfIdx, 1);
-
-        // 3. Remove body indentation whitespace (tokens between \n-after-then+1 and body start)
-        //    Both splices above were at indices > newlineAfterThenIdx, so it's still valid.
-        let indentIdx = newlineAfterThenIdx + 1;
+    private collapseAfterOpener(tokens: Token[], opener: Token): void {
+        const openerIdx = tokens.indexOf(opener);
+        if (openerIdx === -1) {
+            return;
+        }
+        let walkIdx = openerIdx + 1;
+        while (walkIdx < tokens.length && tokens[walkIdx].kind === TokenKind.Whitespace) {
+            walkIdx++;
+        }
+        if (walkIdx >= tokens.length || tokens[walkIdx].kind !== TokenKind.Newline) {
+            return;
+        }
+        const newlineIdx = walkIdx;
+        // Remove indent whitespace after the newline
+        let indentIdx = newlineIdx + 1;
         while (indentIdx < tokens.length && tokens[indentIdx].kind === TokenKind.Whitespace) {
             tokens.splice(indentIdx, 1);
         }
-
-        // 4. Remove the \n after `then`
-        tokens.splice(newlineAfterThenIdx, 1);
-
-        // 5. Insert a space between `then` and the body (now at newlineAfterThenIdx position)
-        tokens.splice(newlineAfterThenIdx, 0, {
-            kind: TokenKind.Whitespace,
-            text: ' '
-        } as TokenWithStartIndex);
+        // Replace the newline with a single space
+        tokens[newlineIdx] = { kind: TokenKind.Whitespace, text: ' ' } as TokenWithStartIndex;
     }
 }
