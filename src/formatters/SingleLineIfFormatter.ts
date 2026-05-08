@@ -1,5 +1,5 @@
 import type { Token, Parser, IfStatement } from 'brighterscript';
-import { createVisitor, createToken, TokenKind, WalkMode } from 'brighterscript';
+import { createVisitor, createToken, isCommentStatement, isIfStatement, isTryCatchStatement, TokenKind, WalkMode } from 'brighterscript';
 import type { TokenWithStartIndex } from '../constants';
 import type { FormattingOptions } from '../FormattingOptions';
 
@@ -18,21 +18,61 @@ export class SingleLineIfFormatter {
             }
         }), { walkMode: WalkMode.visitAllRecursive });
 
-        if (mode === 'expand') {
-            // Inline ifs have no endIf token. Process in reverse to keep indices stable.
-            const inlineIfs = ifStatements.filter(s => !s.tokens.endIf && this.isStandaloneIf(tokens, s));
+        if (mode === 'block') {
+            // `isInline` is true on every IfStatement of an inline chain (parent + every
+            // nested else-if). It cannot be derived from `!tokens.endIf`, since brighterscript
+            // attaches the `end if` to the deepest else-if of a multi-line chain — which would
+            // leave the outer IfStatement looking endIf-less even though the chain is multi-line.
+            //
+            // The range check rejects ifs that brighterscript labels inline but whose body
+            // happens to span multiple physical lines, e.g. `if x then return { ... }` where
+            // the AA literal spans several lines. Expanding those would land `end if` inside
+            // the literal.
+            const inlineIfs = ifStatements.filter(s => s.isInline === true && this.isSingleLine(s) && this.isStandaloneIf(tokens, s));
             for (let i = inlineIfs.length - 1; i >= 0; i--) {
                 this.expand(tokens, inlineIfs[i], options);
             }
-        } else if (mode === 'collapse') {
-            // Collapsible: multi-line, single statement, no else, and not an `else if` branch
-            const collapsible = ifStatements.filter(s => s.tokens.endIf && !s.elseBranch && s.thenBranch?.statements?.length === 1 && this.isStandaloneIf(tokens, s));
+        } else if (mode === 'inline' || mode === 'inlineNoElseIf' || mode === 'inlineNoElse') {
+            const collapsible = ifStatements.filter(s => this.isCollapsible(s) && this.isStandaloneIf(tokens, s));
             for (let i = collapsible.length - 1; i >= 0; i--) {
                 this.collapse(tokens, collapsible[i]);
             }
         }
 
         return tokens;
+    }
+
+    private isSingleLine(stmt: IfStatement): boolean {
+        const range = stmt.range;
+        return !range || range.start.line === range.end.line;
+    }
+
+    /**
+     * A multi-line if is collapsible to inline form only when:
+     *   - it has an `end if` (multi-line) and no else branch,
+     *   - the body has exactly one statement,
+     *   - that statement fits on a single line (so the inline result is one line),
+     *   - and that statement is not itself an `if` (chaining inline ifs is undesirable).
+     */
+    private isCollapsible(stmt: IfStatement): boolean {
+        if (!stmt.tokens.endIf || stmt.elseBranch || stmt.thenBranch?.statements?.length !== 1) {
+            return false;
+        }
+        const body = stmt.thenBranch.statements[0];
+        if (isIfStatement(body) || isTryCatchStatement(body) || isCommentStatement(body)) {
+            // brighterscript reports TryCatchStatement.range as just the `try` keyword,
+            // so we cannot rely on a multi-line range check to reject it.
+            //
+            // A comment-only body has no executable code, so collapsing it would turn an
+            // intentionally-empty branch into something that looks like a trailing comment
+            // on the `if` line. Leave those alone.
+            return false;
+        }
+        const range = body.range;
+        if (range && range.start.line !== range.end.line) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -57,35 +97,47 @@ export class SingleLineIfFormatter {
     }
 
     /**
-     * Expand: `if x then y = 1`  →  multi-line block with `end if`
+     * Expand: `if x then y = 1 [else if z then y = 2] [else y = 3]`  →  multi-line block.
      *
-     * Replaces the whitespace after `then` with `\n`, then appends `\n end if [\n]`
-     * after the body. IndentFormatter handles indentation.
+     * Walks the if/else-if chain via `elseBranch` and inserts `\n` after every `then` and
+     * around every `else`/`else if`, so each branch's body lands on its own line. Finally
+     * appends `\n end if` after the last branch's body. IndentFormatter handles indentation.
      */
     private expand(tokens: Token[], stmt: IfStatement, options: FormattingOptions): void {
-        const thenToken = stmt.tokens.then;
-        if (!thenToken) {
-            return;
+        const breakAfter: Token[] = [];
+        const breakBefore: Token[] = [];
+
+        let current: IfStatement | undefined = stmt;
+        while (current) {
+            if (current.tokens.then) {
+                breakAfter.push(current.tokens.then);
+            }
+            if (current.tokens.else) {
+                breakBefore.push(current.tokens.else);
+            }
+            if (isIfStatement(current.elseBranch)) {
+                // `else if` — descend into the chained IfStatement
+                current = current.elseBranch;
+            } else {
+                // plain `else` body — break after the `else` so its body lands on a new line
+                if (current.elseBranch && current.tokens.else) {
+                    breakAfter.push(current.tokens.else);
+                }
+                current = undefined;
+            }
         }
-        const thenIdx = tokens.indexOf(thenToken);
-        if (thenIdx === -1) {
+
+        if (breakAfter.length === 0) {
             return;
         }
 
-        // Replace whitespace after `then` with a newline (or insert one if missing)
-        const afterThen = tokens[thenIdx + 1];
-        if (afterThen?.kind === TokenKind.Whitespace) {
-            afterThen.text = '\n';
-            afterThen.kind = TokenKind.Newline;
-        } else {
-            tokens.splice(thenIdx + 1, 0, {
-                kind: TokenKind.Newline,
-                text: '\n'
-            } as TokenWithStartIndex);
+        // Find the line end after the rightmost structural token, where `\n end if` will go
+        const lastChainToken = breakAfter[breakAfter.length - 1];
+        const lastChainIdx = tokens.indexOf(lastChainToken);
+        if (lastChainIdx === -1) {
+            return;
         }
-
-        // Walk forward to find the end of the body line (the \n or EOF that terminates it)
-        let lineEndIdx = thenIdx + 2;
+        let lineEndIdx = lastChainIdx + 1;
         while (lineEndIdx < tokens.length && tokens[lineEndIdx].kind !== TokenKind.Newline && tokens[lineEndIdx].kind !== TokenKind.Eof) {
             lineEndIdx++;
         }
@@ -99,18 +151,46 @@ export class SingleLineIfFormatter {
         });
         const lineEnder = tokens[lineEndIdx];
 
+        // 1. Insert `\n end if` at the rightmost position first (highest indices stay highest).
         if (lineEnder?.kind === TokenKind.Eof) {
-            // No trailing newline — insert \n + end if before EOF
             tokens.splice(lineEndIdx, 0,
                 { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex,
                 endIfToken
             );
         } else {
-            // lineEnder is \n — insert end if + \n after it
             tokens.splice(lineEndIdx + 1, 0,
                 endIfToken,
                 { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex
             );
+        }
+
+        // 2. Break around each structural token. Token references stay valid across splices,
+        //    so re-resolving via indexOf each time keeps the logic order-independent.
+        for (const token of breakBefore) {
+            const idx = tokens.indexOf(token);
+            if (idx <= 0) {
+                continue;
+            }
+            const prev = tokens[idx - 1];
+            if (prev?.kind === TokenKind.Whitespace) {
+                prev.text = '\n';
+                prev.kind = TokenKind.Newline;
+            } else {
+                tokens.splice(idx, 0, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
+            }
+        }
+        for (const token of breakAfter) {
+            const idx = tokens.indexOf(token);
+            if (idx === -1) {
+                continue;
+            }
+            const next = tokens[idx + 1];
+            if (next?.kind === TokenKind.Whitespace) {
+                next.text = '\n';
+                next.kind = TokenKind.Newline;
+            } else {
+                tokens.splice(idx + 1, 0, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
+            }
         }
     }
 

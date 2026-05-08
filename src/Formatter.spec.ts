@@ -1040,7 +1040,7 @@ end sub`;
                 print "world"
                 end try
                 print "done"
-                end function 
+                end function
             `)).to.equal(undent`
                 function try
                     try
@@ -1049,7 +1049,7 @@ end sub`;
                         print "world"
                     end try
                     print "done"
-                end function 
+                end function
             `);
         });
 
@@ -2129,7 +2129,7 @@ end sub`;
                 end if
             `, `
                 if x then y = 1
-            `, { singleLineIf: 'collapse' });
+            `, { singleLineIf: 'inlineNoElse' });
         });
 
         it('expands an inline if to multi-line', () => {
@@ -2139,7 +2139,7 @@ end sub`;
                 if x then
                     y = 1
                 end if
-            `, { singleLineIf: 'expand' });
+            `, { singleLineIf: 'block' });
         });
 
         it('does not collapse an if block that has an else branch', () => {
@@ -2149,7 +2149,7 @@ end sub`;
                 else
                     y = 2
                 end if
-            `, undefined, { singleLineIf: 'collapse' });
+            `, undefined, { singleLineIf: 'inlineNoElse' });
         });
 
         it('does not collapse an if block that has an else if branch', () => {
@@ -2159,7 +2159,7 @@ end sub`;
                 else if z then
                     y = 2
                 end if
-            `, undefined, { singleLineIf: 'collapse' });
+            `, undefined, { singleLineIf: 'inlineNoElse' });
         });
 
         it('does not collapse an if block with multiple statements', () => {
@@ -2168,7 +2168,7 @@ end sub`;
                     y = 1
                     z = 2
                 end if
-            `, undefined, { singleLineIf: 'collapse' });
+            `, undefined, { singleLineIf: 'inlineNoElse' });
         });
 
         it('does not modify if statements when set to original', () => {
@@ -2184,7 +2184,7 @@ end sub`;
                 if x then
                     y = 1
                 end if
-            `, undefined, { singleLineIf: 'expand' });
+            `, undefined, { singleLineIf: 'block' });
         });
 
         it('collapses an if block that is preceded by other code', () => {
@@ -2196,19 +2196,315 @@ end sub`;
             `, `
                 x = 1
                 if x then y = 1
-            `, { singleLineIf: 'collapse' });
+            `, { singleLineIf: 'inlineNoElse' });
         });
 
         it('expands an inline if that has a trailing newline', () => {
-            formatEqual('if x then y = 1\n', 'if x then\n    y = 1\nend if\n', { singleLineIf: 'expand' });
+            formatEqual('if x then y = 1\n', 'if x then\n    y = 1\nend if\n', { singleLineIf: 'block' });
         });
 
         it('collapses an if with whitespace between then and the newline', () => {
-            formatEqual('if x then   \n    y = 1\nend if\n', 'if x then  y = 1\n', { singleLineIf: 'collapse' });
+            formatEqual('if x then   \n    y = 1\nend if\n', 'if x then  y = 1\n', { singleLineIf: 'inlineNoElse' });
         });
 
         it('collapses an if with indented end if', () => {
-            formatEqual('if x then\n    y = 1\n    end if\n', 'if x then y = 1\n', { singleLineIf: 'collapse' });
+            formatEqual('if x then\n    y = 1\n    end if\n', 'if x then y = 1\n', { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if that has an else branch into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else y = 2
+            `, `
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if that has an else if branch into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else if z then y = 2
+            `, `
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if that has an else if/else chain into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else if z then y = 2 else y = 3
+            `, `
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if and preserves code that follows it', () => {
+            formatEqualTrim(`
+                if x then y = 1
+                z = 2
+            `, `
+                if x then
+                    y = 1
+                end if
+                z = 2
+            `, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if/else if chain in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if/else if/else chain in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else
+                    x = 3
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line chain with multiple else if branches in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else if c then
+                    x = 3
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if with a comment-only body in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    ' note
+                else if b then
+                    x = 2
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand nested multi-line if blocks in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    if b then
+                        x = 1
+                    end if
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line associative array literal)', () => {
+            formatEqualTrim(`
+                if url <> "" then return {
+                    success: true
+                    libraryUrl: url
+                }
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line array literal)', () => {
+            formatEqualTrim(`
+                if x then return [
+                    1,
+                    2
+                ]
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line function call)', () => {
+            formatEqualTrim(`
+                if x then foo(
+                1,
+                2
+                )
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not collapse an if whose only body statement is a comment', () => {
+            formatEqualTrim(`
+                if x then
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an if whose only body statement is a bs:disable-line comment', () => {
+            formatEqualTrim(`
+                if x then
+                    ' commentedOut() 'bs:disable-line LINT3012
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an empty if body', () => {
+            formatEqualTrim(`
+                if x then
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse outer when the only inner statement is a multi-line if block (inner collapses independently)', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then
+                        z = 1
+                    end if
+                end if
+            `, `
+                if x then
+                    if y then z = 1
+                end if
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is an if/else block', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then
+                        z = 1
+                    else
+                        z = 2
+                    end if
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a for loop', () => {
+            formatEqualTrim(`
+                if x then
+                    for i = 0 to 5
+                        y = i
+                    end for
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a while loop', () => {
+            formatEqualTrim(`
+                if x then
+                    while y < 5
+                        y = y + 1
+                    end while
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('collapses an if and preserves code that follows it', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+                z = 2
+            `, `
+                if x then y = 1
+                z = 2
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (function expression rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (array literal rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = [
+                        1,
+                        2
+                    ]
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (associative array rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = {
+                        a: 1
+                    }
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (multi-line function call)', () => {
+            formatEqualTrim(`
+                if x then
+                    foo(
+                    1,
+                    2
+                    )
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a for-each loop', () => {
+            formatEqualTrim(`
+                if x then
+                    for each i in items
+                        y = i
+                    end for
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a try/catch block', () => {
+            formatEqualTrim(`
+                if x then
+                    try
+                        y = 1
+                    catch e
+                        y = 2
+                    end try
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a single-line inline if', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then z = 1
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if with else and colon-separated multi-statement bodies', () => {
+            formatEqualTrim(`
+                if x then y = 1: z = 2 else y = 3: z = 4
+            `, `
+                if x then
+                    y = 1: z = 2
+                else
+                    y = 3: z = 4
+                end if
+            `, { singleLineIf: 'block' });
         });
     });
 

@@ -22,7 +22,7 @@ describe('SingleLineIfFormatter', () => {
         });
 
         it('returns tokens unchanged when mode is truthy but unrecognized', () => {
-            // Covers the false branch of else-if (mode === 'collapse') when mode is neither expand nor collapse
+            // Covers the false branch of the inline-mode dispatch when mode is neither block nor an inline* variant
             const tokens = [{ kind: TokenKind.Identifier, text: 'x' }] as any[];
             const result = formatter.format(tokens, { singleLineIf: 'bogus' as any } as any, fakeParser);
             expect(result).to.equal(tokens);
@@ -37,7 +37,7 @@ describe('SingleLineIfFormatter', () => {
             );
             const customParser = { ast: { walk: (v: any, _o: any) => v(fakeStmt) } };
             const tokens = [{ kind: TokenKind.Identifier, text: 'x' }] as any[];
-            const result = formatter.format(tokens, { singleLineIf: 'collapse' } as any, customParser as any);
+            const result = formatter.format(tokens, { singleLineIf: 'inlineNoElse' } as any, customParser as any);
             expect(result).to.equal(tokens);
         });
     });

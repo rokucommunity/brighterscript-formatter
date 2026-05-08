@@ -125,12 +125,17 @@ export interface FormattingOptions {
      */
     trailingComma?: 'always' | 'allButLast' | 'never' | 'original';
     /**
-     * Controls how single-statement `if` blocks are formatted.
-     * - `'collapse'`: convert a multi-line if with a single statement and no else to an inline if (e.g. `if x then y = 1`)
-     * - `'expand'`: convert an inline if to a multi-line block with `end if`
-     * - `'original'` or omitted: leave if statements unchanged
+     * Controls how `if` statements are formatted. Values are listed top-to-bottom in
+     * order of increasing strictness about when block (multi-line) form is required.
+     * - `'inline'`: collapse to inline form whenever the body fits on one line, including
+     *   ifs with `else` and `else if` chains
+     * - `'inlineNoElseIf'`: collapse to inline form, but ifs with an `else if` chain
+     *   stay in block form (a single `else` is still allowed inline)
+     * - `'inlineNoElse'`: only collapse simple `if/then` ifs that have no `else` at all
+     * - `'block'`: always use multi-line block form (expand inline ifs to `if/then/end if`)
+     * - `'original'` or omitted: leave each if as written
      */
-    singleLineIf?: 'collapse' | 'expand' | 'original';
+    singleLineIf?: 'inline' | 'inlineNoElseIf' | 'inlineNoElse' | 'block' | 'original';
     /**
      * If set to a positive number, multi-line arrays and associative arrays whose inline
      * representation fits within this many characters will be collapsed to a single line.
