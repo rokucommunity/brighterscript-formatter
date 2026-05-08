@@ -13,7 +13,6 @@ import { util } from './util';
 import { SortImportsFormatter } from './formatters/SortImportsFormatter';
 import { MaxConsecutiveEmptyLinesFormatter } from './formatters/MaxConsecutiveEmptyLinesFormatter';
 import { TrailingCommaFormatter } from './formatters/TrailingCommaFormatter';
-import { BlankLinesBetweenFunctionsFormatter } from './formatters/BlankLinesBetweenFunctionsFormatter';
 import { SingleLineIfFormatter } from './formatters/SingleLineIfFormatter';
 import { InlineArrayAndObjectFormatter } from './formatters/InlineArrayAndObjectFormatter';
 import { RemoveBlankLinesAtStartOfBlockFormatter } from './formatters/RemoveBlankLinesAtStartOfBlockFormatter';
@@ -50,7 +49,6 @@ export class Formatter {
         sortImports: new SortImportsFormatter(),
         maxConsecutiveEmptyLines: new MaxConsecutiveEmptyLinesFormatter(),
         trailingComma: new TrailingCommaFormatter(),
-        blankLinesBetweenFunctions: new BlankLinesBetweenFunctionsFormatter(),
         singleLineIf: new SingleLineIfFormatter(),
         inlineArrayAndObject: new InlineArrayAndObjectFormatter(),
         removeBlankLinesAtStartOfBlock: new RemoveBlankLinesAtStartOfBlockFormatter(),
@@ -183,10 +181,6 @@ export class Formatter {
 
         if (options.maxConsecutiveEmptyLines !== undefined) {
             tokens = this.formatters.maxConsecutiveEmptyLines.format(tokens, options);
-        }
-
-        if (options.blankLinesBetweenFunctions !== undefined) {
-            tokens = this.formatters.blankLinesBetweenFunctions.format(tokens, options);
         }
 
         if (options.removeBlankLinesAtStartOfBlock) {

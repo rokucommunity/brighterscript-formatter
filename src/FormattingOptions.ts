@@ -125,11 +125,6 @@ export interface FormattingOptions {
      */
     trailingComma?: 'always' | 'allButLast' | 'never' | 'original';
     /**
-     * Ensures exactly this many blank lines between consecutive top-level function/sub declarations.
-     * When undefined (the default), spacing between functions is not modified.
-     */
-    blankLinesBetweenFunctions?: number;
-    /**
      * Controls how single-statement `if` blocks are formatted.
      * - `'collapse'`: convert a multi-line if with a single statement and no else to an inline if (e.g. `if x then y = 1`)
      * - `'expand'`: convert an inline if to a multi-line block with `end if`
