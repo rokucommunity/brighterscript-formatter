@@ -8,7 +8,7 @@ describe('InlineArrayAndObjectFormatter', () => {
         formatter = new InlineArrayAndObjectFormatter();
     });
 
-    it('returns tokens unchanged when threshold is falsy', () => {
+    it('returns tokens unchanged when mode is original', () => {
         const tokens = [
             { kind: TokenKind.LeftSquareBracket, text: '[' },
             { kind: TokenKind.Newline, text: '\n' },
@@ -16,7 +16,7 @@ describe('InlineArrayAndObjectFormatter', () => {
             { kind: TokenKind.Newline, text: '\n' },
             { kind: TokenKind.RightSquareBracket, text: ']' }
         ] as any[];
-        const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 0 } as any);
+        const result = formatter.format(tokens, { inlineArrayAndObject: 'original' } as any);
         expect(result).to.equal(tokens);
     });
 
@@ -29,7 +29,7 @@ describe('InlineArrayAndObjectFormatter', () => {
             { kind: TokenKind.Newline, text: '\n' }
             // No closing bracket
         ] as any[];
-        const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 100 } as any);
+        const result = formatter.format(tokens, { inlineArrayAndObject: 'always' } as any);
         // Should not throw; tokens returned as-is
         expect(result.map((t: any) => t.text).join('')).to.equal('[\n1\n');
     });
@@ -45,7 +45,7 @@ describe('InlineArrayAndObjectFormatter', () => {
             { kind: TokenKind.Newline, text: '\n' },
             { kind: TokenKind.RightSquareBracket, text: ']' }
         ] as any[];
-        const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 100 } as any);
+        const result = formatter.format(tokens, { inlineArrayAndObject: 'always' } as any);
         expect(result).to.be.an('array');
     });
 
@@ -62,7 +62,7 @@ describe('InlineArrayAndObjectFormatter', () => {
             { kind: TokenKind.Newline, text: '\n' },
             { kind: TokenKind.RightSquareBracket, text: ']' } // closes outer [
         ] as any[];
-        const result = formatter.format(tokens, { inlineArrayAndObjectThreshold: 100 } as any);
+        const result = formatter.format(tokens, { inlineArrayAndObject: 'always' } as any);
         expect(result).to.be.an('array');
     });
 });

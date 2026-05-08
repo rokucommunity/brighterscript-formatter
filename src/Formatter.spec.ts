@@ -2696,91 +2696,346 @@ end sub`;
         });
     });
 
-    describe('inlineArrayAndObjectThreshold', () => {
-        it('collapses a multi-line array that fits within the character threshold', () => {
-            formatEqualTrim(`
-                x = [
-                    1,
-                    2,
-                    3
-                ]
-            `, `
-                x = [1, 2, 3]
-            `, { inlineArrayAndObjectThreshold: 20 });
-        });
-
-        it('collapses a multi-line AA that fits within the character threshold', () => {
-            formatEqualTrim(`
-                x = {
-                    a: 1,
-                    b: 2
-                }
-            `, `
-                x = { a: 1, b: 2 }
-            `, { inlineArrayAndObjectThreshold: 20 });
-        });
-
-        it('does not collapse an array whose inline form exceeds the threshold', () => {
-            formatEqualTrim(`
-                x = [
-                    1,
-                    2,
-                    3
-                ]
-            `, undefined, { inlineArrayAndObjectThreshold: 5 });
-        });
-
-        it('does not collapse when threshold is 0', () => {
-            formatEqualTrim(`
-                x = [
-                    1,
-                    2,
-                    3
-                ]
-            `, undefined, { inlineArrayAndObjectThreshold: 0 });
-        });
-
-        it('does not collapse the outer array when it contains nested multi-line arrays', () => {
-            formatEqualTrim(`
-                x = [
-                    [
+    describe('inlineArrayAndObject', () => {
+        describe('always', () => {
+            it('collapses a multi-line array', () => {
+                formatEqualTrim(`
+                    x = [
                         1,
-                        2
-                    ],
-                    3
-                ]
-            `, `
-                x = [
-                    [1, 2],
-                    3
-                ]
-            `, { inlineArrayAndObjectThreshold: 100 });
-        });
+                        2,
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'always' });
+            });
 
-        it('does not collapse when option is not set', () => {
-            formatEqualTrim(`
-                x = [
-                    1,
-                    2,
-                    3
-                ]
-            `);
-        });
-
-        it('does not collapse already-single-line brackets', () => {
-            formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObjectThreshold: 50 });
-        });
-
-        it('does not collapse outer array when it contains a nested multiline AA', () => {
-            formatEqualTrim(`
-                x = [
-                    {
+            it('collapses a multi-line AA', () => {
+                formatEqualTrim(`
+                    x = {
                         a: 1,
                         b: 2
-                    },
-                    3
-                ]
-            `, undefined, { inlineArrayAndObjectThreshold: 5 });
+                    }
+                `, `
+                    x = { a: 1, b: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('collapses regardless of resulting line length', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                `, `
+                    x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse already-single-line brackets', () => {
+                formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse the outer array when it contains nested multi-line arrays', () => {
+                formatEqualTrim(`
+                    x = [
+                        [
+                            1,
+                            2
+                        ],
+                        3
+                    ]
+                `, `
+                    x = [
+                        [1, 2],
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse the outer array when it contains a nested multi-line AA', () => {
+                formatEqualTrim(`
+                    x = [
+                        {
+                            a: 1,
+                            b: 2
+                        },
+                        3
+                    ]
+                `, `
+                    x = [
+                        { a: 1, b: 2 },
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('comma fix on collapse', () => {
+            it('inserts commas between AA items separated only by newlines', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1
+                        b: 2
+                    }
+                `, `
+                    x = { a: 1, b: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts commas between array items separated only by newlines', () => {
+                formatEqualTrim(`
+                    x = [
+                        1
+                        2
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts commas where missing in mixed comma/no-comma items', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1,
+                        b: 2
+                        c: 3
+                    }
+                `, `
+                    x = { a: 1, b: 2, c: 3 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts a comma between a nested single-line literal and the next item', () => {
+                formatEqualTrim(`
+                    x = {
+                        inner: { a: 1 }
+                        other: 2
+                    }
+                `, `
+                    x = { inner: { a: 1 }, other: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('preserves a trailing comma after collapse', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1,
+                        b: 2,
+                    }
+                `, `
+                    x = { a: 1, b: 2, }
+                `, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('structural rejections', () => {
+            it('does not collapse when an item has a trailing line comment', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1, ' note about a
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when there is a comment-only line inside', () => {
+                formatEqualTrim(`
+                    x = {
+                        ' header
+                        a: 1
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when an item has a bs:disable-line directive', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1 'bs:disable-line LINT3012
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when contents include a #if conditional compile', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        #if production
+                            2
+                        #else
+                            3
+                        #end if
+                    ]
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when an item value is itself a multi-line function expression', () => {
+                formatEqualTrim(`
+                    x = {
+                        fn: function()
+                            return 1
+                        end function
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse an array of regex literals', () => {
+                formatEqualTrim(`
+                    domains = [
+                        /^https?:\\/\\/foo\\.com\\/.+/
+                        /^https?:\\/\\/bar\\.com\\/.+/
+                    ]
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('fitsLine', () => {
+            it('collapses when the resulting line fits within maxLineLength', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'fitsLine', maxLineLength: 80 });
+            });
+
+            it('does not collapse when the resulting line would exceed maxLineLength', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, undefined, { inlineArrayAndObject: 'fitsLine', maxLineLength: 5 });
+            });
+
+            it('factors indent into the length check', () => {
+                formatEqualTrim(`
+                    function deeplyNested()
+                        if cond then
+                            for i = 0 to 1
+                                x = [
+                                    1,
+                                    2,
+                                    3
+                                ]
+                            end for
+                        end if
+                    end function
+                `, undefined, { inlineArrayAndObject: 'fitsLine', maxLineLength: 24 });
+            });
+
+            it('falls back to always-collapse when maxLineLength is unset', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ]
+                `, `
+                    x = [1, 2, 3, 4, 5]
+                `, { inlineArrayAndObject: 'fitsLine' });
+            });
+        });
+
+        describe('never', () => {
+            it('expands a single-line array to multi-line', () => {
+                formatEqualTrim(`
+                    x = [1, 2, 3]
+                `, `
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands a single-line AA to multi-line', () => {
+                formatEqualTrim(`
+                    x = { a: 1, b: 2 }
+                `, `
+                    x = {
+                        a: 1,
+                        b: 2
+                    }
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an empty array', () => {
+                formatEqualTrim(`
+                    x = []
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an empty AA', () => {
+                formatEqualTrim(`
+                    x = {}
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand a single-element array', () => {
+                formatEqualTrim(`
+                    x = [1]
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an AA with a single property', () => {
+                formatEqualTrim(`
+                    x = { a: 1 }
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('leaves an already-multi-line array alone', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2
+                    ]
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+        });
+
+        describe('original', () => {
+            it('leaves a multi-line array alone', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, undefined, { inlineArrayAndObject: 'original' });
+            });
+
+            it('leaves a single-line array alone', () => {
+                formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObject: 'original' });
+            });
+
+            it('leaves a multi-line array alone when option is omitted', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `);
+            });
         });
     });
 

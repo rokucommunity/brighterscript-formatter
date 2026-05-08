@@ -137,11 +137,24 @@ export interface FormattingOptions {
      */
     singleLineIf?: 'inline' | 'inlineNoElseIf' | 'inlineNoElse' | 'block' | 'original';
     /**
-     * If set to a positive number, multi-line arrays and associative arrays whose inline
-     * representation fits within this many characters will be collapsed to a single line.
-     * Set to 0 or omit to disable.
+     * Controls how arrays and associative arrays are formatted across lines.
+     * - `'always'`: collapse multi-line literals to one line (regardless of length)
+     * - `'never'`: expand single-line literals to multi-line
+     * - `'fitsLine'`: collapse multi-line literals only when the resulting line fits
+     *   within `maxLineLength`. Falls back to `'always'` when `maxLineLength` is unset.
+     * - `'original'` or omitted: leave each literal as written.
+     *
+     * Structural rejections apply to all collapse modes: literals containing line
+     * comments, `bs:disable-line` directives, conditional-compile directives (`#if` /
+     * `#else`), or items whose value spans multiple physical lines are never collapsed.
      */
-    inlineArrayAndObjectThreshold?: number;
+    inlineArrayAndObject?: 'always' | 'never' | 'fitsLine' | 'original';
+    /**
+     * Target maximum line length, in characters. Currently consumed by
+     * `inlineArrayAndObject: 'fitsLine'` to decide whether collapsing keeps a line
+     * within budget. Reserved for future length-aware rules.
+     */
+    maxLineLength?: number;
     /**
      * If true, remove blank lines immediately after the opening of a block
      * (function/sub body, if/for/while blocks, etc.).
@@ -176,7 +189,7 @@ export function normalizeOptions(options: FormattingOptions) {
         sortImports: false,
         trailingComma: 'original',
         singleLineIf: 'original',
-        inlineArrayAndObjectThreshold: 0,
+        inlineArrayAndObject: 'original',
         removeBlankLinesAtStartOfBlock: false,
         alignAssignments: false,
 

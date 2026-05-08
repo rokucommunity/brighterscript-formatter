@@ -125,7 +125,7 @@ export class Formatter {
 
         // Must run before formatMultiLineObjectsAndArrays so that arrays/AAs that fit
         // within the threshold are already single-line and won't be re-expanded.
-        if (options.inlineArrayAndObjectThreshold) {
+        if (options.inlineArrayAndObject && options.inlineArrayAndObject !== 'original') {
             tokens = this.formatters.inlineArrayAndObject.format(tokens, options);
         }
 
