@@ -1,6 +1,27 @@
 import { Formatter } from './Formatter';
 import { TokenKind } from 'brighterscript';
 
+export type BlockSpacing = 'before' | 'after' | 'between' | 'always' | 'original';
+
+/**
+ * Per-construct overrides for `blockSpacing`. Any construct not listed here falls back
+ * to `default`, and if `default` is also omitted that construct uses `'original'`.
+ *
+ * `if` covers the entire if/else if/else chain (only the outer chain — inner branches
+ * don't get individual spacing).
+ * `for` covers both `for` and `for each` loops.
+ * `try` covers the entire try/catch construct.
+ */
+export interface BlockSpacingOptions {
+    default?: BlockSpacing;
+    function?: BlockSpacing;
+    sub?: BlockSpacing;
+    if?: BlockSpacing;
+    for?: BlockSpacing;
+    while?: BlockSpacing;
+    try?: BlockSpacing;
+}
+
 /**
  * A set of formatting options used to determine how the file should be formatted.
  */
@@ -156,11 +177,30 @@ export interface FormattingOptions {
      */
     maxLineLength?: number;
     /**
-     * If true, remove blank lines immediately after the opening of a block
-     * (function/sub body, if/for/while blocks, etc.).
-     * @default false
+     * Controls blank-line spacing around block constructs (function/sub, if/else chain,
+     * for/for each, while, try/catch). Inline ifs (and inline else branches) are not
+     * blocks and are skipped.
+     *
+     * Leading line comments immediately above a block opener are treated as part of the
+     * block — `'before'` puts the blank line above the comment, not between the comment
+     * and the opener. Trailing comments immediately after a closer attach to the closer.
+     *
+     * String form applies the same policy to every supported block type:
+     * - `'before'`: ensure a blank line above the block (above any leading comment)
+     * - `'after'`: ensure a blank line below the block (below any trailing comment)
+     * - `'between'`: both `'before'` and `'after'`
+     * - `'always'`: `'between'` plus a blank line at the start and end of the block body
+     * - `'original'` (or omitted): leave spacing as written
+     *
+     * Object form allows per-construct overrides. `default` is the fallback for any
+     * supported construct that isn't explicitly set; if `default` is also omitted, that
+     * construct uses `'original'`. Setting `if` covers the entire if/else if/else chain.
+     * `for` covers `for` and `for each`. `try` covers the entire try/catch construct.
+     * Example:
+     *
+     *   { default: 'between', function: 'always', if: 'before' }
      */
-    removeBlankLinesAtStartOfBlock?: boolean;
+    blockSpacing?: BlockSpacing | BlockSpacingOptions;
     /**
      * If true, align the `=` sign in consecutive simple assignment statements by
      * padding the left-hand side with spaces.
@@ -190,7 +230,7 @@ export function normalizeOptions(options: FormattingOptions) {
         trailingComma: 'original',
         singleLineIf: 'original',
         inlineArrayAndObject: 'original',
-        removeBlankLinesAtStartOfBlock: false,
+        blockSpacing: 'original',
         alignAssignments: false,
 
         //override defaults with the provided values

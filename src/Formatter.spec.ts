@@ -3039,104 +3039,531 @@ end sub`;
         });
     });
 
-    describe('removeBlankLinesAtStartOfBlock', () => {
-        it('removes blank lines at the start of a function body', () => {
-            formatEqualTrim(`
-                function a()
+    describe('blockSpacing', () => {
+        describe('before', () => {
+            it('inserts a blank line above a while when missing', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
 
-                    x = 1
-                end function
-            `, `
-                function a()
-                    x = 1
-                end function
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('places the blank line above a leading comment, not between comment and opener', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        ' do the loop work now
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
+
+                        ' do the loop work now
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('places the blank line above an annotation, not between annotation and opener', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: { sub: 'before' } });
+            });
+
+            it('walks past mixed annotation and comment lines as a single preamble', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+                        ' explains why this is deprecated
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+
+                        ' explains why this is deprecated
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: { sub: 'before' } });
+            });
+
+            it('walks past multiple consecutive leading comment lines', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        ' first comment
+                        ' second comment
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
+
+                        ' first comment
+                        ' second comment
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('does nothing when a blank line already exists above the block', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+
+                        while true
+                        end while
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
+
+            it('does not insert a blank when the block is the first content in its parent', () => {
+                formatEqualTrim(`
+                    sub m()
+                        while true
+                        end while
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
         });
 
-        it('removes blank lines at the start of a sub body', () => {
-            formatEqualTrim(`
-                sub a()
+        describe('after', () => {
+            it('inserts a blank line below an if when missing', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+                        end if
 
-                    x = 1
-                end sub
-            `, `
-                sub a()
-                    x = 1
-                end sub
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        b()
+                    end sub
+                `, { blockSpacing: { if: 'after' } });
+            });
+
+            it('places the blank line below a trailing comment attached to the closer', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if ' end of conditional
+                        b()
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+                        end if ' end of conditional
+
+                        b()
+                    end sub
+                `, { blockSpacing: { if: 'after' } });
+            });
+
+            it('does nothing when a blank line already exists below', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+
+                        b()
+                    end sub
+                `, undefined, { blockSpacing: { if: 'after' } });
+            });
+
+            it('does not insert a blank when the block is the last content in its parent', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+                    end sub
+                `, undefined, { blockSpacing: { if: 'after' } });
+            });
         });
 
-        it('removes blank lines at the start of an if block', () => {
-            formatEqualTrim(`
-                if true then
+        describe('between', () => {
+            it('inserts blank lines both above and below', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        for each i in items
+                            p(i)
+                        end for
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
 
-                    x = 1
-                end if
-            `, `
-                if true then
-                    x = 1
-                end if
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        for each i in items
+                            p(i)
+                        end for
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { for: 'between' } });
+            });
         });
 
-        it('removes blank lines at the start of a for loop', () => {
-            formatEqualTrim(`
-                for i = 0 to 10
+        describe('always', () => {
+            it('adds blanks before, after, AND inside the body', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        function f()
+                            return 1
+                        end function
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
 
-                    x = 1
-                end for
-            `, `
-                for i = 0 to 10
-                    x = 1
-                end for
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        function f()
+
+                            return 1
+
+                        end function
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { function: 'always' } });
+            });
         });
 
-        it('removes blank lines at the start of a while loop', () => {
-            formatEqualTrim(`
-                while true
+        describe('object form', () => {
+            it('mixes per-construct policies', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "first"
+                        if x then
+                            a()
+                        end if
+                        while y
+                            b()
+                        end while
+                        print "last"
+                    end sub
+                `, `
+                    sub m()
+                        print "first"
+                        if x then
+                            a()
+                        end if
 
-                    x = 1
-                end while
-            `, `
-                while true
-                    x = 1
-                end while
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        while y
+                            b()
+                        end while
+
+                        print "last"
+                    end sub
+                `, { blockSpacing: { if: 'after', while: 'between' } });
+            });
+
+            it('falls back to default for unspecified constructs', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        for i = 0 to 3
+                            p(i)
+                        end for
+                        while x
+                            q()
+                        end while
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        for i = 0 to 3
+                            p(i)
+                        end for
+
+                        while x
+                            q()
+                        end while
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { default: 'between' } });
+            });
+
+            it('respects original for omitted constructs when default is also omitted', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        if x then
+                            a()
+                        end if
+                        print "after"
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
         });
 
-        it('removes multiple blank lines at the start of a block', () => {
-            formatEqualTrim(`
-                function a()
+        describe('string form', () => {
+            it('always applies to every supported construct', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        if x then
+                            a()
+                        end if
+                        for i = 0 to 3
+                            p(i)
+                        end for
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
 
+                        if x then
+                            a()
+                        end if
 
+                        for i = 0 to 3
+                            p(i)
+                        end for
 
-                    x = 1
-                end function
-            `, `
-                function a()
-                    x = 1
-                end function
-            `, { removeBlankLinesAtStartOfBlock: true });
+                        print "after"
+                    end sub
+                `, { blockSpacing: 'between' });
+            });
         });
 
-        it('does not remove blank lines when set to false', () => {
-            formatEqualTrim(`
-                function a()
+        describe('original', () => {
+            it('leaves spacing alone with original mode', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `, undefined, { blockSpacing: 'original' });
+            });
 
-                    x = 1
-                end function
-            `, undefined, { removeBlankLinesAtStartOfBlock: false });
+            it('leaves spacing alone when omitted', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `);
+            });
         });
 
-        it('does not remove blank lines in the middle of a block', () => {
-            formatEqualTrim(`
-                function a()
-                    x = 1
+        describe('parent boundary detection', () => {
+            it('does not insert blank when block is first child of a namespace', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub m()
+                            a()
+                        end sub
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
 
-                    y = 2
-                end function
-            `, undefined, { removeBlankLinesAtStartOfBlock: true });
+            it('does not insert blank when block is last child of a namespace', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x()
+                        end sub
+
+                        sub b()
+                            y()
+                        end sub
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
+
+            it('does not insert blank when nested for is the only thing in its parent if', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, undefined, { blockSpacing: { for: 'between' } });
+            });
+
+            it('does not insert blank when nested for is the last thing in its parent if', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, { blockSpacing: { for: 'between' } });
+            });
+
+            it('does not insert blank when nested if is the only thing in a class method', () => {
+                formatEqualTrim(`
+                    class Foo
+                        sub m()
+                            if x then
+                                a()
+                            end if
+                        end sub
+                    end class
+                `, undefined, { blockSpacing: { if: 'between' } });
+            });
+
+            it('handles nested namespaces correctly', () => {
+                formatEqualTrim(`
+                    namespace a
+                        namespace b
+                            sub deeplyNested()
+                                x = 1
+                            end sub
+                        end namespace
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
+
+            it('does not apply spacing to anonymous sub callbacks', () => {
+                formatEqualTrim(`
+                    function loadData()
+                        return promise.chain(load).then(sub(result)
+                            handle(result)
+                        end sub).catch(sub(err)
+                            throw err
+                        end sub).finally(sub()
+                            cleanup()
+                        end sub).toPromise()
+                    end function
+                `, `
+                    function loadData()
+
+                        return promise.chain(load).then(sub(result)
+                            handle(result)
+                        end sub).catch(sub(err)
+                            throw err
+                        end sub).finally(sub()
+                            cleanup()
+                        end sub).toPromise()
+
+                    end function
+                `, { blockSpacing: { sub: 'always', function: 'always' } });
+            });
+
+            it('does not apply spacing to anonymous function expressions assigned to a variable', () => {
+                formatEqualTrim(`
+                    sub m()
+                        x = function()
+                            return 1
+                        end function
+                    end sub
+                `, undefined, { blockSpacing: { function: 'always' } });
+            });
+
+            it('inserts blanks between siblings inside a namespace but not at boundaries', () => {
+                formatEqualTrim(`
+                    namespace c
+                        sub first()
+                            x = 1
+                        end sub
+                        namespace inner
+                            sub middle()
+                                x = 1
+                            end sub
+                        end namespace
+                        sub last()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace c
+                        sub first()
+                            x = 1
+                        end sub
+
+                        namespace inner
+                            sub middle()
+                                x = 1
+                            end sub
+                        end namespace
+
+                        sub last()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: 'between' });
+            });
         });
     });
 

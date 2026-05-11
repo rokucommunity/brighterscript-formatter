@@ -15,7 +15,7 @@ import { MaxConsecutiveEmptyLinesFormatter } from './formatters/MaxConsecutiveEm
 import { TrailingCommaFormatter } from './formatters/TrailingCommaFormatter';
 import { SingleLineIfFormatter } from './formatters/SingleLineIfFormatter';
 import { InlineArrayAndObjectFormatter } from './formatters/InlineArrayAndObjectFormatter';
-import { RemoveBlankLinesAtStartOfBlockFormatter } from './formatters/RemoveBlankLinesAtStartOfBlockFormatter';
+import { BlockSpacingFormatter } from './formatters/BlockSpacingFormatter';
 import { AlignAssignmentsFormatter } from './formatters/AlignAssignmentsFormatter';
 
 export class Formatter {
@@ -51,7 +51,7 @@ export class Formatter {
         trailingComma: new TrailingCommaFormatter(),
         singleLineIf: new SingleLineIfFormatter(),
         inlineArrayAndObject: new InlineArrayAndObjectFormatter(),
-        removeBlankLinesAtStartOfBlock: new RemoveBlankLinesAtStartOfBlockFormatter(),
+        blockSpacing: new BlockSpacingFormatter(),
         alignAssignments: new AlignAssignmentsFormatter()
     };
 
@@ -183,8 +183,8 @@ export class Formatter {
             tokens = this.formatters.maxConsecutiveEmptyLines.format(tokens, options);
         }
 
-        if (options.removeBlankLinesAtStartOfBlock) {
-            tokens = this.formatters.removeBlankLinesAtStartOfBlock.format(tokens, options);
+        if (options.blockSpacing && options.blockSpacing !== 'original') {
+            tokens = this.formatters.blockSpacing.format(tokens, options);
         }
 
         // Runs after IndentFormatter so that indentation whitespace is already in place
