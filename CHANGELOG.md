@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.25](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.24...v1.7.25) - 2026-05-11
+### Changed
+ - upgrade to [brighterscript@0.72.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0721---2026-05-11). Notable changes since 0.72.0:
+     - feat: allow line continuation in .brs files when minFirmwareVersion >= 15.3 ([#1693](https://github.com/rokucommunity/brighterscript/pull/1693))
+
+
+
 ## [1.7.24](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.23...v1.7.24) - 2026-04-30
 ### Changed
  - upgrade to [brighterscript@0.72.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0720---2026-04-30). Notable changes since 0.71.1:
