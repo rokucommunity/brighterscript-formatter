@@ -2939,6 +2939,26 @@ end sub`;
                 `, undefined, { inlineArrayAndObject: 'fitsLine', maxLineLength: 24 });
             });
 
+            it('counts tab characters as indentSpaceCount columns when computing visual width', () => {
+                // Tab indented source — visualLineLengthBeforeIndex expands tabs.
+                formatEqual(
+                    'if x then\n\tif y then\n\t\tz = [\n\t\t\t1,\n\t\t\t2,\n\t\t\t3\n\t\t]\n\tend if\nend if\n',
+                    'if x then\n\tif y then\n\t\tz = [1, 2, 3]\n\tend if\nend if\n',
+                    { inlineArrayAndObject: 'fitsLine', maxLineLength: 30, indentStyle: 'tabs', indentSpaceCount: 4 }
+                );
+            });
+
+            it('uses indentSpaceCount when computing visual indent width', () => {
+                // With indentSpaceCount=2, indent contribution per nesting is 2 chars.
+                // The collapsed line `  x = [1, 2, 3]` at 2 levels deep = 4 + 13 = 17 chars,
+                // which fits the budget of 30.
+                formatEqual(
+                    'if x then\n  if y then\n    x = [\n      1,\n      2,\n      3\n    ]\n  end if\nend if\n',
+                    'if x then\n  if y then\n    x = [1, 2, 3]\n  end if\nend if\n',
+                    { inlineArrayAndObject: 'fitsLine', maxLineLength: 30, indentSpaceCount: 2 }
+                );
+            });
+
             it('falls back to always-collapse when maxLineLength is unset', () => {
                 formatEqualTrim(`
                     x = [
@@ -3000,6 +3020,36 @@ end sub`;
                 formatEqualTrim(`
                     x = { a: 1 }
                 `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands an outer array containing a single-line nested array (recursively)', () => {
+                formatEqualTrim(`
+                    x = [1, [2, 3], 4]
+                `, `
+                    x = [
+                        1,
+                        [
+                            2,
+                            3
+                        ],
+                        4
+                    ]
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands an outer AA containing a single-line nested AA (recursively)', () => {
+                formatEqualTrim(`
+                    x = { a: 1, inner: { b: 2, c: 3 }, d: 4 }
+                `, `
+                    x = {
+                        a: 1,
+                        inner: {
+                            b: 2,
+                            c: 3
+                        },
+                        d: 4
+                    }
+                `, { inlineArrayAndObject: 'never' });
             });
 
             it('leaves an already-multi-line array alone', () => {
@@ -3481,6 +3531,32 @@ end sub`;
                         end sub
                     end class
                 `, undefined, { blockSpacing: { if: 'between' } });
+            });
+
+            it('applies try construct rule from object form', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        try
+                            a()
+                        catch e
+                            b(e)
+                        end try
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        try
+                            a()
+                        catch e
+                            b(e)
+                        end try
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { try: 'between' } });
             });
 
             it('handles nested namespaces correctly', () => {

@@ -47,7 +47,7 @@ export class InlineArrayAndObjectFormatter {
                 continue;
             }
             if (mode === 'fitsLine' && options.maxLineLength !== undefined) {
-                const tabWidth = options.indentSpaceCount ?? 4;
+                const tabWidth = options.indentSpaceCount!;
                 const indent = visualLineLengthBeforeIndex(tokens, i, tabWidth);
                 const inlinedLength = this.estimateInlinedLength(tokens, i + 1, closeIndex);
                 if (indent + inlinedLength > options.maxLineLength) {
@@ -137,9 +137,7 @@ export class InlineArrayAndObjectFormatter {
             if (t.kind === TokenKind.LeftCurlyBrace || t.kind === TokenKind.LeftSquareBracket) {
                 depth++;
             } else if (t.kind === TokenKind.RightCurlyBrace || t.kind === TokenKind.RightSquareBracket) {
-                if (depth > 0) {
-                    depth--;
-                }
+                depth--;
             }
             if (t.kind !== TokenKind.Whitespace && t.kind !== TokenKind.Newline) {
                 prevNonWs = t;
@@ -157,9 +155,6 @@ export class InlineArrayAndObjectFormatter {
                 continue;
             }
             const closerIdx = tokens.indexOf(closer);
-            if (closerIdx === -1) {
-                continue;
-            }
             if (rangeContainsNewline(tokens, i + 1, closerIdx)) {
                 return false;
             }
@@ -178,10 +173,9 @@ export class InlineArrayAndObjectFormatter {
     private collapseRange(tokens: Token[], openerIdx: number, closeKind: TokenKind): void {
         const opener = tokens[openerIdx];
         // closeIndex is recomputed each iteration since tokens.length shrinks during splices.
-        const closingToken = util.getClosingToken(tokens, openerIdx, opener.kind, closeKind);
-        if (!closingToken) {
-            return;
-        }
+        // collapseAll already filtered for matching brackets, so the closingToken always
+        // resolves here.
+        const closingToken = util.getClosingToken(tokens, openerIdx, opener.kind, closeKind)!;
         let closeIndex = tokens.indexOf(closingToken);
         let j = openerIdx + 1;
         while (j < closeIndex) {
@@ -189,14 +183,12 @@ export class InlineArrayAndObjectFormatter {
                 j++;
                 continue;
             }
-            // Find previous meaningful token (skipping whitespace) within this literal
-            let prevIdx = j - 1;
-            while (prevIdx > openerIdx && tokens[prevIdx].kind === TokenKind.Whitespace) {
-                prevIdx--;
-            }
+            // Find previous meaningful token within this literal. IndentFormatter strips
+            // trailing whitespace before \n, so we don't need to skip ws here.
+            const prevIdx = j - 1;
             const prev = tokens[prevIdx];
             const prevIsOpener = prevIdx === openerIdx;
-            const prevIsComma = prev?.kind === TokenKind.Comma;
+            const prevIsComma = prev.kind === TokenKind.Comma;
 
             // Find next meaningful token (skipping ws/newlines) up to closer
             let nextIdx = j + 1;
@@ -234,10 +226,8 @@ export class InlineArrayAndObjectFormatter {
      * closer. IndentFormatter restores correct indentation on the next pass.
      */
     private expandRange(tokens: Token[], openerIdx: number, closingToken: Token): void {
+        // Token references stay valid across splices.
         const closeIdx = tokens.indexOf(closingToken);
-        if (closeIdx === -1) {
-            return;
-        }
         // Collect comma indices within the top level of the literal (depth 0 relative to opener)
         const commaPositions: number[] = [];
         let depth = 0;
@@ -254,26 +244,22 @@ export class InlineArrayAndObjectFormatter {
 
         // Insert newline before the closer, after each top-level comma, and after the opener.
         // Process in descending index order to keep earlier indices stable.
-        // 1. Newline before the closer (replace any preceding ws with a single newline).
+        // 1. Newline before the closer.
         const beforeCloser = closeIdx;
-        if (tokens[beforeCloser - 1]?.kind === TokenKind.Whitespace) {
+        if (tokens[beforeCloser - 1].kind === TokenKind.Whitespace) {
             tokens.splice(beforeCloser - 1, 1, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
         } else {
             tokens.splice(beforeCloser, 0, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
         }
-        // 2. Newline after each comma (replace following ws with newline).
+        // 2. Newline after each comma. The lexer inserts ws between comma and the next
+        // item, so we always replace that ws with a newline.
         for (let n = commaPositions.length - 1; n >= 0; n--) {
-            const commaIdx = commaPositions[n];
-            const nextIdx = commaIdx + 1;
-            if (tokens[nextIdx]?.kind === TokenKind.Whitespace) {
-                tokens.splice(nextIdx, 1, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
-            } else {
-                tokens.splice(nextIdx, 0, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
-            }
+            const nextIdx = commaPositions[n] + 1;
+            tokens.splice(nextIdx, 1, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
         }
-        // 3. Newline after the opener (replace following ws with newline).
+        // 3. Newline after the opener.
         const afterOpener = openerIdx + 1;
-        if (tokens[afterOpener]?.kind === TokenKind.Whitespace) {
+        if (tokens[afterOpener].kind === TokenKind.Whitespace) {
             tokens.splice(afterOpener, 1, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);
         } else {
             tokens.splice(afterOpener, 0, { kind: TokenKind.Newline, text: '\n' } as TokenWithStartIndex);

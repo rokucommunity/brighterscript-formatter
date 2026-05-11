@@ -61,8 +61,9 @@ export class SingleLineIfFormatter {
         if (stmt.isInline === true) {
             return false;
         }
-        let current: IfStatement | undefined = stmt;
-        while (current) {
+        let current: IfStatement = stmt;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
             if (!this.isSimpleSingleLineBody(current.thenBranch)) {
                 return false;
             }
@@ -75,14 +76,13 @@ export class SingleLineIfFormatter {
                     return false;
                 }
                 current = elseBranch;
-            } else {
-                if (mode === 'inlineNoElse') {
-                    return false;
-                }
-                return this.isSimpleSingleLineBody(elseBranch);
+                continue;
             }
+            if (mode === 'inlineNoElse') {
+                return false;
+            }
+            return this.isSimpleSingleLineBody(elseBranch);
         }
-        return true;
     }
 
     /**
@@ -198,11 +198,8 @@ export class SingleLineIfFormatter {
         //    so re-resolving via indexOf each time keeps the logic order-independent.
         for (const token of breakBefore) {
             const idx = tokens.indexOf(token);
-            if (idx <= 0) {
-                continue;
-            }
-            const prev = tokens[idx - 1];
-            if (prev?.kind === TokenKind.Whitespace) {
+            const prev = tokens[idx - 1]!;
+            if (prev.kind === TokenKind.Whitespace) {
                 prev.text = '\n';
                 prev.kind = TokenKind.Newline;
             } else {
@@ -211,11 +208,8 @@ export class SingleLineIfFormatter {
         }
         for (const token of breakAfter) {
             const idx = tokens.indexOf(token);
-            if (idx === -1) {
-                continue;
-            }
-            const next = tokens[idx + 1];
-            if (next?.kind === TokenKind.Whitespace) {
+            const next = tokens[idx + 1]!;
+            if (next.kind === TokenKind.Whitespace) {
                 next.text = '\n';
                 next.kind = TokenKind.Newline;
             } else {
@@ -265,11 +259,9 @@ export class SingleLineIfFormatter {
             if (isIfStatement(elseBranch)) {
                 current = elseBranch;
             } else {
-                // plain `else` body — the `else` token is also an opener for this body
-                if (!current.tokens.else) {
-                    return;
-                }
-                openers.push(current.tokens.else);
+                // plain `else` body — the `else` token is also an opener for this body.
+                // (The AST always provides an `else` token when elseBranch is set.)
+                openers.push(current.tokens.else!);
                 break;
             }
         }
@@ -300,24 +292,18 @@ export class SingleLineIfFormatter {
         }
 
         // Finally remove the `end if` token. Any `\n` that previously preceded it was
-        // already removed by collapseBeforeCloser above.
-        const endIfIdx = tokens.indexOf(endIfToken);
-        if (endIfIdx !== -1) {
-            tokens.splice(endIfIdx, 1);
-        }
+        // already removed by collapseBeforeCloser above. The token is guaranteed to be
+        // present because of the pre-mutation validation pass.
+        tokens.splice(tokens.indexOf(endIfToken), 1);
     }
 
     private collapseBeforeCloser(tokens: Token[], closer: Token, removeNewline: boolean): void {
         const closerIdx = tokens.indexOf(closer);
-        if (closerIdx === -1) {
-            return;
-        }
+        // collapse() validates all tokens are present before mutating anything, and a
+        // multi-line if always has \n before its closers.
         let walkIdx = closerIdx - 1;
         while (walkIdx >= 0 && tokens[walkIdx].kind === TokenKind.Whitespace) {
             walkIdx--;
-        }
-        if (walkIdx < 0 || tokens[walkIdx].kind !== TokenKind.Newline) {
-            return;
         }
         const newlineIdx = walkIdx;
         const wsCount = closerIdx - newlineIdx - 1;
@@ -333,15 +319,11 @@ export class SingleLineIfFormatter {
 
     private collapseAfterOpener(tokens: Token[], opener: Token): void {
         const openerIdx = tokens.indexOf(opener);
-        if (openerIdx === -1) {
-            return;
-        }
+        // collapse() validates all tokens are present before mutating anything, and a
+        // multi-line if always has \n after its openers.
         let walkIdx = openerIdx + 1;
         while (walkIdx < tokens.length && tokens[walkIdx].kind === TokenKind.Whitespace) {
             walkIdx++;
-        }
-        if (walkIdx >= tokens.length || tokens[walkIdx].kind !== TokenKind.Newline) {
-            return;
         }
         const newlineIdx = walkIdx;
         // Remove indent whitespace after the newline

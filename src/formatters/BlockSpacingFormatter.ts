@@ -211,10 +211,8 @@ export class BlockSpacingFormatter {
             // Block is at the very start of the file — nothing to insert.
             return;
         }
+        // logicalLineStart's line-walk guarantees the preceding token is a Newline.
         const previousNewlineIdx = logicalLineStart - 1;
-        if (tokens[previousNewlineIdx].kind !== TokenKind.Newline) {
-            return;
-        }
         // Count consecutive Newlines before previousNewlineIdx (each extra is a blank line).
         let blankCount = 0;
         let probe = previousNewlineIdx - 1;

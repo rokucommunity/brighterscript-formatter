@@ -92,6 +92,21 @@ describe('SingleLineIfFormatter', () => {
             expect(tokens[1].kind).to.equal(TokenKind.Newline);
         });
 
+        it('inserts a Newline before else when prev is not Whitespace', () => {
+            // Synthetic chain: parent if with else where the else has no preceding ws.
+            // Hits the `else` branch of the breakBefore prev?.kind check.
+            const thenToken = { kind: TokenKind.Then, text: 'then' };
+            const elseToken = { kind: TokenKind.Else, text: 'else' };
+            const tokens = [thenToken, { kind: TokenKind.Identifier, text: 'a' }, elseToken, { kind: TokenKind.Identifier, text: 'b' }, { kind: TokenKind.Eof, text: '' }] as any[];
+            const stmt = {
+                tokens: { then: thenToken, else: elseToken },
+                elseBranch: { constructor: { name: 'Block' } }
+            } as any;
+            (formatter as any).expand(tokens, stmt, {} as any);
+            // The break-before insert should add a Newline at position 2 (before else).
+            expect(tokens.some((t: any) => t.kind === TokenKind.Newline)).to.be.true;
+        });
+
         it('uses "endif" text when compositeKeywords is combine', () => {
             // Covers the ternary true branch: compositeKeywords === 'combine' → 'endif'
             const thenToken = { kind: TokenKind.Then, text: 'then' };
