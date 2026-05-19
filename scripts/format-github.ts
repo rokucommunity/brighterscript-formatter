@@ -4,11 +4,13 @@
  * It is then the responsibility of the person running this script to review the files and
  * see if anything strange has been changed during the format process.
  */
-import { exec } from 'child-process-promise';
 import * as fsExtra from 'fs-extra';
 import * as glob from 'glob-promise';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { exec as execCb, execSync } from 'child_process';
+import { promisify } from 'util';
+
+const exec = promisify(execCb);
 
 import { Formatter } from '../src/Formatter';
 
