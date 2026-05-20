@@ -22,6 +22,7 @@ jobs:
     needs: audit
     if: always()
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/')
         run: if [ "${{ needs.audit.result }}" = "failure" ]; then exit 1; fi
