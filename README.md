@@ -3,7 +3,7 @@
 A code formatter for BrightScript and [BrighterScript](https://github.com/RokuCommunity/brighterscript).
 
 [![build status](https://img.shields.io/github/actions/workflow/status/rokucommunity/brighterscript-formatter/build.yml?branch=master&logo=github)](https://github.com/rokucommunity/brighterscript-formatter/actions?query=branch%3Amaster+workflow%3Abuild)
-[![Security Audit](https://img.shields.io/github/actions/workflow/status/rokucommunity/brighterscript-formatter/security-audit.yml?branch=master&logo=github)](https://github.com/rokucommunity/brighterscript-formatter/actions/workflows/security-audit.yml)
+[![Security Audit](https://img.shields.io/github/actions/workflow/status/rokucommunity/brighterscript-formatter/security-audit.yml?branch=master&logo=github&label=Security%20Audit)](https://github.com/rokucommunity/brighterscript-formatter/actions/workflows/security-audit.yml)
 [![coverage status](https://img.shields.io/coveralls/github/rokucommunity/brighterscript-formatter?logo=coveralls)](https://coveralls.io/github/rokucommunity/brighterscript-formatter?branch=master)
 [![monthly downloads](https://img.shields.io/npm/dm/brighterscript-formatter.svg?sanitize=true&logo=npm&logoColor=)](https://npmcharts.com/compare/brighterscript-formatter?minimal=true)
 [![npm version](https://img.shields.io/npm/v/brighterscript-formatter.svg?logo=npm)](https://www.npmjs.com/package/brighterscript-formatter)
