@@ -155,3 +155,7 @@ var result = formatter.formatWithSourceMap(unformattedFileContents);
 var formattedFileContents = result.code;
 var sourceMap = result.map;
 ```
+
+## Accepted security advisories
+
+Dependencies flagged by `npm audit` that we have reviewed and chosen not to upgrade are tracked in [audit-ci.jsonc](https://github.com/RokuCommunity/brighterscript-formatter/blob/master/audit-ci.jsonc). Each entry includes the advisory ID, the date it was added, and the reason it does not apply to this project.
