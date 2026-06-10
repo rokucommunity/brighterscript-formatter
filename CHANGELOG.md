@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.27](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.26...v1.7.27) - 2026-06-10
+### Added
+ - Add required Security Audit gate job in workflow ([#136](https://github.com/rokucommunity/brighterscript-formatter/pull/136))
+### Changed
+ - Update minimum audit threshold ([#138](https://github.com/rokucommunity/brighterscript-formatter/pull/138))
+ - Accept GHSA-w5hq-g745-h8pq (uuid <11.1.1) advisory ([#137](https://github.com/rokucommunity/brighterscript-formatter/pull/137))
+ - Security Audit workflow ([#135](https://github.com/rokucommunity/brighterscript-formatter/pull/135))
+ - upgrade to [brighterscript@0.72.5](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0725---2026-06-10). Notable changes since 0.72.2:
+     - Add parameter name inlay hints ([#1703](https://github.com/rokucommunity/brighterscript/pull/1703))
+     - Update minimum audit threshold ([#1723](https://github.com/rokucommunity/brighterscript/pull/1723))
+     - Accept GHSA-w5hq-g745-h8pq (uuid <11.1.1) advisory ([#1722](https://github.com/rokucommunity/brighterscript/pull/1722))
+     - Add security-audit-required gate job to security-audit workflow ([#1720](https://github.com/rokucommunity/brighterscript/pull/1720))
+     - Security Audit workflow ([#1718](https://github.com/rokucommunity/brighterscript/pull/1718))
+
+
+
 ## [1.7.26](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.25...v1.7.26) - 2026-05-19
 ### Changed
  - Security enhancements ([#133](https://github.com/rokucommunity/brighterscript-formatter/pull/133))
