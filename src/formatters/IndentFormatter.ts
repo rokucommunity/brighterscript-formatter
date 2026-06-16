@@ -166,7 +166,13 @@ export class IndentFormatter {
                 parentIndentTokenKinds.push(token.kind);
 
                 //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
-                const numUnmatchedOpenTokens = this.getNumberOfUnmatchedOpenTokensOnOneLine(tokens, tokens.indexOf(token));
+                let numUnmatchedOpenTokens = this.getNumberOfUnmatchedOpenTokensOnOneLine(tokens, tokens.indexOf(token));
+                if (numUnmatchedOpenTokens > 0 && CallableKeywordTokenKinds.includes(token.kind) &&
+                    nextNonWhitespaceToken?.kind === TokenKind.LeftParen &&
+                    this.isStartOfOpenFunctionDeclarationParamList(lineTokens, i + 1)) {
+                    // this is a function declaration "function(", do not skip the next token
+                    numUnmatchedOpenTokens--;
+                }
                 if (numUnmatchedOpenTokens > 1) {
                     //skip the next token for each unmatched open token on the same line
                     i += (numUnmatchedOpenTokens - 1);
@@ -195,8 +201,6 @@ export class IndentFormatter {
                         TokenKind.RightParen
                     );
                     if (this.multiLineFuncDeclarationOpeners.includes(opener!)) {
-                        // finish function declaration at same level as function opener
-                        currentLineOffset--;
                         // indent function body
                         nextLineOffset++;
                         this.multiLineFuncDeclarationOpeners = this.multiLineFuncDeclarationOpeners.filter(x => x !== opener);
@@ -206,7 +210,7 @@ export class IndentFormatter {
                 //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
                 const numUnmatchedCloseTokens = this.getNumberOfUnmatchedCloseTokensOnOneLine(tokens, tokens.indexOf(token));
                 if (numUnmatchedCloseTokens > 1) {
-                    //skip the next token for each unmatched open token on the same line
+                    //skip the next token for each unmatched close token on the same line
                     i += (numUnmatchedCloseTokens - 1);
                 }
 

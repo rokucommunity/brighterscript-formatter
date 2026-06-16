@@ -1945,6 +1945,93 @@ end function`;
         it('does not modify single-line function call', () => {
             formatEqual('myPoster = createObject("roSGNode", "Poster")');
         });
+
+        it('indents multiline callfunc calls', () => {
+            formatEqualTrim(`
+                myPoster = someNode@.someCallFunc(
+                    1,
+                    2,
+                    { data: "bob" }
+                )
+            `);
+        });
+
+        it('fixes indents in multiline callfunc calls', () => {
+            formatEqualTrim(`
+                myPoster = someNode@.someCallFunc(
+                         1,
+                2,
+                   {data: "bob"}
+                )
+            `, `
+                myPoster = someNode@.someCallFunc(
+                    1,
+                    2,
+                    { data: "bob" }
+                )
+            `);
+        });
+
+        it('indents in multiline function declarations in aa literals', () => {
+            formatEqualTrim(`
+                {
+                    func: function(
+                        param1 as function
+                    ) as string
+                        return param1(
+                            "hello"
+                        )
+                    end function
+                }
+                
+            `);
+        });
+
+        it('indents in multiline function calls with aa literals', () => {
+            formatEqualTrim(`
+                someFunc(
+                    1,
+                    { data: "bob" },
+                    {
+                        name: "multiLineAA",
+                        value: 22
+                    },
+                    {
+                        func: sub()
+                            print "hello"
+                        end sub,
+                        func2: function(
+                            param1 as function
+                        ) as string
+                            return param1(
+                                "hello"
+                            )
+                        end function
+                    }
+                )
+            `);
+        });
+
+        it('indents function calls with multiple args per line ', () => {
+            formatEqualTrim(`
+                someFunc(1, { data: "bob" }, {
+                        name: "multiLineAA",
+                        value: 22
+                    }, "hello", {
+                        func: sub()
+                            print "hello"
+                        end sub,
+                        func2: function(
+                            param1 as function
+                        ) as string
+                            return param1(
+                                "hello"
+                            )
+                        end function
+                    }
+                )
+            `);
+        });
     });
 
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
