@@ -1875,6 +1875,14 @@ end function`;
             `);
         });
 
+        it('does not double indent when sub passed to function', () => {
+            formatEqualTrim(`
+                callSomeFuncWithSubParam(sub()
+                    print "hello"
+                end sub)
+            `);
+        });
+
         it('indents function parameters when already split across lines', () => {
             formatEqualTrim(`
                 function foo(
@@ -1890,6 +1898,24 @@ end function`;
                     param3 as string
                 ) as string
                 end function
+            `);
+        });
+
+        it('indents sub parameters when already split across lines', () => {
+            formatEqualTrim(`
+                sub foo(
+                param1 as string,
+                param2,
+                param3 as string
+                ) as string
+                end sub
+            `, `
+                sub foo(
+                    param1 as string,
+                    param2,
+                    param3 as string
+                ) as string
+                end sub
             `);
         });
 
@@ -1984,6 +2010,29 @@ end function`;
                     end function
                 }
                 
+            `);
+        });
+
+        it('allows indents of grouping expressions', () => {
+            formatEqualTrim(`
+                a = b * (
+                    3 - 2
+                )
+            `);
+        });
+
+        it('allows grouping expressions in function calls', () => {
+            formatEqualTrim(`
+                someFunc(
+                    (4 + 7) * 2
+                )
+            `);
+            formatEqualTrim(`
+                someFunc(
+                    (
+                        4 + 7
+                    ) * 2
+                )
             `);
         });
 

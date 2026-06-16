@@ -168,7 +168,6 @@ export class IndentFormatter {
                 //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
                 let numUnmatchedOpenTokens = this.getNumberOfUnmatchedOpenTokensOnOneLine(tokens, tokens.indexOf(token));
                 if (numUnmatchedOpenTokens > 0 && CallableKeywordTokenKinds.includes(token.kind) &&
-                    nextNonWhitespaceToken?.kind === TokenKind.LeftParen &&
                     this.isStartOfOpenFunctionDeclarationParamList(lineTokens, i + 1)) {
                     // this is a function declaration "function(", do not skip the next token
                     numUnmatchedOpenTokens--;
@@ -238,12 +237,8 @@ export class IndentFormatter {
         let targetTokens = [currentToken];
 
         while (typeof nextNonWhitespaceTokenIndex === 'number') {
-
             const nextNonWhitespaceToken = tokens[nextNonWhitespaceTokenIndex];
 
-            if (!nextNonWhitespaceToken) {
-                break;
-            }
             const isNextTokenAnOpenToken = targetTokenKinds.includes(nextNonWhitespaceToken.kind);
 
             if (isNextTokenAnOpenToken && currentToken.range.start.line === nextNonWhitespaceToken.range.start.line) {
@@ -282,7 +277,7 @@ export class IndentFormatter {
     }
 
     private getMatchingOpeningTokens(allTokens: Token[], closeTokens: Token[], currentIndex: number): (Token | null)[] {
-        const closingTokens: (Token | null)[] = [];
+        const openingTokens: (Token | null)[] = [];
         for (let closeToken of closeTokens) {
             const expectedClosingTokenKinds = this.getExpectedOpeningTokens(closeToken);
             if (expectedClosingTokenKinds.length < 1) {
@@ -290,12 +285,12 @@ export class IndentFormatter {
             }
             const openingToken = this.getOpeningToken(allTokens, allTokens.indexOf(closeToken), expectedClosingTokenKinds, closeToken.kind);
             if (openingToken) {
-                closingTokens.push(openingToken);
+                openingTokens.push(openingToken);
             } else {
-                closingTokens.push(null);
+                openingTokens.push(null);
             }
         }
-        return closingTokens;
+        return openingTokens;
     }
 
     private getNumberOfUnmatchedOpenTokensOnOneLine(tokens: Token[], currentIndex: number): number {
@@ -336,15 +331,15 @@ export class IndentFormatter {
      */
     private getExpectedOpeningTokens(closeToken: Token): TokenKind[] {
         if (closeToken.kind === TokenKind.RightCurlyBrace) {
-            return [TokenKind.RightCurlyBrace];
+            return [TokenKind.LeftCurlyBrace];
         } else if (closeToken.kind === TokenKind.RightSquareBracket) {
             return [TokenKind.LeftSquareBracket, TokenKind.QuestionLeftSquare];
         } else if (closeToken.kind === TokenKind.RightParen) {
             return [TokenKind.LeftParen, TokenKind.QuestionLeftParen];
-        } else if (closeToken.kind === TokenKind.Sub) {
-            return [TokenKind.EndSub];
-        } else if (closeToken.kind === TokenKind.Function) {
-            return [TokenKind.EndFunction];
+        } else if (closeToken.kind === TokenKind.EndSub) {
+            return [TokenKind.Sub];
+        } else if (closeToken.kind === TokenKind.EndFunction) {
+            return [TokenKind.Function];
         }
         return [];
     }

@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { expectTokens, lex } from '../testHelpers.spec';
 import { IndentFormatter } from './IndentFormatter';
+import type { Token } from 'brighterscript';
+import { TokenKind } from 'brighterscript';
 
 describe('IndentFormatter', () => {
     let formatter: IndentFormatter;
@@ -75,6 +77,44 @@ describe('IndentFormatter', () => {
                 formatter['trimWhitespaceOnlyLines'](lex(` speak()`)),
                 [' ', 'speak', '(', ')']
             );
+        });
+    });
+
+    describe('getMatchingOpeningTokens', () => {
+        it('returns null for tokens with no expected opening tokens', () => {
+            const tokes = lex(`some random tokens`);
+            expect(
+                formatter['getMatchingOpeningTokens'](tokes, [tokes[0]], 0)
+            ).to.eql([]);
+        });
+    });
+
+    describe('getMatchingClosingTokens', () => {
+        it('returns null for tokens with no expected closing tokens', () => {
+            const tokes = lex(`some random tokens`);
+            expect(
+                formatter['getMatchingClosingTokens'](tokes, [tokes[0]], 0)
+            ).to.eql([]);
+        });
+    });
+
+    describe('getExpectedOpeningTokens', () => {
+        it('returns correct possible opening tokens', () => {
+            expect(
+                formatter['getExpectedOpeningTokens']({ kind: TokenKind.RightParen } as Token)
+            ).to.eql([TokenKind.LeftParen, TokenKind.QuestionLeftParen]);
+
+            expect(
+                formatter['getExpectedOpeningTokens']({ kind: TokenKind.RightSquareBracket } as Token)
+            ).to.eql([TokenKind.LeftSquareBracket, TokenKind.QuestionLeftSquare]);
+
+            expect(
+                formatter['getExpectedOpeningTokens']({ kind: TokenKind.EndSub } as Token)
+            ).to.eql([TokenKind.Sub]);
+
+            expect(
+                formatter['getExpectedOpeningTokens']({ kind: TokenKind.Identifier } as Token)
+            ).to.eql([]);
         });
     });
 });
