@@ -252,6 +252,17 @@ describe('Formatter', () => {
            `);
         });
 
+        it('handles wrapped anon function over multiple lines in ternary properly', () => {
+            formatEqualTrim(`
+                sub main()
+                    a = true ? (sub()
+                        print hello
+                    end sub) : true
+                    print a
+                end sub
+           `);
+        });
+
         it('handles type statements with typed function types', () => {
             formatEqualTrim(`
                 type myFunc = function(a as string) as integer
@@ -1718,6 +1729,16 @@ end sub`;
     });
 
     describe('indentStyle', () => {
+        it('handles anon functions as function args', () => {
+            formatEqual(undent`
+                sub main()
+                    doSomething(sub()
+                        print 1
+                    end sub)
+                end sub
+            `);
+        });
+
         it('ignores methods with the name `catch` when contained within a function using a custom param type', () => {
             formatEqual(undent`
                 sub main()
@@ -1843,15 +1864,95 @@ end function`;
         });
     });
 
+    describe('multiline function parameters and calls', () => {
+        it('does not double indent [{...\\n...}]', () => {
+            formatEqualTrim(`
+                sub test()
+                    foo([{
+                        name: "bob"
+                    }])
+                end sub
+            `);
+        });
+
+        it('indents function parameters when already split across lines', () => {
+            formatEqualTrim(`
+                function foo(
+                param1 as string,
+                param2,
+                param3 as string
+                ) as string
+                end function
+            `, `
+                function foo(
+                    param1 as string,
+                    param2,
+                    param3 as string
+                ) as string
+                end function
+            `);
+        });
+
+        it('indents function parameters when already split across lines with function body', () => {
+            formatEqualTrim(`
+                function foo(
+                param1 as    string,
+                     param2  as       integer,
+                param3  as    string
+                )      as string
+                        print "hello"
+                return param1 + param2.toStr() + param3
+                end function
+            `, `
+                function foo(
+                    param1 as string,
+                    param2 as integer,
+                    param3 as string
+                ) as string
+                    print "hello"
+                    return param1 + param2.toStr() + param3
+                end function
+            `);
+        });
+
+        it('indents multiline function calls', () => {
+            formatEqualTrim(`
+                myPoster = createObject(
+                    "roSGNode",
+                    "Poster"
+                )
+            `);
+        });
+
+        it('fixes indents in multiline function calls', () => {
+            formatEqualTrim(`
+                myPoster = createObject(
+                         "roSGNode",
+                "Poster"
+                )
+            `, `
+                myPoster = createObject(
+                    "roSGNode",
+                    "Poster"
+                )
+            `);
+        });
+
+        it('does not modify single-line function declarations', () => {
+            formatEqual('function foo(param1 as string, param2, param3 as string) as string\nend function');
+        });
+
+        it('does not modify single-line function call', () => {
+            formatEqual('myPoster = createObject("roSGNode", "Poster")');
+        });
+    });
+
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
         expected = expected ?? incoming;
         let formatted = formatter.format(incoming, options);
         expect(formatted).to.equal(expected);
     }
 
-    /**
-     * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
-     */
     function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
         let sources = [
             incoming,
@@ -1860,22 +1961,22 @@ end function`;
         for (let i = 0; i < sources.length; i++) {
             let lines = sources[i].split('\n');
             //throw out leading newlines
-            while (lines[0].length === 0) {
+            while (lines.length > 0 && lines[0].length === 0) {
                 lines.splice(0, 1);
             }
             let trimStartIndex = null as number | null;
             for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
                 //if we don't have a starting trim count, compute it
-                if (!trimStartIndex) {
+                if (trimStartIndex === null && lines[lineIndex].trim().length > 0) {
                     trimStartIndex = lines[lineIndex].length - lines[lineIndex].trim().length;
                 }
 
-                if (lines[lineIndex].length > 0) {
+                if (lines[lineIndex].length > 0 && trimStartIndex !== null) {
                     lines[lineIndex] = lines[lineIndex].substring(trimStartIndex);
                 }
             }
             //trim trailing newlines
-            while (lines[lines.length - 1].length === 0) {
+            while (lines.length > 0 && lines[lines.length - 1].length === 0) {
                 lines.splice(lines.length - 1);
             }
             sources[i] = lines.join('\n');
