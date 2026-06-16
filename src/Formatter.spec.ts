@@ -2040,6 +2040,9 @@ end function`;
         expect(formatted).to.equal(expected);
     }
 
+    /**
+      * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
+      */
     function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
         let sources = [
             incoming,
