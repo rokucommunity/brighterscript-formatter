@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.28](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.27...v1.7.28) - 2026-06-23
+### Changed
+ - Multi-line Function parameters ([#140](https://github.com/rokucommunity/brighterscript-formatter/pull/140))
+ - Bump form-data from 2.5.5 to 2.5.6 ([#141](https://github.com/rokucommunity/brighterscript-formatter/pull/141))
+
+
+
 ## [1.7.27](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.26...v1.7.27) - 2026-06-10
 ### Changed
  - chore: security fixes ([#138](https://github.com/rokucommunity/brighterscript-formatter/pull/138), [#137](https://github.com/rokucommunity/brighterscript-formatter/pull/137), [#135](https://github.com/rokucommunity/brighterscript-formatter/pull/135), [#136](https://github.com/rokucommunity/brighterscript-formatter/pull/136))
