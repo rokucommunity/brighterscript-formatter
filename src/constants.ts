@@ -87,6 +87,7 @@ export let IndentSpacerTokenKinds = [
     TokenKind.LeftCurlyBrace,
     TokenKind.LeftSquareBracket,
     TokenKind.QuestionLeftSquare,
+    TokenKind.LeftParen,
     TokenKind.While,
     TokenKind.HashIf,
     TokenKind.Class,
@@ -115,6 +116,7 @@ export let IgnoreIndentSpacerByParentTokenKind = new Map<TokenKind, TokenKind[]>
 export let OutdentSpacerTokenKinds = [
     TokenKind.RightCurlyBrace,
     TokenKind.RightSquareBracket,
+    TokenKind.RightParen,
     TokenKind.EndFunction,
     TokenKind.EndIf,
     TokenKind.EndSub,
@@ -216,3 +218,16 @@ export const ConditionalCompileTokenKinds = [
 export const CompositeKeywordStartingWords = ['end', 'exit', 'else', '#end', '#else'];
 
 export const AllowedClassIdentifierKinds = [TokenKind.Identifier, ...AllowedLocalIdentifiers];
+
+export const IndentGroupingTokenKinds = [
+    TokenKind.LeftCurlyBrace,
+    TokenKind.LeftSquareBracket,
+    TokenKind.QuestionLeftSquare,
+    TokenKind.LeftParen
+];
+
+export const OutdentGroupingTokenKinds = [
+    TokenKind.RightCurlyBrace,
+    TokenKind.RightSquareBracket,
+    TokenKind.RightParen
+];

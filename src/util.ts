@@ -51,13 +51,24 @@ export class Util {
         if (index < 0) {
             return;
         }
+        const foundIndex = this.getNextNonWhitespaceTokenIndex(tokens, index, stopAtNewLine);
+        if (foundIndex === undefined) {
+            return;
+        }
+        return tokens[foundIndex];
+    }
+
+    public getNextNonWhitespaceTokenIndex(tokens: Token[], index: number, stopAtNewLine = false) {
+        if (index < 0) {
+            return;
+        }
         for (index += 1; index < tokens.length; index++) {
             let token = tokens[index];
             if (stopAtNewLine && token && token.kind === TokenKind.Newline) {
                 return;
             }
             if (token && token.kind !== TokenKind.Whitespace) {
-                return token;
+                return index;
             }
         }
     }
