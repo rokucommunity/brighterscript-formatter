@@ -21,12 +21,18 @@ export class IndentFormatter {
 
         let parentIndentTokenKinds: TokenKind[] = [];
 
+        // Tracks bracket-closer tokens (e.g. `}` or `]`) that should be skipped when
+        // computing indentation offsets. Used to prevent double-indenting when a bracket
+        // opener and a function/sub keyword appear on the same line and both close together
+        // (e.g. `{ function() as boolean\n    return true\nend function }`).
+        const skipOutdentTokens = new Set<Token>();
+
         //the list of output tokens
         let result: Token[] = [];
 
         //set the loop to run for a max of double the number of tokens we found so we don't end up with an infinite loop
         for (let lineTokens of this.splitTokensByLine(tokens)) {
-            const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds);
+            const { currentLineOffset, nextLineOffset } = this.processLine(lineTokens, tokens, ifStatements, parentIndentTokenKinds, skipOutdentTokens);
 
             //uncomment the next line to debug indent/outdent issues
             // console.log(currentLineOffset.toString().padStart(3, ' '), nextLineOffset.toString().padStart(3, ' '), lineTokens.map(x => x.text).join('').replace(/\r?\n/, '').replace(/^\s*/, ''));
@@ -50,7 +56,8 @@ export class IndentFormatter {
         lineTokens: Token[],
         tokens: Token[],
         ifStatements: Map<Token, IfStatement>,
-        parentIndentTokenKinds: TokenKind[]
+        parentIndentTokenKinds: TokenKind[],
+        skipOutdentTokens: Set<Token>
     ): { currentLineOffset: number; nextLineOffset: number } {
         const getParentIndentTokenKind = () => {
             const parentIndentTokenKind = parentIndentTokenKinds.length > 0 ? parentIndentTokenKinds[parentIndentTokenKinds.length - 1] : undefined;
@@ -61,6 +68,10 @@ export class IndentFormatter {
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
         let firstNonWhitespaceToken: Token | null = null;
+        // Tracks the last multi-line bracket opener (`{` or `[`) and its closer pushed as an indent
+        // on this line. Storing the closer avoids a redundant getClosingToken call during compound
+        // indent detection.
+        let lastBracketIndentInfo: { opener: Token; closer: Token } | null = null;
 
         for (let i = 0; i < lineTokens.length; i++) {
             let token = lineTokens[i];
@@ -157,6 +168,8 @@ export class IndentFormatter {
                 parentIndentTokenKinds.push(token.kind);
 
                 //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
+                // Note: this block is before the lastBracketIndentTokenOnLine update below so
+                // that skipped `{`/`[` tokens don't overwrite the tracked bracket.
                 if (
                     //is open square
                     token.kind === TokenKind.LeftSquareBracket &&
@@ -175,12 +188,51 @@ export class IndentFormatter {
                         i++;
                     }
                 }
+
+                // Track the last multi-line bracket opener on this line for compound-indent detection below.
+                // Only track brackets whose closer is on a different line — single-line brackets like
+                // `["any"]` open and close on the same line and don't affect body indentation.
+                if (token.kind === TokenKind.LeftCurlyBrace || token.kind === TokenKind.LeftSquareBracket) {
+                    const bCloseKind = token.kind === TokenKind.LeftCurlyBrace ? TokenKind.RightCurlyBrace : TokenKind.RightSquareBracket;
+                    const bCloser = util.getClosingToken(tokens, tokens.indexOf(token), token.kind, bCloseKind);
+                    if (bCloser && bCloser.range.start.line !== token.range.start.line) {
+                        lastBracketIndentInfo = { opener: token, closer: bCloser };
+                    }
+                }
+
+                // Don't double-indent when a bracket opener (`{` or `[`) and a function/sub keyword
+                // both appear on the same line and both close together on a later line, e.g.:
+                //   key: { runtimeCheck: function() as boolean
+                //       return true        <-- should be 1 level deeper, not 2
+                //   end function }
+                if (
+                    foundIndentorThisLine &&
+                    CallableKeywordTokenKinds.includes(token.kind) &&
+                    lastBracketIndentInfo !== null
+                ) {
+                    const { closer: bracketCloser } = lastBracketIndentInfo;
+                    const tokenBeforeCloser = util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(bracketCloser), true);
+                    if (tokenBeforeCloser && (tokenBeforeCloser.kind === TokenKind.EndFunction || tokenBeforeCloser.kind === TokenKind.EndSub)) {
+                        // The function closes inside the bracket — undo the extra indent level and
+                        // mark the bracket closer to be skipped on the closing line
+                        nextLineOffset--;
+                        skipOutdentTokens.add(bracketCloser);
+                    }
+                }
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
                 //do not un-indent if this is a `next` or `endclass` token preceeded by a period
                 if (
                     [TokenKind.Next, TokenKind.EndClass, TokenKind.Namespace, TokenKind.EndNamespace, TokenKind.Catch, TokenKind.EndTry].includes(token.kind) &&
                     previousNonWhitespaceToken && previousNonWhitespaceToken.kind === TokenKind.Dot
                 ) {
+                    continue;
+                }
+
+                // This bracket closer was marked to be skipped by the compound-indent fix above.
+                // Pop the stack to keep it balanced but don't adjust offsets.
+                if (skipOutdentTokens.has(token)) {
+                    skipOutdentTokens.delete(token);
+                    parentIndentTokenKinds.pop();
                     continue;
                 }
 

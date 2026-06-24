@@ -1133,6 +1133,167 @@ end sub`;
         it('works for arrays with objects in them on separate lines', () => {
             formatEqual(`theVar = [\n    {\n        name = "bob"\n    }\n]`);
         });
+
+        // https://github.com/rokucommunity/brighterscript-formatter/issues/85
+        // When `{` and `function` appear on the same line, each independently triggers an indent,
+        // causing the body to be triple-indented instead of double-indented.
+        // The fix uses lookahead: if a line opens a bracket scope and a function/sub on the same
+        // line, and both close together on a later line, only 1 additional indent level is applied.
+        it('does not double-indent when { and function are on the same line', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    key_9 = { runtimeCheck: function() as boolean
+                        return true
+                    end function }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    key_9 = { runtimeCheck: function() as boolean
+                        return true
+                    end function }
+                end sub
+            `);
+        });
+
+        it('does not double-indent when [ and function are on the same line', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    items = [function() as boolean
+                        return true
+                    end function]
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    items = [function() as boolean
+                        return true
+                    end function]
+                end sub
+            `);
+        });
+
+        it('does not double-indent inline AA with function value nested inside outer AA (issue #85)', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    config = {
+                        key_1: "value1"
+                        key_9: { env: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function }
+                    }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    config = {
+                        key_1: "value1"
+                        key_9: { env: ["any"], runtimeCheck: function() as boolean
+                            return true
+                        end function }
+                    }
+                end sub
+            `);
+        });
+
+        it('does not double-indent multiple inline function values in the same AA (issue #85)', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    config = {
+                        key_9: { runtimeCheck: function() as boolean
+                            return true
+                        end function }
+                        key_10: { runtimeCheck: function() as boolean
+                            return false
+                        end function }
+                    }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    config = {
+                        key_9: { runtimeCheck: function() as boolean
+                            return true
+                        end function }
+                        key_10: { runtimeCheck: function() as boolean
+                            return false
+                        end function }
+                    }
+                end sub
+            `);
+        });
+
+        it('does not double-indent when deeply nested (issue #85)', () => {
+            expect(formatter.format(undent`
+                namespace tests
+                    class TestStuff
+                        function test()
+                            m.call({
+                                key_9: { runtimeCheck: function() as boolean
+                                    return true
+                                end function }
+                            })
+                        end function
+                    end class
+                end namespace
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                namespace tests
+                    class TestStuff
+                        function test()
+                            m.call({
+                                key_9: { runtimeCheck: function() as boolean
+                                    return true
+                                end function }
+                            })
+                        end function
+                    end class
+                end namespace
+            `);
+        });
+
+        it('empty lines inside [{ }] do not break surrounding indentation', () => {
+            formatEqualTrim(`
+                sub test()
+                    array = [{
+
+                    }]
+                    if true then
+                        print true
+                    end if
+                end sub
+            `);
+        });
+
+        // https://github.com/rokucommunity/brighterscript-formatter/issues/85
+        it('does not double-indent when { and sub are on the same line (issue #85)', () => {
+            expect(formatter.format(undent`
+                sub main()
+                    m.foo = { callback: sub()
+                        doThing()
+                    end sub }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    m.foo = { callback: sub()
+                        doThing()
+                    end sub }
+                end sub
+            `);
+        });
+
+        it('does not apply double-indent fix when bracket closer has non-end-function token before it (issue #85)', () => {
+            // When `}` has something other than `end function`/`end sub` immediately before it
+            // on the same line (e.g. a second AA entry), the fix intentionally does not apply.
+            expect(formatter.format(undent`
+                sub main()
+                    m.foo = { cb: function()
+                        return true
+                    end function, other: 1 }
+                end sub
+            `, { formatMultiLineObjectsAndArrays: false })).to.equal(undent`
+                sub main()
+                    m.foo = { cb: function()
+                            return true
+                    end function, other: 1 }
+                end sub
+            `);
+        });
     });
 
     describe('indentSpaceCount', () => {
@@ -1225,6 +1386,45 @@ end sub`;
         it('works with if statements that do not have a "then" after them', () => {
             let program = `if (request.AsyncGetToString())\n    scope.immediatelyFailed = false\nelse\n    scope.immediatelyFailed = true\nend if`;
             expect(formatter.format(program)).to.equal(program);
+        });
+
+        // https://github.com/rokucommunity/brighterscript-formatter/issues/82
+        it('does not de-indent when ".catch" is used as a method call (issue #82)', () => {
+            formatEqual(undent`
+                sub main()
+                    if true then
+                        m.promise.catch(sub(err)
+                            print err
+                        end sub)
+                    end if
+                end sub
+            `);
+        });
+
+        it('does not de-indent surrounding if blocks when chaining lambdas with typecast args (issue #82)', () => {
+            formatEqual(undent`
+                sub main()
+                    if true then
+                        m.list.filter(function(item as object) as boolean
+                            return item.active = true
+                        end function).forEach(sub(item as object)
+                            print item
+                        end sub)
+                    end if
+                end sub
+            `);
+        });
+
+        it('does not de-indent when lambda has a typed parameter in a method chain (issue #82)', () => {
+            formatEqual(undent`
+                sub main()
+                    if true then
+                        someObject.next(function(val as integer) as string
+                            return val.toStr()
+                        end function)
+                    end if
+                end sub
+            `);
         });
     });
 
