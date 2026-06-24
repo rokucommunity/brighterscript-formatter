@@ -1051,7 +1051,7 @@ end sub`;
                 print "world"
                 end try
                 print "done"
-                end function 
+                end function
             `)).to.equal(undent`
                 function try
                     try
@@ -1060,7 +1060,7 @@ end sub`;
                         print "world"
                     end try
                     print "done"
-                end function 
+                end function
             `);
         });
 
@@ -1830,6 +1830,1897 @@ end sub`;
             formatEqual(`import "d"\nimport "c"\n'comment\nimport "b"\nimport "a"\n\n`, `import "c"\nimport "d"\n'comment\nimport "a"\nimport "b"\n\n`, {
                 sortImports: true
             });
+        });
+    });
+
+    describe('maxConsecutiveEmptyLines', () => {
+        it('collapses multiple blank lines down to the specified max', () => {
+            formatEqual(
+                'x = 1\n\n\n\ny = 2\n',
+                'x = 1\n\ny = 2\n',
+                { maxConsecutiveEmptyLines: 1 }
+            );
+        });
+
+        it('allows exactly the specified number of blank lines through', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n',
+                'x = 1\n\n\ny = 2\n',
+                { maxConsecutiveEmptyLines: 2 }
+            );
+        });
+
+        it('removes all blank lines when set to 0', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n',
+                'x = 1\ny = 2\n',
+                { maxConsecutiveEmptyLines: 0 }
+            );
+        });
+
+        it('does not affect blank lines when option is not set', () => {
+            formatEqual(
+                'x = 1\n\n\ny = 2\n'
+            );
+        });
+
+        it('works inside function bodies', () => {
+            formatEqualTrim(`
+                sub main()
+                    x = 1
+
+
+                    y = 2
+                end sub
+            `, `
+                sub main()
+                    x = 1
+
+                    y = 2
+                end sub
+            `, { maxConsecutiveEmptyLines: 1 });
+        });
+
+        it('handles more blank lines than the max at end of file', () => {
+            formatEqual(
+                'x = 1\n\n\n',
+                'x = 1\n\n',
+                { maxConsecutiveEmptyLines: 1 }
+            );
+        });
+    });
+
+    describe('trailingComma', () => {
+        it('adds trailing comma to last item in a multi-line array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, { trailingComma: 'always' });
+        });
+
+        it('adds trailing comma to last item in a multi-line AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes all commas from items in a multi-line array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, `
+                x = [
+                    1
+                    2
+                    3
+                ]
+            `, { trailingComma: 'never' });
+        });
+
+        it('removes all commas from items in a multi-line AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: 1
+                    b: 2
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('does not change trailing commas when set to original', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, undefined, { trailingComma: 'original' });
+        });
+
+        it('does not add trailing comma to single-line arrays', () => {
+            formatEqual('x = [1, 2, 3]\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not add trailing comma to single-line AAs', () => {
+            formatEqual('x = { a: 1, b: 2 }\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not affect blank arrays', () => {
+            formatEqual('x = []\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('does not affect blank AAs', () => {
+            formatEqual('x = {}\n', undefined, { trailingComma: 'always' });
+        });
+
+        it('adds commas to all items in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all items in a multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3,
+                }
+            `, `
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('adds commas to all items in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1
+                    2
+                    3
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, { trailingComma: 'always' });
+        });
+
+        it('handles nested multiline AAs independently', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('removes commas from all levels of nested multiline AAs', () => {
+            formatEqualTrim(`
+                x = {
+                    a: {
+                        inner: 1,
+                        inner2: 2,
+                    },
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: {
+                        inner: 1
+                        inner2: 2
+                    }
+                    b: 2
+                }
+            `, { trailingComma: 'never' });
+        });
+
+        it('does not add commas inside single-line nested values', () => {
+            formatEqualTrim(`
+                x = {
+                    a: [1, 2, 3]
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: [1, 2, 3],
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+
+        it('allButLast adds commas to all items except the last in a multiline array', () => {
+            formatEqualTrim(`
+                x = [
+                    1,
+                    2,
+                    3,
+                ]
+            `, `
+                x = [
+                    1,
+                    2,
+                    3
+                ]
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast adds commas to all items except the last in a comma-free multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+                    b: 2
+                    c: 3
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2,
+                    c: 3
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('allButLast removes trailing comma from last item when others already have commas', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1,
+                    b: 2,
+                }
+            `, `
+                x = {
+                    a: 1,
+                    b: 2
+                }
+            `, { trailingComma: 'allButLast' });
+        });
+
+        it('does not touch blank lines inside multiline AA', () => {
+            formatEqualTrim(`
+                x = {
+                    a: 1
+
+                    b: 2
+                }
+            `, `
+                x = {
+                    a: 1,
+
+                    b: 2,
+                }
+            `, { trailingComma: 'always' });
+        });
+    });
+
+    describe('singleLineIf', () => {
+        it('collapses a simple if block to a single line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if to multi-line', () => {
+            formatEqualTrim(`
+                if x then y = 1
+            `, `
+                if x then
+                    y = 1
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('does not collapse an if block that has an else branch', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an if block that has an else if branch', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an if block with multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                    z = 2
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not modify if statements when set to original', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, undefined, { singleLineIf: 'original' });
+        });
+
+        it('does not expand an already-multi-line if when set to expand', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('collapses an if block that is preceded by other code', () => {
+            formatEqualTrim(`
+                x = 1
+                if x then
+                    y = 1
+                end if
+            `, `
+                x = 1
+                if x then y = 1
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if that has a trailing newline', () => {
+            formatEqual('if x then y = 1\n', 'if x then\n    y = 1\nend if\n', { singleLineIf: 'block' });
+        });
+
+        it('collapses an if with whitespace between then and the newline', () => {
+            formatEqual('if x then   \n    y = 1\nend if\n', 'if x then  y = 1\n', { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('collapses an if with indented end if', () => {
+            formatEqual('if x then\n    y = 1\n    end if\n', 'if x then y = 1\n', { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if that has an else branch into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else y = 2
+            `, `
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if that has an else if branch into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else if z then y = 2
+            `, `
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if that has an else if/else chain into a multi-line block', () => {
+            formatEqualTrim(`
+                if x then y = 1 else if z then y = 2 else y = 3
+            `, `
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('expands an inline if and preserves code that follows it', () => {
+            formatEqualTrim(`
+                if x then y = 1
+                z = 2
+            `, `
+                if x then
+                    y = 1
+                end if
+                z = 2
+            `, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if/else if chain in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if/else if/else chain in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else
+                    x = 3
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line chain with multiple else if branches in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else if c then
+                    x = 3
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand a multi-line if with a comment-only body in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    ' note
+                else if b then
+                    x = 2
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not re-expand nested multi-line if blocks in block mode', () => {
+            formatEqualTrim(`
+                if a then
+                    if b then
+                        x = 1
+                    end if
+                end if
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line associative array literal)', () => {
+            formatEqualTrim(`
+                if url <> "" then return {
+                    success: true
+                    libraryUrl: url
+                }
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line array literal)', () => {
+            formatEqualTrim(`
+                if x then return [
+                    1,
+                    2
+                ]
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not expand an inline if whose body spans multiple lines (multi-line function call)', () => {
+            formatEqualTrim(`
+                if x then foo(
+                1,
+                2
+                )
+            `, undefined, { singleLineIf: 'block' });
+        });
+
+        it('does not collapse an if whose only body statement is a comment', () => {
+            formatEqualTrim(`
+                if x then
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an if whose only body statement is a bs:disable-line comment', () => {
+            formatEqualTrim(`
+                if x then
+                    ' commentedOut() 'bs:disable-line LINT3012
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse an empty if body', () => {
+            formatEqualTrim(`
+                if x then
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse outer when the only inner statement is a multi-line if block (inner collapses independently)', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then
+                        z = 1
+                    end if
+                end if
+            `, `
+                if x then
+                    if y then z = 1
+                end if
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is an if/else block', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then
+                        z = 1
+                    else
+                        z = 2
+                    end if
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a for loop', () => {
+            formatEqualTrim(`
+                if x then
+                    for i = 0 to 5
+                        y = i
+                    end for
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a while loop', () => {
+            formatEqualTrim(`
+                if x then
+                    while y < 5
+                        y = y + 1
+                    end while
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('collapses an if and preserves code that follows it', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+                z = 2
+            `, `
+                if x then y = 1
+                z = 2
+            `, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (function expression rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (array literal rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = [
+                        1,
+                        2
+                    ]
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (associative array rhs)', () => {
+            formatEqualTrim(`
+                if x then
+                    y = {
+                        a: 1
+                    }
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement spans multiple lines (multi-line function call)', () => {
+            formatEqualTrim(`
+                if x then
+                    foo(
+                    1,
+                    2
+                    )
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a for-each loop', () => {
+            formatEqualTrim(`
+                if x then
+                    for each i in items
+                        y = i
+                    end for
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a try/catch block', () => {
+            formatEqualTrim(`
+                if x then
+                    try
+                        y = 1
+                    catch e
+                        y = 2
+                    end try
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('does not collapse when the only inner statement is a single-line inline if', () => {
+            formatEqualTrim(`
+                if x then
+                    if y then z = 1
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElse' });
+        });
+
+        it('expands an inline if with else and colon-separated multi-statement bodies', () => {
+            formatEqualTrim(`
+                if x then y = 1: z = 2 else y = 3: z = 4
+            `, `
+                if x then
+                    y = 1: z = 2
+                else
+                    y = 3: z = 4
+                end if
+            `, { singleLineIf: 'block' });
+        });
+
+        it('inlineNoElseIf collapses a simple if/then to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf collapses an if/else to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else y = 2
+            `, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse if/else if chains', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse if/else if/else chains', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body has multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                    z = 3
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body is comment-only', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inlineNoElseIf does not collapse when else body is multi-line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inlineNoElseIf' });
+        });
+
+        it('inline collapses a simple if/then to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                end if
+            `, `
+                if x then y = 1
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else y = 2
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else if chain to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                end if
+            `, `
+                if x then y = 1 else if z then y = 2
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses an if/else if/else chain to inline', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = 3
+                end if
+            `, `
+                if x then y = 1 else if z then y = 2 else y = 3
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline collapses a long if/else if/else if/else chain', () => {
+            formatEqualTrim(`
+                if a then
+                    x = 1
+                else if b then
+                    x = 2
+                else if c then
+                    x = 3
+                else
+                    x = 4
+                end if
+            `, `
+                if a then x = 1 else if b then x = 2 else if c then x = 3 else x = 4
+            `, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch body is multi-line', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch body is comment-only', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    ' note
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when an else-if branch has multiple statements', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                    w = 3
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+
+        it('inline does not collapse when the final else has a multi-line body', () => {
+            formatEqualTrim(`
+                if x then
+                    y = 1
+                else if z then
+                    y = 2
+                else
+                    y = (function()
+                        return 1
+                    end function)()
+                end if
+            `, undefined, { singleLineIf: 'inline' });
+        });
+    });
+
+    describe('inlineArrayAndObject', () => {
+        describe('always', () => {
+            it('collapses a multi-line array', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('collapses a multi-line AA', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1,
+                        b: 2
+                    }
+                `, `
+                    x = { a: 1, b: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('collapses regardless of resulting line length', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10
+                    ]
+                `, `
+                    x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse already-single-line brackets', () => {
+                formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse the outer array when it contains nested multi-line arrays', () => {
+                formatEqualTrim(`
+                    x = [
+                        [
+                            1,
+                            2
+                        ],
+                        3
+                    ]
+                `, `
+                    x = [
+                        [1, 2],
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse the outer array when it contains a nested multi-line AA', () => {
+                formatEqualTrim(`
+                    x = [
+                        {
+                            a: 1,
+                            b: 2
+                        },
+                        3
+                    ]
+                `, `
+                    x = [
+                        { a: 1, b: 2 },
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('comma fix on collapse', () => {
+            it('inserts commas between AA items separated only by newlines', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1
+                        b: 2
+                    }
+                `, `
+                    x = { a: 1, b: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts commas between array items separated only by newlines', () => {
+                formatEqualTrim(`
+                    x = [
+                        1
+                        2
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts commas where missing in mixed comma/no-comma items', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1,
+                        b: 2
+                        c: 3
+                    }
+                `, `
+                    x = { a: 1, b: 2, c: 3 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('inserts a comma between a nested single-line literal and the next item', () => {
+                formatEqualTrim(`
+                    x = {
+                        inner: { a: 1 }
+                        other: 2
+                    }
+                `, `
+                    x = { inner: { a: 1 }, other: 2 }
+                `, { inlineArrayAndObject: 'always' });
+            });
+
+            it('preserves a trailing comma after collapse', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1,
+                        b: 2,
+                    }
+                `, `
+                    x = { a: 1, b: 2, }
+                `, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('structural rejections', () => {
+            it('does not collapse when an item has a trailing line comment', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1, ' note about a
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when there is a comment-only line inside', () => {
+                formatEqualTrim(`
+                    x = {
+                        ' header
+                        a: 1
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when an item has a bs:disable-line directive', () => {
+                formatEqualTrim(`
+                    x = {
+                        a: 1 'bs:disable-line LINT3012
+                        b: 2
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when contents include a #if conditional compile', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        #if production
+                            2
+                        #else
+                            3
+                        #end if
+                    ]
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse when an item value is itself a multi-line function expression', () => {
+                formatEqualTrim(`
+                    x = {
+                        fn: function()
+                            return 1
+                        end function
+                    }
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+
+            it('does not collapse an array of regex literals', () => {
+                formatEqualTrim(`
+                    domains = [
+                        /^https?:\\/\\/foo\\.com\\/.+/
+                        /^https?:\\/\\/bar\\.com\\/.+/
+                    ]
+                `, undefined, { inlineArrayAndObject: 'always' });
+            });
+        });
+
+        describe('fitsLine', () => {
+            it('collapses when the resulting line fits within maxLineLength', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, `
+                    x = [1, 2, 3]
+                `, { inlineArrayAndObject: 'fitsLine', maxLineLength: 80 });
+            });
+
+            it('does not collapse when the resulting line would exceed maxLineLength', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, undefined, { inlineArrayAndObject: 'fitsLine', maxLineLength: 5 });
+            });
+
+            it('factors indent into the length check', () => {
+                formatEqualTrim(`
+                    function deeplyNested()
+                        if cond then
+                            for i = 0 to 1
+                                x = [
+                                    1,
+                                    2,
+                                    3
+                                ]
+                            end for
+                        end if
+                    end function
+                `, undefined, { inlineArrayAndObject: 'fitsLine', maxLineLength: 24 });
+            });
+
+            it('counts tab characters as indentSpaceCount columns when computing visual width', () => {
+                // Tab indented source — visualLineLengthBeforeIndex expands tabs.
+                formatEqual(
+                    'if x then\n\tif y then\n\t\tz = [\n\t\t\t1,\n\t\t\t2,\n\t\t\t3\n\t\t]\n\tend if\nend if\n',
+                    'if x then\n\tif y then\n\t\tz = [1, 2, 3]\n\tend if\nend if\n',
+                    { inlineArrayAndObject: 'fitsLine', maxLineLength: 30, indentStyle: 'tabs', indentSpaceCount: 4 }
+                );
+            });
+
+            it('uses indentSpaceCount when computing visual indent width', () => {
+                // With indentSpaceCount=2, indent contribution per nesting is 2 chars.
+                // The collapsed line `  x = [1, 2, 3]` at 2 levels deep = 4 + 13 = 17 chars,
+                // which fits the budget of 30.
+                formatEqual(
+                    'if x then\n  if y then\n    x = [\n      1,\n      2,\n      3\n    ]\n  end if\nend if\n',
+                    'if x then\n  if y then\n    x = [1, 2, 3]\n  end if\nend if\n',
+                    { inlineArrayAndObject: 'fitsLine', maxLineLength: 30, indentSpaceCount: 2 }
+                );
+            });
+
+            it('falls back to always-collapse when maxLineLength is unset', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ]
+                `, `
+                    x = [1, 2, 3, 4, 5]
+                `, { inlineArrayAndObject: 'fitsLine' });
+            });
+        });
+
+        describe('never', () => {
+            it('expands a single-line array to multi-line', () => {
+                formatEqualTrim(`
+                    x = [1, 2, 3]
+                `, `
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands a single-line AA to multi-line', () => {
+                formatEqualTrim(`
+                    x = { a: 1, b: 2 }
+                `, `
+                    x = {
+                        a: 1,
+                        b: 2
+                    }
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an empty array', () => {
+                formatEqualTrim(`
+                    x = []
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an empty AA', () => {
+                formatEqualTrim(`
+                    x = {}
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand a single-element array', () => {
+                formatEqualTrim(`
+                    x = [1]
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('does not expand an AA with a single property', () => {
+                formatEqualTrim(`
+                    x = { a: 1 }
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands an outer array containing a single-line nested array (recursively)', () => {
+                formatEqualTrim(`
+                    x = [1, [2, 3], 4]
+                `, `
+                    x = [
+                        1,
+                        [
+                            2,
+                            3
+                        ],
+                        4
+                    ]
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('expands an outer AA containing a single-line nested AA (recursively)', () => {
+                formatEqualTrim(`
+                    x = { a: 1, inner: { b: 2, c: 3 }, d: 4 }
+                `, `
+                    x = {
+                        a: 1,
+                        inner: {
+                            b: 2,
+                            c: 3
+                        },
+                        d: 4
+                    }
+                `, { inlineArrayAndObject: 'never' });
+            });
+
+            it('leaves an already-multi-line array alone', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2
+                    ]
+                `, undefined, { inlineArrayAndObject: 'never' });
+            });
+        });
+
+        describe('original', () => {
+            it('leaves a multi-line array alone', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `, undefined, { inlineArrayAndObject: 'original' });
+            });
+
+            it('leaves a single-line array alone', () => {
+                formatEqual('x = [1, 2, 3]\n', undefined, { inlineArrayAndObject: 'original' });
+            });
+
+            it('leaves a multi-line array alone when option is omitted', () => {
+                formatEqualTrim(`
+                    x = [
+                        1,
+                        2,
+                        3
+                    ]
+                `);
+            });
+        });
+    });
+
+    describe('blockSpacing', () => {
+        describe('before', () => {
+            it('inserts a blank line above a while when missing', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
+
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('places the blank line above a leading comment, not between comment and opener', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        ' do the loop work now
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
+
+                        ' do the loop work now
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('places the blank line above an annotation, not between annotation and opener', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: { sub: 'before' } });
+            });
+
+            it('walks past mixed annotation and comment lines as a single preamble', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+                        ' explains why this is deprecated
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace foo
+                        sub a()
+                            x = 1
+                        end sub
+
+                        ' explains why this is deprecated
+                        @deprecated("use newSub")
+                        sub b()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: { sub: 'before' } });
+            });
+
+            it('walks past multiple consecutive leading comment lines', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        ' first comment
+                        ' second comment
+                        while true
+                        end while
+                    end sub
+                `, `
+                    sub m()
+                        print "test"
+
+                        ' first comment
+                        ' second comment
+                        while true
+                        end while
+                    end sub
+                `, { blockSpacing: { while: 'before' } });
+            });
+
+            it('does nothing when a blank line already exists above the block', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+
+                        while true
+                        end while
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
+
+            it('does not insert a blank when the block is the first content in its parent', () => {
+                formatEqualTrim(`
+                    sub m()
+                        while true
+                        end while
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
+        });
+
+        describe('after', () => {
+            it('inserts a blank line below an if when missing', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+                        end if
+
+                        b()
+                    end sub
+                `, { blockSpacing: { if: 'after' } });
+            });
+
+            it('places the blank line below a trailing comment attached to the closer', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if ' end of conditional
+                        b()
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+                        end if ' end of conditional
+
+                        b()
+                    end sub
+                `, { blockSpacing: { if: 'after' } });
+            });
+
+            it('does nothing when a blank line already exists below', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+
+                        b()
+                    end sub
+                `, undefined, { blockSpacing: { if: 'after' } });
+            });
+
+            it('does not insert a blank when the block is the last content in its parent', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                        end if
+                    end sub
+                `, undefined, { blockSpacing: { if: 'after' } });
+            });
+        });
+
+        describe('between', () => {
+            it('inserts blank lines both above and below', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        for each i in items
+                            p(i)
+                        end for
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        for each i in items
+                            p(i)
+                        end for
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { for: 'between' } });
+            });
+        });
+
+        describe('always', () => {
+            it('adds blanks before, after, AND inside the body', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        function f()
+                            return 1
+                        end function
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        function f()
+
+                            return 1
+
+                        end function
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { function: 'always' } });
+            });
+        });
+
+        describe('object form', () => {
+            it('mixes per-construct policies', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "first"
+                        if x then
+                            a()
+                        end if
+                        while y
+                            b()
+                        end while
+                        print "last"
+                    end sub
+                `, `
+                    sub m()
+                        print "first"
+                        if x then
+                            a()
+                        end if
+
+                        while y
+                            b()
+                        end while
+
+                        print "last"
+                    end sub
+                `, { blockSpacing: { if: 'after', while: 'between' } });
+            });
+
+            it('falls back to default for unspecified constructs', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        for i = 0 to 3
+                            p(i)
+                        end for
+                        while x
+                            q()
+                        end while
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        for i = 0 to 3
+                            p(i)
+                        end for
+
+                        while x
+                            q()
+                        end while
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { default: 'between' } });
+            });
+
+            it('respects original for omitted constructs when default is also omitted', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        if x then
+                            a()
+                        end if
+                        print "after"
+                    end sub
+                `, undefined, { blockSpacing: { while: 'before' } });
+            });
+        });
+
+        describe('string form', () => {
+            it('always applies to every supported construct', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        if x then
+                            a()
+                        end if
+                        for i = 0 to 3
+                            p(i)
+                        end for
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        if x then
+                            a()
+                        end if
+
+                        for i = 0 to 3
+                            p(i)
+                        end for
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: 'between' });
+            });
+        });
+
+        describe('original', () => {
+            it('leaves spacing alone with original mode', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `, undefined, { blockSpacing: 'original' });
+            });
+
+            it('leaves spacing alone when omitted', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "test"
+                        if x then
+                            a()
+                        end if
+                        b()
+                    end sub
+                `);
+            });
+        });
+
+        describe('parent boundary detection', () => {
+            it('does not insert blank when block is first child of a namespace', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub m()
+                            a()
+                        end sub
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
+
+            it('does not insert blank when block is last child of a namespace', () => {
+                formatEqualTrim(`
+                    namespace foo
+                        sub a()
+                            x()
+                        end sub
+
+                        sub b()
+                            y()
+                        end sub
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
+
+            it('does not insert blank when nested for is the only thing in its parent if', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, undefined, { blockSpacing: { for: 'between' } });
+            });
+
+            it('does not insert blank when nested for is the last thing in its parent if', () => {
+                formatEqualTrim(`
+                    sub m()
+                        if x then
+                            a()
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, `
+                    sub m()
+                        if x then
+                            a()
+
+                            for each y in z
+                                p(y)
+                            end for
+                        end if
+                    end sub
+                `, { blockSpacing: { for: 'between' } });
+            });
+
+            it('does not insert blank when nested if is the only thing in a class method', () => {
+                formatEqualTrim(`
+                    class Foo
+                        sub m()
+                            if x then
+                                a()
+                            end if
+                        end sub
+                    end class
+                `, undefined, { blockSpacing: { if: 'between' } });
+            });
+
+            it('applies try construct rule from object form', () => {
+                formatEqualTrim(`
+                    sub m()
+                        print "before"
+                        try
+                            a()
+                        catch e
+                            b(e)
+                        end try
+                        print "after"
+                    end sub
+                `, `
+                    sub m()
+                        print "before"
+
+                        try
+                            a()
+                        catch e
+                            b(e)
+                        end try
+
+                        print "after"
+                    end sub
+                `, { blockSpacing: { try: 'between' } });
+            });
+
+            it('handles nested namespaces correctly', () => {
+                formatEqualTrim(`
+                    namespace a
+                        namespace b
+                            sub deeplyNested()
+                                x = 1
+                            end sub
+                        end namespace
+                    end namespace
+                `, undefined, { blockSpacing: 'between' });
+            });
+
+            it('does not apply spacing to anonymous sub callbacks', () => {
+                formatEqualTrim(`
+                    function loadData()
+                        return promise.chain(load).then(sub(result)
+                            handle(result)
+                        end sub).catch(sub(err)
+                            throw err
+                        end sub).finally(sub()
+                            cleanup()
+                        end sub).toPromise()
+                    end function
+                `, `
+                    function loadData()
+
+                        return promise.chain(load).then(sub(result)
+                            handle(result)
+                        end sub).catch(sub(err)
+                            throw err
+                        end sub).finally(sub()
+                            cleanup()
+                        end sub).toPromise()
+
+                    end function
+                `, { blockSpacing: { sub: 'always', function: 'always' } });
+            });
+
+            it('does not apply spacing to anonymous function expressions assigned to a variable', () => {
+                formatEqualTrim(`
+                    sub m()
+                        x = function()
+                            return 1
+                        end function
+                    end sub
+                `, undefined, { blockSpacing: { function: 'always' } });
+            });
+
+            it('inserts blanks between siblings inside a namespace but not at boundaries', () => {
+                formatEqualTrim(`
+                    namespace c
+                        sub first()
+                            x = 1
+                        end sub
+                        namespace inner
+                            sub middle()
+                                x = 1
+                            end sub
+                        end namespace
+                        sub last()
+                            x = 1
+                        end sub
+                    end namespace
+                `, `
+                    namespace c
+                        sub first()
+                            x = 1
+                        end sub
+
+                        namespace inner
+                            sub middle()
+                                x = 1
+                            end sub
+                        end namespace
+
+                        sub last()
+                            x = 1
+                        end sub
+                    end namespace
+                `, { blockSpacing: 'between' });
+            });
+        });
+    });
+
+    describe('alignAssignments', () => {
+        it('aligns consecutive assignments by padding before the equals sign', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                y = 3
+            `, `
+                x        = 1
+                longName = 2
+                y        = 3
+            `, { alignAssignments: true });
+        });
+
+        it('resets alignment after a blank line', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+
+                a = 3
+                bb = 4
+            `, `
+                x        = 1
+                longName = 2
+
+                a  = 3
+                bb = 4
+            `, { alignAssignments: true });
+        });
+
+        it('resets alignment after a non-assignment line', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                print "hello"
+                a = 3
+                bb = 4
+            `, `
+                x        = 1
+                longName = 2
+                print "hello"
+                a  = 3
+                bb = 4
+            `, { alignAssignments: true });
+        });
+
+        it('does not align when set to false', () => {
+            formatEqualTrim(`
+                x = 1
+                longName = 2
+                y = 3
+            `, undefined, { alignAssignments: false });
+        });
+
+        it('handles a single assignment (no alignment needed)', () => {
+            formatEqualTrim(`
+                x = 1
+            `, undefined, { alignAssignments: true });
         });
     });
 

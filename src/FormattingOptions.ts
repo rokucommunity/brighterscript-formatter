@@ -1,6 +1,27 @@
 import { Formatter } from './Formatter';
 import { TokenKind } from 'brighterscript';
 
+export type BlockSpacing = 'before' | 'after' | 'between' | 'always' | 'original';
+
+/**
+ * Per-construct overrides for `blockSpacing`. Any construct not listed here falls back
+ * to `default`, and if `default` is also omitted that construct uses `'original'`.
+ *
+ * `if` covers the entire if/else if/else chain (only the outer chain — inner branches
+ * don't get individual spacing).
+ * `for` covers both `for` and `for each` loops.
+ * `try` covers the entire try/catch construct.
+ */
+export interface BlockSpacingOptions {
+    default?: BlockSpacing;
+    function?: BlockSpacing;
+    sub?: BlockSpacing;
+    if?: BlockSpacing;
+    for?: BlockSpacing;
+    while?: BlockSpacing;
+    try?: BlockSpacing;
+}
+
 /**
  * A set of formatting options used to determine how the file should be formatted.
  */
@@ -109,6 +130,84 @@ export interface FormattingOptions {
      * Sort import statements alphabetically.
      */
     sortImports?: boolean;
+    /**
+     * Collapse runs of consecutive blank lines down to at most this many blank lines.
+     * For example, `maxConsecutiveEmptyLines: 1` collapses three blank lines in a row into one.
+     * When undefined (the default), blank lines are not modified.
+     */
+    maxConsecutiveEmptyLines?: number;
+    /**
+     * Controls commas on items of multi-line arrays and associative arrays.
+     * - `'always'`: ensure every item has a trailing comma (including the last)
+     * - `'allButLast'`: ensure every item except the last has a trailing comma
+     * - `'never'`: remove all item commas
+     * - `'original'` or omitted: leave commas unchanged
+     * Has no effect on single-line arrays or AAs.
+     */
+    trailingComma?: 'always' | 'allButLast' | 'never' | 'original';
+    /**
+     * Controls how `if` statements are formatted. Values are listed top-to-bottom in
+     * order of increasing strictness about when block (multi-line) form is required.
+     * - `'inline'`: collapse to inline form whenever the body fits on one line, including
+     *   ifs with `else` and `else if` chains
+     * - `'inlineNoElseIf'`: collapse to inline form, but ifs with an `else if` chain
+     *   stay in block form (a single `else` is still allowed inline)
+     * - `'inlineNoElse'`: only collapse simple `if/then` ifs that have no `else` at all
+     * - `'block'`: always use multi-line block form (expand inline ifs to `if/then/end if`)
+     * - `'original'` or omitted: leave each if as written
+     */
+    singleLineIf?: 'inline' | 'inlineNoElseIf' | 'inlineNoElse' | 'block' | 'original';
+    /**
+     * Controls how arrays and associative arrays are formatted across lines.
+     * - `'always'`: collapse multi-line literals to one line (regardless of length)
+     * - `'never'`: expand single-line literals to multi-line
+     * - `'fitsLine'`: collapse multi-line literals only when the resulting line fits
+     *   within `maxLineLength`. Falls back to `'always'` when `maxLineLength` is unset.
+     * - `'original'` or omitted: leave each literal as written.
+     *
+     * Structural rejections apply to all collapse modes: literals containing line
+     * comments, `bs:disable-line` directives, conditional-compile directives (`#if` /
+     * `#else`), or items whose value spans multiple physical lines are never collapsed.
+     */
+    inlineArrayAndObject?: 'always' | 'never' | 'fitsLine' | 'original';
+    /**
+     * Target maximum line length, in characters. Currently consumed by
+     * `inlineArrayAndObject: 'fitsLine'` to decide whether collapsing keeps a line
+     * within budget. Reserved for future length-aware rules.
+     */
+    maxLineLength?: number;
+    /**
+     * Controls blank-line spacing around block constructs (function/sub, if/else chain,
+     * for/for each, while, try/catch). Inline ifs (and inline else branches) are not
+     * blocks and are skipped.
+     *
+     * Leading line comments immediately above a block opener are treated as part of the
+     * block — `'before'` puts the blank line above the comment, not between the comment
+     * and the opener. Trailing comments immediately after a closer attach to the closer.
+     *
+     * String form applies the same policy to every supported block type:
+     * - `'before'`: ensure a blank line above the block (above any leading comment)
+     * - `'after'`: ensure a blank line below the block (below any trailing comment)
+     * - `'between'`: both `'before'` and `'after'`
+     * - `'always'`: `'between'` plus a blank line at the start and end of the block body
+     * - `'original'` (or omitted): leave spacing as written
+     *
+     * Object form allows per-construct overrides. `default` is the fallback for any
+     * supported construct that isn't explicitly set; if `default` is also omitted, that
+     * construct uses `'original'`. Setting `if` covers the entire if/else if/else chain.
+     * `for` covers `for` and `for each`. `try` covers the entire try/catch construct.
+     * Example:
+     *
+     *   { default: 'between', function: 'always', if: 'before' }
+     */
+    blockSpacing?: BlockSpacing | BlockSpacingOptions;
+    /**
+     * If true, align the `=` sign in consecutive simple assignment statements by
+     * padding the left-hand side with spaces.
+     * Alignment resets after a blank line or a non-assignment statement.
+     * @default false
+     */
+    alignAssignments?: boolean;
 }
 
 export function normalizeOptions(options: FormattingOptions) {
@@ -128,6 +227,11 @@ export function normalizeOptions(options: FormattingOptions) {
         insertSpaceBetweenAssociativeArrayLiteralKeyAndColon: false,
         formatMultiLineObjectsAndArrays: true,
         sortImports: false,
+        trailingComma: 'original',
+        singleLineIf: 'original',
+        inlineArrayAndObject: 'original',
+        blockSpacing: 'original',
+        alignAssignments: false,
 
         //override defaults with the provided values
         ...options
