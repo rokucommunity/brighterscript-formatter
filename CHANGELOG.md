@@ -6,6 +6,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.7.28](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.27...v1.7.28) - 2026-06-23
+### Changed
+ - Multi-line Function parameters ([#140](https://github.com/rokucommunity/brighterscript-formatter/pull/140))
+ - Bump form-data from 2.5.5 to 2.5.6 ([#141](https://github.com/rokucommunity/brighterscript-formatter/pull/141))
+
+
+
+## [1.7.27](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.26...v1.7.27) - 2026-06-10
+### Changed
+ - chore: security fixes ([#138](https://github.com/rokucommunity/brighterscript-formatter/pull/138), [#137](https://github.com/rokucommunity/brighterscript-formatter/pull/137), [#135](https://github.com/rokucommunity/brighterscript-formatter/pull/135), [#136](https://github.com/rokucommunity/brighterscript-formatter/pull/136))
+ - upgrade to [brighterscript@0.72.5](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0725---2026-06-10). Notable changes since 0.72.2:
+     - chore: security updates ([#1723](https://github.com/rokucommunity/brighterscript/pull/1723), [#1722](https://github.com/rokucommunity/brighterscript/pull/1722), [#1720](https://github.com/rokucommunity/brighterscript/pull/1720), [#1718](https://github.com/rokucommunity/brighterscript/pull/1718))
+
+
+
+## [1.7.26](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.25...v1.7.26) - 2026-05-19
+### Changed
+ - Security enhancements ([#133](https://github.com/rokucommunity/brighterscript-formatter/pull/133))
+ - upgrade to [brighterscript@0.72.2](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0722---2026-05-19). Notable changes since 0.72.1:
+     - Security enhancements ([#1714](https://github.com/rokucommunity/brighterscript/pull/1714))
+
+
+
+## [1.7.25](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.24...v1.7.25) - 2026-05-11
+### Changed
+ - upgrade to [brighterscript@0.72.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0721---2026-05-11). Notable changes since 0.72.0:
+     - feat: allow line continuation in .brs files when minFirmwareVersion >= 15.3 ([#1693](https://github.com/rokucommunity/brighterscript/pull/1693))
+
+
+
 ## [1.7.24](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.23...v1.7.24) - 2026-04-30
 ### Changed
  - upgrade to [brighterscript@0.72.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0720---2026-04-30). Notable changes since 0.71.1:

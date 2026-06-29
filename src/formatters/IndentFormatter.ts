@@ -1,7 +1,7 @@
 import type { Token, Parser, IfStatement } from 'brighterscript';
 import { isIfStatement, createVisitor, TokenKind, WalkMode } from 'brighterscript';
 import type { TokenWithStartIndex } from '../constants';
-import { OutdentSpacerTokenKinds, IndentSpacerTokenKinds, CallableKeywordTokenKinds, IgnoreIndentSpacerByParentTokenKind, InterumSpacingTokenKinds, DEFAULT_INDENT_SPACE_COUNT } from '../constants';
+import { OutdentSpacerTokenKinds, IndentSpacerTokenKinds, CallableKeywordTokenKinds, IgnoreIndentSpacerByParentTokenKind, InterumSpacingTokenKinds, DEFAULT_INDENT_SPACE_COUNT, IndentGroupingTokenKinds, OutdentGroupingTokenKinds } from '../constants';
 import type { FormattingOptions } from '../FormattingOptions';
 import { util } from '../util';
 
@@ -21,6 +21,8 @@ export class IndentFormatter {
 
         let parentIndentTokenKinds: TokenKind[] = [];
 
+        this.multiLineFuncDeclarationOpeners = [];
+        this.collapsedGroupClosers = new Set<Token>();
         //the list of output tokens
         let result: Token[] = [];
 
@@ -46,6 +48,14 @@ export class IndentFormatter {
         return result;
     }
 
+    private multiLineFuncDeclarationOpeners: Token[] = [];
+
+    /**
+     * Closers belonging to bracket groups that were collapsed on the open side (because more than one group opened on
+     * the same line). The close side skips the un-indent for these so opens and closes stay balanced.
+     */
+    private collapsedGroupClosers = new Set<Token>();
+
     private processLine(
         lineTokens: Token[],
         tokens: Token[],
@@ -60,6 +70,7 @@ export class IndentFormatter {
         let currentLineOffset = 0;
         let nextLineOffset = 0;
         let foundIndentorThisLine = false;
+        let outdentedThisLine = false;
         let firstNonWhitespaceToken: Token | null = null;
 
         for (let i = 0; i < lineTokens.length; i++) {
@@ -84,7 +95,7 @@ export class IndentFormatter {
                 //if this is an indentor token
                 IndentSpacerTokenKinds.includes(token.kind) &&
                 //is not being used as a key in an AA literal
-                nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon
+                (nextNonWhitespaceToken && nextNonWhitespaceToken.kind !== TokenKind.Colon)
             ) {
                 //skip indent for 'function'|'sub' used as type (preceeded by `as` keyword)
                 if (
@@ -152,29 +163,28 @@ export class IndentFormatter {
                     continue;
                 }
 
-                nextLineOffset++;
-                foundIndentorThisLine = true;
-                parentIndentTokenKinds.push(token.kind);
+                const isOpenFunctionDeclarationParamList = this.isStartOfOpenFunctionDeclarationParamList(lineTokens, i);
 
-                //don't double indent if this is `[[...\n...]]` or `[{...\n...}]`
-                if (
-                    //is open square
-                    token.kind === TokenKind.LeftSquareBracket &&
-                    //next is an open curly or square
-                    (nextNonWhitespaceToken.kind === TokenKind.LeftCurlyBrace || nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket) &&
-                    //both tokens are on the same line
-                    token.range.start.line === nextNonWhitespaceToken.range.start.line
-                ) {
-                    //find the closer
-                    let closer = util.getClosingToken(tokens, tokens.indexOf(token), TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
-                    let expectedClosingPreviousKind = nextNonWhitespaceToken.kind === TokenKind.LeftSquareBracket ? TokenKind.RightSquareBracket : TokenKind.RightCurlyBrace;
-                    let closingPrevious = closer && util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closer), true);
-                    /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
-                    if (closingPrevious && closingPrevious.kind === expectedClosingPreviousKind) {
-                        //skip the next token
-                        i++;
+                //collapse multiple bracket groups that open on the same line into a single indent level: only the first
+                //unclosed opener on a line adds a level; a later opener whose enclosing group opened on the same line is
+                //collapsed into it (e.g. the `{` in `foo(arg, {` ... `})`, or `[{` ... `}]`). We record the enclosing
+                //group's closer so the close side skips its matching un-indent, keeping opens and closes balanced.
+                if (!isOpenFunctionDeclarationParamList) {
+                    const enclosingCloser = this.getCollapsibleEnclosingCloser(tokens, tokens.indexOf(token));
+                    if (enclosingCloser) {
+                        this.collapsedGroupClosers.add(enclosingCloser);
+                        continue;
                     }
                 }
+
+                if (isOpenFunctionDeclarationParamList) {
+                    this.multiLineFuncDeclarationOpeners.push(token);
+                } else {
+                    nextLineOffset++;
+                    foundIndentorThisLine = true;
+                }
+                parentIndentTokenKinds.push(token.kind);
+
             } else if (this.isOutdentToken(token, nextNonWhitespaceToken)) {
                 //do not un-indent if this is a `next` or `endclass` token preceeded by a period
                 if (
@@ -193,32 +203,33 @@ export class IndentFormatter {
                     }
                 }
 
+                //skip the un-indent for a closer whose group was collapsed on the open side (more than one group opened
+                //on the same line). The matching opener didn't add a level, so this closer must not remove one.
+                if (this.collapsedGroupClosers.has(token)) {
+                    this.collapsedGroupClosers.delete(token);
+                    continue;
+                }
+
                 nextLineOffset--;
-                if (foundIndentorThisLine === false) {
+                //only the first leading closer dedents the current line, aligning it with that closer's opener (e.g.
+                //the `}` in `})` aligns the line with its `{`); later closers on the line only affect the next line
+                if (foundIndentorThisLine === false && !outdentedThisLine) {
                     currentLineOffset--;
+                    outdentedThisLine = true;
                 }
                 parentIndentTokenKinds.pop();
 
-                //don't double un-indent if this is `[[...\n...]]` or `[{...\n...}]`
-                if (
-                    //is closing curly or square
-                    (token.kind === TokenKind.RightCurlyBrace || token.kind === TokenKind.RightSquareBracket) &&
-                    //next is closing square
-                    nextNonWhitespaceToken && nextNonWhitespaceToken.kind === TokenKind.RightSquareBracket &&
-                    //both tokens are on the same line
-                    token.range.start.line === nextNonWhitespaceToken.range.start.line
-                ) {
+                if (token.kind === TokenKind.RightParen) {
                     let opener = this.getOpeningToken(
                         tokens,
-                        tokens.indexOf(nextNonWhitespaceToken),
-                        TokenKind.LeftSquareBracket,
-                        TokenKind.RightSquareBracket
+                        tokens.indexOf(token),
+                        [TokenKind.LeftParen],
+                        TokenKind.RightParen
                     );
-                    let openerNext = opener && util.getNextNonWhitespaceToken(tokens, tokens.indexOf(opener), true);
-                    if (openerNext && (openerNext.kind === TokenKind.LeftCurlyBrace || openerNext.kind === TokenKind.LeftSquareBracket)) {
-                        //skip the next token
-                        i += 1;
-                        continue;
+                    if (this.multiLineFuncDeclarationOpeners.includes(opener!)) {
+                        // indent function body
+                        nextLineOffset++;
+                        this.multiLineFuncDeclarationOpeners = this.multiLineFuncDeclarationOpeners.filter(x => x !== opener);
                     }
                 }
 
@@ -227,15 +238,139 @@ export class IndentFormatter {
                 //these need outdented, but don't change the tabCount
                 currentLineOffset--;
             }
-            //  else if (token.kind === TokenKind.return && foundIndentorThisLine) {
-            //     //a return statement on the same line as an indentor means we don't want to indent
-            //     tabCount--;
-            // }
         }
         return {
             currentLineOffset: currentLineOffset,
             nextLineOffset: nextLineOffset
         };
+    }
+
+    private getMatchingClosingTokens(allTokens: Token[], openTokens: Token[], currentIndex: number): (Token | null)[] {
+        const closingTokens: (Token | null)[] = [];
+        for (let openToken of openTokens) {
+            const expectedClosingTokenKind = this.getExpectedClosingToken(openToken);
+            if (!expectedClosingTokenKind) {
+                continue;
+            }
+            const closingToken = util.getClosingToken(allTokens, allTokens.indexOf(openToken), openToken.kind, expectedClosingTokenKind);
+            if (closingToken) {
+                closingTokens.push(closingToken);
+            } else {
+                closingTokens.push(null);
+            }
+        }
+        return closingTokens;
+    }
+
+    /**
+     * If the open token at `currentIndex` is a multi-line group nested directly inside another group that opened on the
+     * same line, return that enclosing group's closing token (so the open side can collapse them into a single indent
+     * level and the close side can skip the matching un-indent). Returns undefined when this token should indent on its
+     * own (it is the first unclosed group to open on its line, or it opens and closes on the same line).
+     */
+    private getCollapsibleEnclosingCloser(tokens: Token[], currentIndex: number): Token | null | undefined {
+        const openToken = tokens[currentIndex];
+        const closingToken = this.getMatchingClosingTokens(tokens, [openToken], currentIndex)[0];
+        //a group that opens and closes on the same line never adds an indent level, so it can't be collapsed
+        if (!closingToken || closingToken.range.start.line === openToken.range.start.line) {
+            return undefined;
+        }
+        const enclosingOpenToken = this.getImmediateEnclosingOpenerOnSameLine(tokens, currentIndex);
+        if (!enclosingOpenToken) {
+            return undefined;
+        }
+        //null when the enclosing group has no closer (unbalanced source); the caller treats that as "don't collapse"
+        return this.getMatchingClosingTokens(tokens, [enclosingOpenToken], tokens.indexOf(enclosingOpenToken))[0];
+    }
+
+    /**
+     * Walk backward from `currentIndex` to find the opener that directly encloses it, but only if that opener is on the
+     * same line. Balanced groups encountered along the way are skipped via depth tracking. Returns undefined if the
+     * start of the line is reached first (i.e. there is no enclosing opener on this line).
+     */
+    private getImmediateEnclosingOpenerOnSameLine(tokens: Token[], currentIndex: number): Token | undefined {
+        const openerKinds = [...IndentGroupingTokenKinds, ...CallableKeywordTokenKinds];
+        const closerKinds = [...OutdentGroupingTokenKinds, TokenKind.EndSub, TokenKind.EndFunction];
+        let depth = 0;
+        for (let i = currentIndex - 1; i >= 0; i--) {
+            const candidate = tokens[i];
+            if (candidate.kind === TokenKind.Newline) {
+                return undefined;
+            }
+            if (candidate.kind === TokenKind.Whitespace) {
+                continue;
+            }
+            //`function`/`sub` used as a type (e.g. `as function`) is not a block opener, so don't let it match
+            if (CallableKeywordTokenKinds.includes(candidate.kind)) {
+                //the optional chain only short-circuits at the start of the file, which the scan never reaches here
+                /* istanbul ignore next */
+                if (util.getPreviousNonWhitespaceToken(tokens, i)?.kind === TokenKind.As) {
+                    continue;
+                }
+            }
+            if (closerKinds.includes(candidate.kind)) {
+                depth++;
+            } else if (openerKinds.includes(candidate.kind)) {
+                if (depth === 0) {
+                    return candidate;
+                }
+                depth--;
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Gets an array of all possible closing token kinds for a given opening token
+     */
+    private getExpectedClosingToken(openToken: Token): TokenKind | undefined {
+        if (openToken.kind === TokenKind.LeftCurlyBrace) {
+            return TokenKind.RightCurlyBrace;
+        } else if (openToken.kind === TokenKind.LeftSquareBracket) {
+            return TokenKind.RightSquareBracket;
+        } else if (openToken.kind === TokenKind.QuestionLeftSquare) {
+            return TokenKind.RightSquareBracket;
+        } else if (openToken.kind === TokenKind.LeftParen) {
+            return TokenKind.RightParen;
+        } else if (openToken.kind === TokenKind.QuestionLeftParen) {
+            return TokenKind.RightParen;
+        } else if (openToken.kind === TokenKind.Sub) {
+            return TokenKind.EndSub;
+        } else if (openToken.kind === TokenKind.Function) {
+            return TokenKind.EndFunction;
+        }
+    }
+
+    private isStartOfOpenFunctionDeclarationParamList(lineTokens: Token[], currentIndex: number): boolean {
+        const currentToken = lineTokens[currentIndex];
+        if (currentToken.kind !== TokenKind.LeftParen) {
+            return false;
+        }
+        const previousNonWhitespaceToken = util.getPreviousNonWhitespaceToken(lineTokens, currentIndex);
+        if (!previousNonWhitespaceToken) {
+            return false;
+        }
+        let isFunctionDeclarationParamList = false;
+        if (CallableKeywordTokenKinds.includes(previousNonWhitespaceToken.kind)) {
+            // this is "function(" or "sub("
+            isFunctionDeclarationParamList = true;
+        } else if (previousNonWhitespaceToken.kind === TokenKind.Identifier) {
+            const previousPreviousNonWhitespaceToken = util.getPreviousNonWhitespaceToken(lineTokens, lineTokens.indexOf(previousNonWhitespaceToken), true);
+            if (!previousPreviousNonWhitespaceToken) {
+                return false;
+            }
+            if (CallableKeywordTokenKinds.includes(previousPreviousNonWhitespaceToken.kind)) {
+                // this is "function someName(" or "sub someName("
+                isFunctionDeclarationParamList = true;
+            }
+        }
+        if (isFunctionDeclarationParamList) {
+            let closingToken = this.getMatchingClosingTokens(lineTokens, [lineTokens[currentIndex]], currentIndex)[0];
+            if (!closingToken) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -342,11 +477,11 @@ export class IndentFormatter {
     /**
      * Given a kind like `}` or `]`, walk backwards until we find its match
      */
-    public getOpeningToken(tokens: Token[], currentIndex: number, openKind: TokenKind, closeKind: TokenKind) {
+    public getOpeningToken(tokens: Token[], currentIndex: number, openKinds: TokenKind[], closeKind: TokenKind) {
         let openCount = 0;
         for (let i = currentIndex; i >= 0; i--) {
             let token = tokens[i];
-            if (token.kind === openKind) {
+            if (openKinds.includes(token.kind)) {
                 openCount++;
             } else if (token.kind === closeKind) {
                 openCount--;
@@ -362,7 +497,7 @@ export class IndentFormatter {
      */
     public isOutdentToken(token: Token, nextNonWhitespaceToken?: Token) {
         //this is a temporary fix for broken indentation for brighterscript ternary operations.
-        const isSymbol = [TokenKind.RightCurlyBrace, TokenKind.RightSquareBracket].includes(token.kind);
+        const isSymbol = [TokenKind.RightCurlyBrace, TokenKind.RightSquareBracket, TokenKind.RightParen].includes(token.kind);
         if (
             //this is an outdentor token
             OutdentSpacerTokenKinds.includes(token.kind) &&

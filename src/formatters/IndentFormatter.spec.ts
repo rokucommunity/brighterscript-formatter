@@ -77,4 +77,14 @@ describe('IndentFormatter', () => {
             );
         });
     });
+
+    describe('getMatchingClosingTokens', () => {
+        it('returns null for tokens with no expected closing tokens', () => {
+            const tokes = lex(`some random tokens`);
+            expect(
+                formatter['getMatchingClosingTokens'](tokes, [tokes[0]], 0)
+            ).to.eql([]);
+        });
+    });
+
 });

@@ -359,6 +359,17 @@ describe('Formatter', () => {
            `);
         });
 
+        it('handles wrapped anon function over multiple lines in ternary properly', () => {
+            formatEqualTrim(`
+                sub main()
+                    a = true ? (sub()
+                        print hello
+                    end sub) : true
+                    print a
+                end sub
+           `);
+        });
+
         it('handles type statements with typed function types', () => {
             formatEqualTrim(`
                 type myFunc = function(a as string) as integer
@@ -1960,6 +1971,16 @@ end sub`;
     });
 
     describe('indentStyle', () => {
+        it('handles anon functions as function args', () => {
+            formatEqual(undent`
+                sub main()
+                    doSomething(sub()
+                        print 1
+                    end sub)
+                end sub
+            `);
+        });
+
         it('ignores methods with the name `catch` when contained within a function using a custom param type', () => {
             formatEqual(undent`
                 sub main()
@@ -1982,6 +2003,21 @@ end sub`;
                     end sub).then(sub(a as boolean)
                         print 2
                     end sub).catch()
+                end sub
+            `);
+        });
+
+        it('does not de-indent on a typecast inside chained anonymous functions (#82)', () => {
+            formatEqualTrim(`
+                sub test()
+                    if true
+                        if true
+                            promises.chain(media as dynamic).then(sub()
+                                print 1
+                            end sub).catch(sub()
+                            end sub)
+                        end if
+                    end if
                 end sub
             `);
         });
@@ -2085,6 +2121,401 @@ end function`;
         });
     });
 
+    describe('multiline function parameters and calls', () => {
+        it('does not double indent [{...\\n...}]', () => {
+            formatEqualTrim(`
+                sub test()
+                    foo([{
+                        name: "bob"
+                    }])
+                end sub
+            `);
+        });
+
+        it('does not double indent when sub passed to function', () => {
+            formatEqualTrim(`
+                callSomeFuncWithSubParam(sub()
+                    print "hello"
+                end sub)
+            `);
+        });
+
+        it('indents function parameters when already split across lines', () => {
+            formatEqualTrim(`
+                function foo(
+                param1 as string,
+                param2,
+                param3 as string
+                ) as string
+                end function
+            `, `
+                function foo(
+                    param1 as string,
+                    param2,
+                    param3 as string
+                ) as string
+                end function
+            `);
+        });
+
+        it('indents sub parameters when already split across lines', () => {
+            formatEqualTrim(`
+                sub foo(
+                param1 as string,
+                param2,
+                param3 as string
+                ) as string
+                end sub
+            `, `
+                sub foo(
+                    param1 as string,
+                    param2,
+                    param3 as string
+                ) as string
+                end sub
+            `);
+        });
+
+        it('indents function parameters when already split across lines with function body', () => {
+            formatEqualTrim(`
+                function foo(
+                param1 as    string,
+                     param2  as       integer,
+                param3  as    string
+                )      as string
+                        print "hello"
+                return param1 + param2.toStr() + param3
+                end function
+            `, `
+                function foo(
+                    param1 as string,
+                    param2 as integer,
+                    param3 as string
+                ) as string
+                    print "hello"
+                    return param1 + param2.toStr() + param3
+                end function
+            `);
+        });
+
+        it('indents multiline function calls', () => {
+            formatEqualTrim(`
+                myPoster = createObject(
+                    "roSGNode",
+                    "Poster"
+                )
+            `);
+        });
+
+        it('fixes indents in multiline function calls', () => {
+            formatEqualTrim(`
+                myPoster = createObject(
+                         "roSGNode",
+                "Poster"
+                )
+            `, `
+                myPoster = createObject(
+                    "roSGNode",
+                    "Poster"
+                )
+            `);
+        });
+
+        it('does not modify single-line function declarations', () => {
+            formatEqual('function foo(param1 as string, param2, param3 as string) as string\nend function');
+        });
+
+        it('does not modify single-line function call', () => {
+            formatEqual('myPoster = createObject("roSGNode", "Poster")');
+        });
+
+        it('indents multiline callfunc calls', () => {
+            formatEqualTrim(`
+                myPoster = someNode@.someCallFunc(
+                    1,
+                    2,
+                    { data: "bob" }
+                )
+            `);
+        });
+
+        it('fixes indents in multiline callfunc calls', () => {
+            formatEqualTrim(`
+                myPoster = someNode@.someCallFunc(
+                         1,
+                2,
+                   {data: "bob"}
+                )
+            `, `
+                myPoster = someNode@.someCallFunc(
+                    1,
+                    2,
+                    { data: "bob" }
+                )
+            `);
+        });
+
+        it('indents in multiline function declarations in aa literals', () => {
+            formatEqualTrim(`
+                {
+                    func: function(
+                        param1 as function
+                    ) as string
+                        return param1(
+                            "hello"
+                        )
+                    end function
+                }
+                
+            `);
+        });
+
+        it('allows indents of grouping expressions', () => {
+            formatEqualTrim(`
+                a = b * (
+                    3 - 2
+                )
+            `);
+        });
+
+        it('allows grouping expressions in function calls', () => {
+            formatEqualTrim(`
+                someFunc(
+                    (4 + 7) * 2
+                )
+            `);
+            formatEqualTrim(`
+                someFunc(
+                    (
+                        4 + 7
+                    ) * 2
+                )
+            `);
+        });
+
+        it('indents in multiline function calls with aa literals', () => {
+            formatEqualTrim(`
+                someFunc(
+                    1,
+                    { data: "bob" },
+                    {
+                        name: "multiLineAA",
+                        value: 22
+                    },
+                    {
+                        func: sub()
+                            print "hello"
+                        end sub,
+                        func2: function(
+                            param1 as function
+                        ) as string
+                            return param1(
+                                "hello"
+                            )
+                        end function
+                    }
+                )
+            `);
+        });
+
+        it('indents function calls with multiple args per line ', () => {
+            formatEqualTrim(`
+                someFunc(1, { data: "bob" }, {
+                    name: "multiLineAA",
+                    value: 22
+                }, "hello", {
+                    func: sub()
+                        print "hello"
+                    end sub,
+                    func2: function(
+                        param1 as function
+                    ) as string
+                        return param1(
+                            "hello"
+                        )
+                    end function
+                }
+                )
+            `);
+        });
+
+        it('indents nested multi-line function calls one level per call', () => {
+            formatEqualTrim(`
+                sub test()
+                    outer(
+                        inner(
+                            value
+                        )
+                    )
+                end sub
+            `);
+        });
+
+        it('indents a multi-line call with mixed args, a nested call, and a trailing comment (#131)', () => {
+            formatEqualTrim(`
+                sub main()
+                    callOtherFunction(
+                        "param1",
+                        "param2",
+                        [1, 2, 3],
+                        { allowAA: true },
+                        nestedFunctionCall(
+                            "nestedParam"
+                        ),
+                        "commentsOnSameLine" ' this may require a Brightscript parser update?
+                    )
+                end sub
+            `);
+        });
+
+        it('indents a multi-line function declaration with a default object-literal param (#131)', () => {
+            formatEqualTrim(`
+                sub multiLineFunctionDeclaration(
+                    param1 as string,
+                    param2 as boolean,
+                    param3 = { test: "AA" } as roAssociativeArray
+                )
+                end sub
+            `);
+        });
+
+        it('does not double indent three groups that open adjacently on one line', () => {
+            formatEqualTrim(`
+                sub test()
+                    foo([{
+                        name: "bob"
+                    }])
+                end sub
+            `);
+        });
+
+        it('indents a multi-line optional-index expression', () => {
+            formatEqualTrim(`
+                sub test()
+                    value = data?[
+                        0
+                    ]
+                end sub
+            `);
+        });
+
+        it('indents a multi-line optional-call expression', () => {
+            formatEqualTrim(`
+                sub test()
+                    value = foo?(
+                        1
+                    )
+                end sub
+            `);
+        });
+
+        it('does not double indent a multi-line array of arrays opened on one line', () => {
+            formatEqualTrim(`
+                sub test()
+                    grid = [[
+                        1
+                    ]]
+                end sub
+            `);
+        });
+
+        it('does not double indent an object arg following a `as function` type annotation', () => {
+            formatEqualTrim(`
+                sub test()
+                    register(handler as function, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an object arg following an inline sub argument', () => {
+            formatEqualTrim(`
+                sub test()
+                    register(sub() : end sub, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an object literal as the last call arg closed with `})` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    result = doThing(value, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an array literal as the last call arg closed with `])` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    result = doThing(value, [
+                        1
+                        2
+                    ])
+                end sub
+            `);
+        });
+
+        it('does not double indent a function passed as the last call arg closed with `end function)` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    SetNavigation(a, b, c, function()
+                        ScrollUp()
+                    end function)
+                    SetNavigation(d, e, f)
+                end sub
+            `);
+        });
+
+        it('does not double indent a sub passed as the last call arg closed with `end sub)` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    SetNavigation(a, b, c, sub()
+                        ScrollUp()
+                    end sub)
+                    SetNavigation(d, e, f)
+                end sub
+            `);
+        });
+
+        it('does not drift indentation when an object opens on its own line and closes with `})` (issue #143)', () => {
+            formatEqualTrim(`
+                function getImage(showId as string)
+                    result = api.GetEpisodes(showId,
+                        {
+                            seasonId: seasonId,
+                            limit: 5
+                        })
+                    return result
+                end function
+            `);
+        });
+
+        it('does not drift indentation after `})` for the rest of the function (issue #143)', () => {
+            formatEqualTrim(`
+                function ExecuteJob() as void
+                    if isInnertubeProfile
+                        subscriptionStatus = GetSubscriptionStatusForChannel(ucid, {
+                            cancellation: cancellation
+                            accessToken: authToken.token
+                        })
+
+                        if subscriptionStatus.error <> invalid
+                            return
+                        end if
+                        channelView.isSubscribed = subscriptionStatus.isSubscribed
+                    else
+                        service = createService(invidiousNode)
+                    end if
+                end function
+            `);
+        });
+    });
+
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
         expected = expected ?? incoming;
         let formatted = formatter.format(incoming, options);
@@ -2092,8 +2523,8 @@ end function`;
     }
 
     /**
-     * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
-     */
+      * Same as formatEqual, but smart trims leading whitespace to the indent level of the first character found
+      */
     function formatEqualTrim(incoming: string, expected?: string, options?: FormattingOptions) {
         let sources = [
             incoming,
@@ -2102,22 +2533,22 @@ end function`;
         for (let i = 0; i < sources.length; i++) {
             let lines = sources[i].split('\n');
             //throw out leading newlines
-            while (lines[0].length === 0) {
+            while (lines.length > 0 && lines[0].length === 0) {
                 lines.splice(0, 1);
             }
             let trimStartIndex = null as number | null;
             for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
                 //if we don't have a starting trim count, compute it
-                if (!trimStartIndex) {
+                if (trimStartIndex === null && lines[lineIndex].trim().length > 0) {
                     trimStartIndex = lines[lineIndex].length - lines[lineIndex].trim().length;
                 }
 
-                if (lines[lineIndex].length > 0) {
+                if (lines[lineIndex].length > 0 && trimStartIndex !== null) {
                     lines[lineIndex] = lines[lineIndex].substring(trimStartIndex);
                 }
             }
             //trim trailing newlines
-            while (lines[lines.length - 1].length === 0) {
+            while (lines.length > 0 && lines[lines.length - 1].length === 0) {
                 lines.splice(lines.length - 1);
             }
             sources[i] = lines.join('\n');

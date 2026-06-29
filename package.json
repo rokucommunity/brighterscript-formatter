@@ -1,18 +1,19 @@
 {
     "name": "brighterscript-formatter",
-    "version": "1.7.24",
+    "version": "1.7.28",
     "description": "A formatter for BrighterScript, a superset of Roku's BrightScript language, written in JavaScript",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
         "preversion": "npm run build && npm run lint && npm run test",
-        "build": "rimraf dist && tsc",
-        "watch": "rimraf dist && tsc --watch",
+        "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+        "build": "npm run clean && tsc",
+        "watch": "npm run clean && tsc --watch",
         "prepublishOnly": "npm run build && npm run test && npm run lint",
         "lint": "eslint \"src/**\"",
         "test": "nyc mocha \"src/**/*.spec.ts\" --full-trace",
         "test:nocover": "mocha \"src/**/*.spec.ts\"",
-        "publish-coverage": "nyc report --reporter=text-lcov | coveralls",
+        "audit": "npm audit || audit-ci --config ./audit-ci.jsonc",
         "format-github": "ts-node scripts/format-github.ts",
         "format-github-compare": "ts-node scripts/format-github.ts --compare",
         "cli": "SET TS_NODE_TYPE_CHECK=false && ts-node src/cli.ts",
@@ -23,7 +24,7 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.72.0",
+        "brighterscript": "^0.72.5",
         "glob-all": "^3.3.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "0.7.4",
@@ -33,30 +34,28 @@
         "@types/chai": "^4.2.22",
         "@types/fs-extra": "^9.0.13",
         "@types/glob": "^7.2.0",
-        "@types/mocha": "^9.0.0",
+        "@types/mocha": "^10.0.10",
         "@types/node": "^20.12.12",
         "@types/sinon": "^10.0.6",
         "@types/yargs": "^17.0.4",
         "@typescript-eslint/eslint-plugin": "^5.27.0",
         "@typescript-eslint/parser": "^5.27.0",
+        "audit-ci": "^7.1.0",
         "chai": "^4.3.4",
-        "child-process-promise": "^2.2.1",
-        "coveralls-next": "^4.2.0",
         "eslint": "^8.1.0",
         "eslint-plugin-no-only-tests": "^2.6.0",
         "fs-extra": "^10.0.0",
         "glob-promise": "^4.2.2",
-        "mocha": "9.1.3",
+        "mocha": "^10.8.2",
         "nyc": "15.1.0",
-        "rimraf": "^3.0.2",
         "sinon": "^11.1.2",
         "source-map-support": "0.5.21",
         "ts-node": "10.9.2",
         "typescript": "^4.7.2",
-        "undent": "^0.1.0"
+        "undent": "^1.0.1"
     },
     "overrides": {
-        "@types/minimatch": "npm:empty-npm-package@1.0.0"
+        "serialize-javascript": "^7.0.5"
     },
     "files": [
         "dist/**/*",
@@ -88,7 +87,8 @@
         ],
         "reporter": [
             "text-summary",
-            "html"
+            "html",
+            "lcovonly"
         ],
         "sourceMap": true,
         "instrument": true,
