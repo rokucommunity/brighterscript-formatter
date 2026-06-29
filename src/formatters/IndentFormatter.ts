@@ -194,6 +194,15 @@ export class IndentFormatter {
                     continue;
                 }
 
+                //`next` only validly closes `for`/`for each` blocks - skip outdent if the
+                //enclosing block is anything else (e.g. `while ... next`, which the parser rejects)
+                if (token.kind === TokenKind.Next) {
+                    const parentKind = getParentIndentTokenKind();
+                    if (parentKind !== TokenKind.For && parentKind !== TokenKind.ForEach) {
+                        continue;
+                    }
+                }
+
                 //skip the un-indent for a closer whose group was collapsed on the open side (more than one group opened
                 //on the same line). The matching opener didn't add a level, so this closer must not remove one.
                 if (this.collapsedGroupClosers.has(token)) {

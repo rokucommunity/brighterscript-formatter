@@ -5,6 +5,7 @@ import type { FormattingOptions } from './FormattingOptions';
 import { normalizeOptions } from './FormattingOptions';
 import { CompositeKeywordFormatter } from './formatters/CompositeKeywordFormatter';
 import { IndentFormatter } from './formatters/IndentFormatter';
+import { ForLoopTerminatorFormatter } from './formatters/ForLoopTerminatorFormatter';
 import { InteriorWhitespaceFormatter } from './formatters/InteriorWhitespaceFormatter';
 import { KeywordCaseFormatter } from './formatters/KeywordCaseFormatter';
 import { MultiLineItemFormatter } from './formatters/MultiLineItemFormatter';
@@ -36,6 +37,7 @@ export class Formatter {
     private formatters = {
         indent: new IndentFormatter(),
         multiLineItem: new MultiLineItemFormatter(),
+        forLoopTerminator: new ForLoopTerminatorFormatter(),
         compositeKeyword: new CompositeKeywordFormatter(),
         keywordCase: new KeywordCaseFormatter(),
         trailingWhitespace: new TrailingWhitespaceFormatter(),
@@ -113,6 +115,10 @@ export class Formatter {
 
         if (options.formatMultiLineObjectsAndArrays) {
             tokens = this.formatters.multiLineItem.format(tokens);
+        }
+
+        if (options.forLoopTerminator && options.forLoopTerminator !== 'original') {
+            tokens = this.formatters.forLoopTerminator.format(tokens, options, parser);
         }
 
         if (options.compositeKeywords) {
