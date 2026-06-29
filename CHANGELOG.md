@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.8.0](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.28...v1.8.0) - 2026-06-29
+### Added
+ - Add forLoopTerminator option and fix bogus next handling ([#130](https://github.com/rokucommunity/brighterscript-formatter/pull/130))
+### Changed
+ - upgrade to [brighterscript@0.73.0](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0730---2026-06-29). Notable changes since 0.72.5:
+     - Reduced unessisary unnecessary production dependencies ([#1735](https://github.com/rokucommunity/brighterscript/pull/1735)) ([#1736](https://github.com/rokucommunity/brighterscript/pull/1736)) ([#1737](https://github.com/rokucommunity/brighterscript/pull/1737))
+### Fixed
+ - Fix multi-line indentation regression from 1.7.28 (#143) ([#145](https://github.com/rokucommunity/brighterscript-formatter/pull/145))
+
+
+
 ## [1.7.28](https://github.com/rokucommunity/brighterscript-formatter/compare/1.7.27...v1.7.28) - 2026-06-23
 ### Changed
  - Multi-line Function parameters ([#140](https://github.com/rokucommunity/brighterscript-formatter/pull/140))
