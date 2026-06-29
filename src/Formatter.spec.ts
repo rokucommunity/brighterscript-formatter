@@ -1765,6 +1765,21 @@ end sub`;
             `);
         });
 
+        it('does not de-indent on a typecast inside chained anonymous functions (#82)', () => {
+            formatEqualTrim(`
+                sub test()
+                    if true
+                        if true
+                            promises.chain(media as dynamic).then(sub()
+                                print 1
+                            end sub).catch(sub()
+                            end sub)
+                        end if
+                    end if
+                end sub
+            `);
+        });
+
         describe('conditional block', () => {
             it('correctly fixes the indentation', () => {
                 let expected = `#if isDebug\n    doSomething()\n#end if`;
@@ -2090,6 +2105,34 @@ end function`;
                             value
                         )
                     )
+                end sub
+            `);
+        });
+
+        it('indents a multi-line call with mixed args, a nested call, and a trailing comment (#131)', () => {
+            formatEqualTrim(`
+                sub main()
+                    callOtherFunction(
+                        "param1",
+                        "param2",
+                        [1, 2, 3],
+                        { allowAA: true },
+                        nestedFunctionCall(
+                            "nestedParam"
+                        ),
+                        "commentsOnSameLine" ' this may require a Brightscript parser update?
+                    )
+                end sub
+            `);
+        });
+
+        it('indents a multi-line function declaration with a default object-literal param (#131)', () => {
+            formatEqualTrim(`
+                sub multiLineFunctionDeclaration(
+                    param1 as string,
+                    param2 as boolean,
+                    param3 = { test: "AA" } as roAssociativeArray
+                )
                 end sub
             `);
         });
