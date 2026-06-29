@@ -88,6 +88,7 @@ export let IndentSpacerTokenKinds = [
     TokenKind.LeftSquareBracket,
     TokenKind.QuestionLeftSquare,
     TokenKind.LeftParen,
+    TokenKind.QuestionLeftParen,
     TokenKind.While,
     TokenKind.HashIf,
     TokenKind.Class,
@@ -223,7 +224,8 @@ export const IndentGroupingTokenKinds = [
     TokenKind.LeftCurlyBrace,
     TokenKind.LeftSquareBracket,
     TokenKind.QuestionLeftSquare,
-    TokenKind.LeftParen
+    TokenKind.LeftParen,
+    TokenKind.QuestionLeftParen
 ];
 
 export const OutdentGroupingTokenKinds = [
