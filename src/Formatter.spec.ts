@@ -2064,21 +2064,169 @@ end function`;
         it('indents function calls with multiple args per line ', () => {
             formatEqualTrim(`
                 someFunc(1, { data: "bob" }, {
-                        name: "multiLineAA",
-                        value: 22
-                    }, "hello", {
-                        func: sub()
-                            print "hello"
-                        end sub,
-                        func2: function(
-                            param1 as function
-                        ) as string
-                            return param1(
-                                "hello"
-                            )
-                        end function
-                    }
+                    name: "multiLineAA",
+                    value: 22
+                }, "hello", {
+                    func: sub()
+                        print "hello"
+                    end sub,
+                    func2: function(
+                        param1 as function
+                    ) as string
+                        return param1(
+                            "hello"
+                        )
+                    end function
+                }
                 )
+            `);
+        });
+
+        it('indents nested multi-line function calls one level per call', () => {
+            formatEqualTrim(`
+                sub test()
+                    outer(
+                        inner(
+                            value
+                        )
+                    )
+                end sub
+            `);
+        });
+
+        it('does not double indent three groups that open adjacently on one line', () => {
+            formatEqualTrim(`
+                sub test()
+                    foo([{
+                        name: "bob"
+                    }])
+                end sub
+            `);
+        });
+
+        it('indents a multi-line optional-index expression', () => {
+            formatEqualTrim(`
+                sub test()
+                    value = data?[
+                        0
+                    ]
+                end sub
+            `);
+        });
+
+        it('indents a multi-line optional-call expression', () => {
+            formatEqualTrim(`
+                sub test()
+                    value = foo?(
+                        1
+                    )
+                end sub
+            `);
+        });
+
+        it('does not double indent a multi-line array of arrays opened on one line', () => {
+            formatEqualTrim(`
+                sub test()
+                    grid = [[
+                        1
+                    ]]
+                end sub
+            `);
+        });
+
+        it('does not double indent an object arg following a `as function` type annotation', () => {
+            formatEqualTrim(`
+                sub test()
+                    register(handler as function, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an object arg following an inline sub argument', () => {
+            formatEqualTrim(`
+                sub test()
+                    register(sub() : end sub, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an object literal as the last call arg closed with `})` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    result = doThing(value, {
+                        name: "bob"
+                    })
+                end sub
+            `);
+        });
+
+        it('does not double indent an array literal as the last call arg closed with `])` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    result = doThing(value, [
+                        1
+                        2
+                    ])
+                end sub
+            `);
+        });
+
+        it('does not double indent a function passed as the last call arg closed with `end function)` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    SetNavigation(a, b, c, function()
+                        ScrollUp()
+                    end function)
+                    SetNavigation(d, e, f)
+                end sub
+            `);
+        });
+
+        it('does not double indent a sub passed as the last call arg closed with `end sub)` (issue #143)', () => {
+            formatEqualTrim(`
+                sub test()
+                    SetNavigation(a, b, c, sub()
+                        ScrollUp()
+                    end sub)
+                    SetNavigation(d, e, f)
+                end sub
+            `);
+        });
+
+        it('does not drift indentation when an object opens on its own line and closes with `})` (issue #143)', () => {
+            formatEqualTrim(`
+                function getImage(showId as string)
+                    result = api.GetEpisodes(showId,
+                        {
+                            seasonId: seasonId,
+                            limit: 5
+                        })
+                    return result
+                end function
+            `);
+        });
+
+        it('does not drift indentation after `})` for the rest of the function (issue #143)', () => {
+            formatEqualTrim(`
+                function ExecuteJob() as void
+                    if isInnertubeProfile
+                        subscriptionStatus = GetSubscriptionStatusForChannel(ucid, {
+                            cancellation: cancellation
+                            accessToken: authToken.token
+                        })
+
+                        if subscriptionStatus.error <> invalid
+                            return
+                        end if
+                        channelView.isSubscribed = subscriptionStatus.isSubscribed
+                    else
+                        service = createService(invidiousNode)
+                    end if
+                end function
             `);
         });
     });
