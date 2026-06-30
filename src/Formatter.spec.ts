@@ -2409,6 +2409,26 @@ end function`;
             `);
         });
 
+        it('indents a continuation line ending with the closing paren', () => {
+            formatEqualTrim(`
+                sub test()
+                    m.assertEqual(result, expected,
+                        "message text")
+                end sub
+            `);
+        });
+
+        it('indents consecutive multi-line calls whose continuations end with a template literal closing paren', () => {
+            formatEqualTrim(`
+                sub test(input, expected)
+                    m.assertTrue(Type(result) = "roBoolean" or Type(result) = "Boolean",
+                        \`toBoolean('\${input}') should return boolean type but got \${Type(result)}\`)
+                    m.assertEqual(result, expected,
+                        \`toBoolean('\${input}') should return \${expected} but got \${result}\`)
+                end sub
+            `);
+        });
+
         it('does not double indent a multi-line array of arrays opened on one line', () => {
             formatEqualTrim(`
                 sub test()
