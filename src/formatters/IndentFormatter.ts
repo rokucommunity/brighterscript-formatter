@@ -69,8 +69,6 @@ export class IndentFormatter {
 
         let currentLineOffset = 0;
         let nextLineOffset = 0;
-        let foundIndentorThisLine = false;
-        let outdentedThisLine = false;
         let firstNonWhitespaceToken: Token | null = null;
 
         for (let i = 0; i < lineTokens.length; i++) {
@@ -181,7 +179,6 @@ export class IndentFormatter {
                     this.multiLineFuncDeclarationOpeners.push(token);
                 } else {
                     nextLineOffset++;
-                    foundIndentorThisLine = true;
                 }
                 parentIndentTokenKinds.push(token.kind);
 
@@ -211,11 +208,11 @@ export class IndentFormatter {
                 }
 
                 nextLineOffset--;
-                //only the first leading closer dedents the current line, aligning it with that closer's opener (e.g.
-                //the `}` in `})` aligns the line with its `{`); later closers on the line only affect the next line
-                if (foundIndentorThisLine === false && !outdentedThisLine) {
+                //only dedent the current line when it *starts* with a closer, aligning the line with that closer's
+                //opener (e.g. the `}` in a leading `})`). A closer at the end of a content/continuation line must not
+                //pull the line back - e.g. the trailing `)` in `m.assertEqual(a,` ⏎ `` `msg`) `` keeps the +1 indent.
+                if (token === firstNonWhitespaceToken) {
                     currentLineOffset--;
-                    outdentedThisLine = true;
                 }
                 parentIndentTokenKinds.pop();
 
