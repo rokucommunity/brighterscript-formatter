@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.8.2](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.1...v1.8.2) - 2026-09-02
+### Changed
+ - Security enhancements ([#155](https://github.com/rokucommunity/brighterscript-formatter/pull/155))
+ - upgrade to [brighterscript@0.73.1](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0731---2026-09-02). Notable changes since 0.73.0:
+
+
+
 ## [1.8.1](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.0...v1.8.1) - 2026-06-30
 ### Fixed
  - Fix de-indent of multi-line call continuation lines ending with a closing paren ([#147](https://github.com/rokucommunity/brighterscript-formatter/pull/147))
