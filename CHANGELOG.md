@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.8.3](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.2...v1.8.3) - 2026-09-09
+### Changed
+ - Security enhancements ([#157](https://github.com/rokucommunity/brighterscript-formatter/pull/157))
+ - upgrade to [brighterscript@0.73.3](https://github.com/rokucommunity/brighterscript/blob/master/CHANGELOG.md#0733---2026-09-09). Notable changes since 0.73.1:
+     - Security enhancements ([#1796](https://github.com/rokucommunity/brighterscript/pull/1796))
+     - Add `isTerminal` and `previousInChain` getters to AstNode ([#1788](https://github.com/rokucommunity/brighterscript/pull/1788))
+     - Fix nested curly braces in template strings ([#1539](https://github.com/rokucommunity/brighterscript/pull/1539))
+     - Recognize regex literals after `${` and `,` ([#1789](https://github.com/rokucommunity/brighterscript/pull/1789))
+     - Reduce per-Token lexer allocation to cut GC pressure while editing ([#1712](https://github.com/rokucommunity/brighterscript/pull/1712))
+
+
+
 ## [1.8.2](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.1...v1.8.2) - 2026-09-02
 ### Changed
  - Security enhancements ([#155](https://github.com/rokucommunity/brighterscript-formatter/pull/155))
