@@ -1,11 +1,11 @@
-import * as globAll from 'glob-all';
-import type { IOptions } from 'glob';
+import * as fastGlob from 'fast-glob';
 import * as fsExtra from 'fs-extra';
 import { Formatter } from './Formatter';
 import type { FormattingOptions } from './FormattingOptions';
 import * as path from 'path';
 import type { ParseError } from 'jsonc-parser';
 import { parse as parseJsonc, printParseErrorCode } from 'jsonc-parser';
+import { util } from './util';
 
 /**
  * Runs the formatter for an entire project.
@@ -71,13 +71,15 @@ export class Runner {
      * Get the list of file paths for this run.
      */
     private getFilePaths(files: string[], cwd: string) {
-        const filePaths = globAll.sync(files, {
-            cwd: cwd,
+        //fast-glob only understands forward slashes (a backslash is an escape character in glob
+        //syntax), so normalize the separators the same way roku-deploy does before matching.
+        //fast-glob handles `!`-prefixed negation patterns natively, so patterns pass through as-is.
+        return fastGlob.sync(files.map(x => util.toForwardSlashes(x)), {
+            cwd: util.toForwardSlashes(cwd),
             absolute: true,
             //skip all directories
-            nodir: true
-        } as IOptions);
-        return filePaths as string[];
+            onlyFiles: true
+        });
     }
 
     /**
