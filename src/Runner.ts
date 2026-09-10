@@ -5,6 +5,7 @@ import type { FormattingOptions } from './FormattingOptions';
 import * as path from 'path';
 import type { ParseError } from 'jsonc-parser';
 import { parse as parseJsonc, printParseErrorCode } from 'jsonc-parser';
+import { util } from './util';
 
 /**
  * Runs the formatter for an entire project.
@@ -70,29 +71,15 @@ export class Runner {
      * Get the list of file paths for this run.
      */
     private getFilePaths(files: string[], cwd: string) {
-        //fast-glob handles `!`-prefixed negation patterns natively, so the patterns can be passed through as-is
-        return fastGlob.sync(files.map(x => this.normalizePattern(x)), {
-            cwd: cwd,
+        //fast-glob only understands forward slashes (a backslash is an escape character in glob
+        //syntax), so normalize the separators the same way roku-deploy does before matching.
+        //fast-glob handles `!`-prefixed negation patterns natively, so patterns pass through as-is.
+        return fastGlob.sync(files.map(x => util.toForwardSlashes(x)), {
+            cwd: util.toForwardSlashes(cwd),
             absolute: true,
             //skip all directories
             onlyFiles: true
         });
-    }
-
-    /**
-     * fast-glob requires patterns to use forward slashes, and cannot handle a windows-style
-     * absolute path (i.e. `C:\some\path`) as a pattern. Convert those to a valid pattern, while
-     * leaving any actual glob pattern untouched (`convertPathToPattern` escapes glob characters).
-     */
-    private normalizePattern(pattern: string) {
-        //preserve any leading negation characters
-        const negation = /^!*/.exec(pattern)![0];
-        const rest = pattern.slice(negation.length);
-        //only windows-style absolute paths need converting (i.e. they start with a drive letter)
-        if (/^[A-Za-z]:[\\/]/.test(rest)) {
-            return negation + fastGlob.convertPathToPattern(rest);
-        }
-        return pattern;
     }
 
     /**

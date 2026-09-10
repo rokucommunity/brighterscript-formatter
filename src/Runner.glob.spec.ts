@@ -107,6 +107,42 @@ describe('Runner globbing', () => {
         ).to.eql(['my dir/lib.brs']);
     });
 
+    it('matches a pattern with mixed path separators', () => {
+        write('source/nested/lib.brs');
+        expect(
+            getRelativePaths(['source\\nested/lib.brs'])
+        ).to.eql(['source/nested/lib.brs']);
+    });
+
+    it('matches a relative pattern that uses backslashes', () => {
+        write('source/lib.brs', 'other.brs');
+        expect(
+            getRelativePaths(['source\\*.brs'])
+        ).to.eql(['source/lib.brs']);
+    });
+
+    it('excludes files using a negated pattern that uses backslashes', () => {
+        write('source/main.brs', 'source/roku_modules/lib.brs');
+        expect(
+            getRelativePaths(['**/*.brs', '!**\\roku_modules\\**'])
+        ).to.eql(['source/main.brs']);
+    });
+
+    it('collapses duplicate path separators', () => {
+        write('source/lib.brs');
+        expect(
+            getRelativePaths(['source//lib.brs'])
+        ).to.eql(['source/lib.brs']);
+    });
+
+    it('matches when the cwd uses backslashes', () => {
+        write('source/main.brs');
+        //`s` yields backslashes on windows, so this exercises cwd normalization
+        expect(
+            getRelativePaths(['**/*.brs'], s`${rootDir}`)
+        ).to.eql(['source/main.brs']);
+    });
+
     it('returns empty array when no patterns are provided', () => {
         write('lib.brs');
         expect(getRelativePaths([])).to.eql([]);

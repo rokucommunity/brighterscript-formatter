@@ -3,6 +3,32 @@ import { util } from './util';
 import { Lexer, TokenKind } from 'brighterscript';
 
 describe('util', () => {
+    describe('toForwardSlashes', () => {
+        it('converts backslashes to forward slashes', () => {
+            expect(util.toForwardSlashes('a\\b\\c.brs')).to.equal('a/b/c.brs');
+        });
+
+        it('leaves forward slashes alone', () => {
+            expect(util.toForwardSlashes('a/b/c.brs')).to.equal('a/b/c.brs');
+        });
+
+        it('handles mixed separators', () => {
+            expect(util.toForwardSlashes('a\\b/c\\d.brs')).to.equal('a/b/c/d.brs');
+        });
+
+        it('collapses runs of separators', () => {
+            expect(util.toForwardSlashes('a\\\\b//c.brs')).to.equal('a/b/c.brs');
+        });
+
+        it('preserves a windows drive letter', () => {
+            expect(util.toForwardSlashes('C:\\projects\\lib.brs')).to.equal('C:/projects/lib.brs');
+        });
+
+        it('returns an empty string unchanged', () => {
+            expect(util.toForwardSlashes('')).to.equal('');
+        });
+    });
+
     describe('getNextNonWhitespaceToken', () => {
         it('returns undefined when index is out of bounds', () => {
             expect(util.getNextNonWhitespaceToken([], -1)).to.be.undefined;

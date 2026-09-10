@@ -119,6 +119,15 @@ export class Util {
             }
         }
     }
+
+    /**
+     * Convert all slashes (and runs of slashes) to a single forward slash. Mirrors
+     * roku-deploy's `util.toForwardSlashes` so glob patterns are normalized consistently
+     * across the RokuCommunity tools.
+     */
+    public toForwardSlashes(thePath: string) {
+        return thePath.replace(/[\/\\]+/g, '/');
+    }
 }
 
 const util = new Util();
