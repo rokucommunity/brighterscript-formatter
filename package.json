@@ -12,7 +12,6 @@
         "prepublishOnly": "npm run build && npm run test && npm run lint",
         "lint": "eslint \"src/**\"",
         "test": "c8 mocha \"src/**/*.spec.ts\" --full-trace",
-        "test:nocover": "mocha \"src/**/*.spec.ts\"",
         "audit": "npm audit || audit-ci --config ./audit-ci.jsonc",
         "format-github": "ts-node scripts/format-github.ts",
         "format-github-compare": "ts-node scripts/format-github.ts --compare",
