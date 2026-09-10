@@ -26,6 +26,7 @@
     "dependencies": {
         "brighterscript": "^0.73.3",
         "fast-glob": "^3.2.12",
+        "fs-extra": "^10.0.0",
         "jsonc-parser": "^3.0.0",
         "source-map": "0.7.4",
         "yargs": "^17.2.1"
@@ -43,8 +44,6 @@
         "chai": "^4.3.4",
         "eslint": "^8.1.0",
         "eslint-plugin-no-only-tests": "^2.6.0",
-        "fs-extra": "^10.0.0",
-        "glob-promise": "^4.2.2",
         "mocha": "^10.8.2",
         "nyc": "15.1.0",
         "sinon": "^11.1.2",
