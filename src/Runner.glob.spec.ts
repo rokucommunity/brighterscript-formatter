@@ -70,12 +70,41 @@ describe('Runner globbing', () => {
         ).to.eql(['lib.brs']);
     });
 
-    it('matches a literal absolute file path', () => {
+    it('matches a literal absolute file path with forward slashes', () => {
         write('lib.brs', 'other.brs');
         const absolute = s`${rootDir}/lib.brs`.replace(/\\/g, '/');
         expect(
             getRelativePaths([absolute])
         ).to.eql(['lib.brs']);
+    });
+
+    it('matches a literal absolute file path using native path separators', () => {
+        write('lib.brs', 'other.brs');
+        //`s` produces backslashes on windows, which is what callers of the CLI will pass in
+        expect(
+            getRelativePaths([s`${rootDir}/lib.brs`])
+        ).to.eql(['lib.brs']);
+    });
+
+    it('matches an absolute glob pattern', () => {
+        write('source/main.brs', 'source/lib.bs');
+        expect(
+            getRelativePaths([`${rootDir.replace(/\\/g, '/')}/**/*.brs`])
+        ).to.eql(['source/main.brs']);
+    });
+
+    it('excludes files using an absolute negated pattern', () => {
+        write('a.brs', 'b.brs');
+        expect(
+            getRelativePaths(['*.brs', `!${s`${rootDir}/b.brs`}`])
+        ).to.eql(['a.brs']);
+    });
+
+    it('matches an absolute path that contains a directory with a space', () => {
+        write('my dir/lib.brs');
+        expect(
+            getRelativePaths([s`${rootDir}/my dir/lib.brs`])
+        ).to.eql(['my dir/lib.brs']);
     });
 
     it('returns empty array when no patterns are provided', () => {

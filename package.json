@@ -25,7 +25,7 @@
     },
     "dependencies": {
         "brighterscript": "^0.73.3",
-        "glob-all": "^3.3.0",
+        "fast-glob": "^3.2.12",
         "jsonc-parser": "^3.0.0",
         "source-map": "0.7.4",
         "yargs": "^17.2.1"
@@ -33,7 +33,6 @@
     "devDependencies": {
         "@types/chai": "^4.2.22",
         "@types/fs-extra": "^9.0.13",
-        "@types/glob": "^7.2.0",
         "@types/mocha": "^10.0.10",
         "@types/node": "^20.12.12",
         "@types/sinon": "^10.0.6",

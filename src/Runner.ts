@@ -1,5 +1,4 @@
-import * as globAll from 'glob-all';
-import type { IOptions } from 'glob';
+import * as fastGlob from 'fast-glob';
 import * as fsExtra from 'fs-extra';
 import { Formatter } from './Formatter';
 import type { FormattingOptions } from './FormattingOptions';
@@ -71,13 +70,29 @@ export class Runner {
      * Get the list of file paths for this run.
      */
     private getFilePaths(files: string[], cwd: string) {
-        const filePaths = globAll.sync(files, {
+        //fast-glob handles `!`-prefixed negation patterns natively, so the patterns can be passed through as-is
+        return fastGlob.sync(files.map(x => this.normalizePattern(x)), {
             cwd: cwd,
             absolute: true,
             //skip all directories
-            nodir: true
-        } as IOptions);
-        return filePaths as string[];
+            onlyFiles: true
+        });
+    }
+
+    /**
+     * fast-glob requires patterns to use forward slashes, and cannot handle a windows-style
+     * absolute path (i.e. `C:\some\path`) as a pattern. Convert those to a valid pattern, while
+     * leaving any actual glob pattern untouched (`convertPathToPattern` escapes glob characters).
+     */
+    private normalizePattern(pattern: string) {
+        //preserve any leading negation characters
+        const negation = /^!*/.exec(pattern)![0];
+        const rest = pattern.slice(negation.length);
+        //only windows-style absolute paths need converting (i.e. they start with a drive letter)
+        if (/^[A-Za-z]:[\\/]/.test(rest)) {
+            return negation + fastGlob.convertPathToPattern(rest);
+        }
+        return pattern;
     }
 
     /**
