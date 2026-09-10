@@ -38,7 +38,7 @@ export class MultiLineItemFormatter {
                     text: '\n'
                 } as TokenWithStartIndex);
                 let closingToken = util.getClosingToken(tokens, i, openKind, closeKind);
-                /* istanbul ignore next */
+                /* c8 ignore next */
                 let closingTokenKindex = closingToken ? tokens.indexOf(closingToken) : -1;
 
                 i++;
@@ -92,7 +92,7 @@ export class MultiLineItemFormatter {
             let closingToken = util.getClosingToken(tokens, currentIndex, TokenKind.LeftSquareBracket, TokenKind.RightSquareBracket);
             //look at the previous token
             let previous = closingToken && util.getPreviousNonWhitespaceToken(tokens, tokens.indexOf(closingToken), true);
-            /* istanbul ignore else (because I can't figure out how to make this happen but I think it's still necessary) */
+            /* c8 ignore next (can't figure out how to make the falsy path happen, but it's still likely necessary) */
             if (previous && (previous.kind === TokenKind.RightSquareBracket || previous.kind === TokenKind.RightCurlyBrace)) {
                 return true;
             }

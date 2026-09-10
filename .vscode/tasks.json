@@ -19,7 +19,7 @@
             },
             "label": "test",
             "type": "shell",
-            "command": "npm run test:nocover --silent",
+            "command": "npm test --silent",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

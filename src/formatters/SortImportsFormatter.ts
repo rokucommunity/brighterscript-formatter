@@ -30,7 +30,7 @@ export class SortImportsFormatter {
                     importStatementsToSort.startLine = lineObj.tokens[0].range.start.line;
                 }
             } else {
-                /* istanbul ignore else */
+                /* c8 ignore next */
                 if (importStatementsToSort.lineTokens.length > 1) {
                     this.sortImportStatements(importStatementsToSort, tokens);
                 }

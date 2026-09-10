@@ -300,7 +300,7 @@ export class IndentFormatter {
             //`function`/`sub` used as a type (e.g. `as function`) is not a block opener, so don't let it match
             if (CallableKeywordTokenKinds.includes(candidate.kind)) {
                 //the optional chain only short-circuits at the start of the file, which the scan never reaches here
-                /* istanbul ignore next */
+                /* c8 ignore next */
                 if (util.getPreviousNonWhitespaceToken(tokens, i)?.kind === TokenKind.As) {
                     continue;
                 }
