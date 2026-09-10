@@ -2537,7 +2537,7 @@ end function`;
     });
 
     function formatEqual(incoming: string, expected?: string, options?: FormattingOptions) {
-        expected = expected ?? incoming;
+        expected ??= incoming;
         let formatted = formatter.format(incoming, options);
         expect(formatted).to.equal(expected);
     }

@@ -124,7 +124,7 @@ export class Runner {
 
     public normalizeArgs(args: RunnerOptions): RunnerOptions {
         args.files = Array.isArray(args.files) ? args.files : [];
-        args.cwd = args.cwd ?? process.cwd();
+        args.cwd ??= process.cwd();
         return args;
     }
 }
