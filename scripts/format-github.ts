@@ -5,7 +5,7 @@
  * see if anything strange has been changed during the format process.
  */
 import * as fsExtra from 'fs-extra';
-import * as glob from 'glob-promise';
+import * as fastGlob from 'fast-glob';
 import * as path from 'path';
 import { exec as execCb, execSync } from 'child_process';
 import { promisify } from 'util';
@@ -13,6 +13,7 @@ import { promisify } from 'util';
 const exec = promisify(execCb);
 
 import { Formatter } from '../src/Formatter';
+import { util } from '../src/util';
 
 var argv = require('yargs').argv;
 
@@ -73,9 +74,12 @@ let workspace = {
             //clone the repo
             await exec(`git clone ${repositoryUrl} "${projectFolderPath}"`);
 
-            //find every brightscript file
-            let files = await glob('**/*.brs', {
-                cwd: projectFolderPath
+            //find every brightscript file. fast-glob only understands forward slashes, so
+            //normalize the cwd the same way Runner does. Paths stay relative to the project
+            //folder because they're joined with projectFolderPath below.
+            let files = await fastGlob.async('**/*.brs', {
+                cwd: util.toForwardSlashes(projectFolderPath),
+                onlyFiles: true
             });
 
             //format using version from npm and then commit
