@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [1.8.4](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.3...v1.8.4) - 2026-10-09
+### Changed
+ - Format `...` (spread/rest) token ([#168](https://github.com/rokucommunity/brighterscript-formatter/pull/168))
+ - Security enhancements ([#159](https://github.com/rokucommunity/brighterscript-formatter/pull/159), [#164](https://github.com/rokucommunity/brighterscript-formatter/pull/164), [#166](https://github.com/rokucommunity/brighterscript-formatter/pull/166), [#167](https://github.com/rokucommunity/brighterscript-formatter/pull/167))
+ - Replace glob-all with fast-glob ([#160](https://github.com/rokucommunity/brighterscript-formatter/pull/160))
+
+
+
 ## [1.8.3](https://github.com/rokucommunity/brighterscript-formatter/compare/1.8.2...v1.8.3) - 2026-09-09
 ### Changed
  - Security enhancements ([#157](https://github.com/rokucommunity/brighterscript-formatter/pull/157))
