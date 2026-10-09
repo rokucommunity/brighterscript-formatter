@@ -64,7 +64,9 @@ export class InteriorWhitespaceFormatter {
         let removeRight = [
             ...removeBoth,
             TokenKind.LeftSquareBracket,
-            TokenKind.LeftParen
+            TokenKind.LeftParen,
+            //spread/rest (i.e. `...args`)
+            TokenKind.DotDotDot
         ];
 
         let isPastFirstTokenOfLine = false;
@@ -165,7 +167,11 @@ export class InteriorWhitespaceFormatter {
 
             //remove any space tokens on the right
             if (removeRight.includes(token.kind)) {
-                if (nextTokenType === TokenKind.Whitespace) {
+                if (
+                    nextTokenType === TokenKind.Whitespace &&
+                    //don't glue a trailing comment onto `...`
+                    !(token.kind === TokenKind.DotDotDot && tokens[i + 2]?.kind === TokenKind.Comment)
+                ) {
                     //remove the next token, which is the Whitespace token
                     tokens.splice(i + 1, 1);
                 }
@@ -251,17 +257,15 @@ export class InteriorWhitespaceFormatter {
                     util.getNextNonWhitespaceToken(tokens, i, true)?.kind
                 ) {
                     let whitespaceToken = tokens[i + 1];
-
-                    //this is never called because formatInteriorWhitespace already handles inserting this space
-                    // //ensure there is a whitespace token in that position (make it 0-length for now)
-                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
-                    //     whitespaceToken = <any>{
-                    //         kind: TokenKind.Whitespace,
-                    //         startIndex: -1,
-                    //         text: ''
-                    //     };
-                    //     tokens.splice(i, 0, whitespaceToken);
-                    // }
+                    //ensure there is a whitespace token in that position so we never overwrite the text of a real token
+                    if (whitespaceToken.kind !== TokenKind.Whitespace) {
+                        whitespaceToken = {
+                            kind: TokenKind.Whitespace,
+                            startIndex: -1,
+                            text: ''
+                        } as TokenWithStartIndex;
+                        tokens.splice(i + 1, 0, whitespaceToken);
+                    }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                 }
@@ -274,16 +278,15 @@ export class InteriorWhitespaceFormatter {
                     util.getPreviousNonWhitespaceToken(tokens, i, true)
                 ) {
                     let whitespaceToken = tokens[i - 1];
-                    //this is never called because formatInteriorWhitespace already handles inserting this space
-                    // //ensure there is a whitespace token in that position (make it 0-length for now)
-                    // if (whitespaceToken && whitespaceToken.kind !== TokenKind.Whitespace) {
-                    //     whitespaceToken = <any>{
-                    //         kind: TokenKind.Whitespace,
-                    //         startIndex: -1,
-                    //         text: ''
-                    //     };
-                    //     tokens.splice(i - 1, 0, whitespaceToken);
-                    // }
+                    //ensure there is a whitespace token in that position so we never overwrite the text of a real token
+                    if (whitespaceToken.kind !== TokenKind.Whitespace) {
+                        whitespaceToken = {
+                            kind: TokenKind.Whitespace,
+                            startIndex: -1,
+                            text: ''
+                        } as TokenWithStartIndex;
+                        tokens.splice(i, 0, whitespaceToken);
+                    }
                     //insert the space only if so configured
                     whitespaceToken.text = options.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces ? ' ' : '';
                     //next loop iteration should be after the closing curly brace
