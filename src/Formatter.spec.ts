@@ -2121,6 +2121,142 @@ end function`;
         });
     });
 
+    describe('dotdotdot (spread/rest)', () => {
+        it('preserves `...` in array literals', () => {
+            formatEqual(`x = [...a]`);
+            formatEqual(`x = [...a, ...b]`);
+            formatEqual(`x = [ ...a, ...b ]`, `x = [...a, ...b]`);
+            formatEqual(`x = [1, 2,...a]`, `x = [1, 2, ...a]`);
+            formatEqual(`x = [...m.items]`);
+            formatEqual(`x = [...[1, 2]]`);
+            formatEqual(`x = [...{a: 1}]`, `x = [...{ a: 1 }]`);
+        });
+
+        it('preserves `...` in associative array literals', () => {
+            formatEqual(`x = {...a}`, `x = { ...a }`);
+            formatEqual(`x = {...a, b: 1}`, `x = { ...a, b: 1 }`);
+            formatEqual(`x = { ...a, ...b }`);
+        });
+
+        it('preserves `...` in associative array literals when not adding spaces inside braces', () => {
+            formatEqual(`x = { ...a, b: 1 }`, `x = {...a, b: 1}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
+        });
+
+        it('does not remove a `.` that is directly beside a curly brace', () => {
+            formatEqual(`x = {.a}`, `x = { .a }`);
+            formatEqual(`x = {a.}`, `x = { a. }`);
+            formatEqual(`x = {a.}`, `x = {a.}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
+        });
+
+        it('preserves `...` in multi-line array and associative array literals', () => {
+            formatEqual(`x = [\n...a\n...b\n]`, `x = [\n    ...a\n    ...b\n]`);
+            formatEqual(`x = {\n...a\nb: 1\n}`, `x = {\n    ...a\n    b: 1\n}`);
+            formatEqual(`x = {...a,\nb: 1}`, `x = {\n    ...a,\n    b: 1\n}`, {
+                formatMultiLineObjectsAndArrays: true
+            });
+        });
+
+        it('indents `...` items that start a new line', () => {
+            formatEqual(`arr = [\n...thing\n]`, `arr = [\n    ...thing\n]`);
+            formatEqual(`obj = {\n...m\n}`, `obj = {\n    ...m\n}`);
+            formatEqual(`arr = [\n...thing\n]`, `arr = [\n   ...thing\n]`, { indentSpaceCount: 3 });
+            formatEqual(`obj = {\n...m\n}`, `obj = {\n   ...m\n}`, { indentSpaceCount: 3 });
+            formatEqual(`obj = {\n...m\n}`, `obj = {\n\t...m\n}`, { indentStyle: 'tabs' });
+        });
+
+        it('indents nested `...` items that start a new line', () => {
+            formatEqualTrim(`
+                sub main()
+                arr = [
+                ...thing,
+                ...[
+                1
+                ]
+                ]
+                obj = {
+                ...m
+                child: {
+                ...m.child
+                }
+                }
+                end sub
+            `, `
+                sub main()
+                    arr = [
+                        ...thing,
+                        ...[
+                            1
+                        ]
+                    ]
+                    obj = {
+                        ...m
+                        child: {
+                            ...m.child
+                        }
+                    }
+                end sub
+            `);
+        });
+
+        it('indents multi-line rest parameters, call arguments, and destructuring', () => {
+            formatEqual(`sub m(\na,\n...args\n)\nend sub`, `sub m(\n    a,\n    ...args\n)\nend sub`);
+            formatEqual(`foo(\n...args\n)`, `foo(\n    ...args\n)`);
+            formatEqual(`[\na,\n...rest\n] = arr`, `[\n    a,\n    ...rest\n] = arr`);
+            formatEqual(`{\na,\n...rest\n} = obj`, `{\n    a,\n    ...rest\n} = obj`);
+        });
+
+        it('preserves `...` in function parameters and call arguments', () => {
+            formatEqual(`sub m(...args)\nend sub`);
+            formatEqual(`sub m(a, ...args)\nend sub`);
+            formatEqual(`foo(...args)`);
+            formatEqual(`foo(a,...args)`, `foo(a, ...args)`);
+        });
+
+        it('preserves `...` in destructuring assignments', () => {
+            formatEqual(`[a, ...rest] = arr`);
+            formatEqual(`{a, ...rest} = obj`, `{ a, ...rest } = obj`);
+        });
+
+        it('removes whitespace between `...` and its operand', () => {
+            formatEqual(`x = [ ... a ]`, `x = [...a]`);
+            formatEqual(`foo(a, ...   args)`, `foo(a, ...args)`);
+            formatEqual(`x = { ... a }`, `x = { ...a }`);
+            formatEqual(`x = { ...   a, b: 1 }`, `x = { ...a, b: 1 }`);
+            formatEqual(`x = [a, ...\tb]`, `x = [a, ...b]`);
+            formatEqual(`x = [\n    ... a\n]`, `x = [\n    ...a\n]`);
+        });
+
+        it('removes whitespace between `...` and its operand in rest parameters', () => {
+            formatEqual(`sub m(... args)\nend sub`, `sub m(...args)\nend sub`);
+            formatEqual(`sub m(a, ...  args)\nend sub`, `sub m(a, ...args)\nend sub`);
+        });
+
+        it('removes whitespace between `...` and its operand in destructuring', () => {
+            formatEqual(`[a, ... rest] = arr`, `[a, ...rest] = arr`);
+            formatEqual(`{ a, ... rest } = obj`, `{ a, ...rest } = obj`);
+        });
+
+        it('does not remove whitespace between `...` and a trailing comment', () => {
+            formatEqual(`x = [\n    ... 'comment\n]`);
+        });
+
+        it('does not change `...` when formatInteriorWhitespace is disabled', () => {
+            formatEqual(`x = { ... a }`, undefined, {
+                formatInteriorWhitespace: false
+            });
+        });
+
+        it('does not change keyword case of identifiers that follow `...`', () => {
+            formatEqual(`x = [...type]`, `x = [...type]`, {
+                keywordCase: 'upper'
+            });
+        });
+    });
+
     describe('multiline function parameters and calls', () => {
         it('does not double indent [{...\\n...}]', () => {
             formatEqualTrim(`
