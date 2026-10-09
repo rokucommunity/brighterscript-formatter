@@ -2144,6 +2144,14 @@ end function`;
             });
         });
 
+        it('does not remove a `.` that is directly beside a curly brace', () => {
+            formatEqual(`x = {.a}`, `x = { .a }`);
+            formatEqual(`x = {a.}`, `x = { a. }`);
+            formatEqual(`x = {a.}`, `x = {a.}`, {
+                insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces: false
+            });
+        });
+
         it('preserves `...` in multi-line array and associative array literals', () => {
             formatEqual(`x = [\n...a\n...b\n]`, `x = [\n    ...a\n    ...b\n]`);
             formatEqual(`x = {\n...a\nb: 1\n}`, `x = {\n    ...a\n    b: 1\n}`);
