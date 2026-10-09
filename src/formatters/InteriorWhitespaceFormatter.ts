@@ -65,7 +65,6 @@ export class InteriorWhitespaceFormatter {
             ...removeBoth,
             TokenKind.LeftSquareBracket,
             TokenKind.LeftParen,
-            //spread/rest (i.e. `...args`)
             TokenKind.DotDotDot
         ];
 
