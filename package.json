@@ -24,7 +24,7 @@
         "brighterscript-formatter": "dist/cli.js"
     },
     "dependencies": {
-        "brighterscript": "^0.73.3",
+        "brighterscript": "https://github.com/rokucommunity/brighterscript/releases/download/v0.0.0-packages/brighterscript-0.73.5-add-dotdotdot-token.20261009172620.tgz",
         "fast-glob": "^3.2.12",
         "fs-extra": "^10.0.0",
         "jsonc-parser": "^3.0.0",
